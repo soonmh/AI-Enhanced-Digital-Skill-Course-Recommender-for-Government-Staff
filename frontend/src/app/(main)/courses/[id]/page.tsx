@@ -1,0 +1,563 @@
+"use client";
+
+import { useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { toast } from "sonner";
+import { useCourse, enrollCourse, rateCourse } from "@/hooks/useApi";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PermissionGate } from "@/components/shared/PermissionGate";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import {
+  BookOpen,
+  Briefcase,
+  Users,
+  ArrowLeft,
+  Play,
+  Pencil,
+  Star,
+  ExternalLink,
+  Calendar,
+  User,
+  BarChart3,
+  CheckCircle2,
+  Loader2,
+  Archive,
+} from "lucide-react";
+
+function StarRating({ value, onChange, readonly, size = "md" }: {
+  value: number;
+  onChange?: (r: number) => void;
+  readonly?: boolean;
+  size?: "sm" | "md" | "lg";
+}) {
+  const [hover, setHover] = useState(0);
+  const sz = size === "sm" ? "w-3.5 h-3.5" : size === "lg" ? "w-6 h-6" : "w-5 h-5";
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          disabled={readonly}
+          onClick={() => onChange?.(star)}
+          onMouseEnter={() => !readonly && setHover(star)}
+          onMouseLeave={() => !readonly && setHover(0)}
+          className={`${readonly ? "cursor-default" : "cursor-pointer"} transition-transform ${!readonly && "hover:scale-110"}`}
+        >
+          <Star
+            className={`${sz} transition-colors ${(hover || value) >= star ? "text-yellow-400 fill-current" : "text-gray-200"}`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function RatingBar({ stars, count, total }: { stars: number; count: number; total: number }) {
+  const pct = total > 0 ? (count / total) * 100 : 0;
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <span className="w-3 text-right text-gray-500">{stars}</span>
+      <Star className="w-3 h-3 text-yellow-400 fill-current" />
+      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-full bg-yellow-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="w-6 text-right text-gray-400 text-xs">{count}</span>
+    </div>
+  );
+}
+
+export default function CourseDetailPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const { course, isLoading, mutate } = useCourse(params.id as string);
+  const [submitting, setSubmitting] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
+
+  const from = searchParams.get("from");
+
+  const backConfig: Record<string, { href: string; label: string }> = {
+    "my-learning": { href: "/courses/my-learning", label: "My Learning" },
+    recommended: { href: "/courses/recommended", label: "Recommended Courses" },
+    list: { href: "/courses/list", label: "Manage Courses" },
+  };
+  const back = backConfig[from ?? ""] ?? { href: "/courses/my-learning", label: "Courses" };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <Skeleton className="h-4 w-28 mb-6" />
+            <Skeleton className="h-56 w-full rounded-xl mb-8" />
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-4">
+                <Skeleton className="h-48 w-full rounded-xl" />
+              </div>
+              <div className="space-y-4">
+                <Skeleton className="h-40 w-full rounded-xl" />
+                <Skeleton className="h-32 w-full rounded-xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <BookOpen className="w-8 h-8 text-gray-300" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Course not found</h3>
+          <Link href={back.href} className="text-violet-600 font-medium hover:underline">Back to {back.label}</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const enrolled = course.enrolled || false;
+  const progress = course.progress ?? 0;
+  const isCompleted = progress >= 100;
+  const isArchived = course.enrollment_status === "removed";
+  const dist = course.rating_distribution || {};
+  const totalRatings = (Object.values(dist) as number[]).reduce((a, b) => a + b, 0);
+  const reviews = course.recent_reviews || [];
+
+  const handleEnroll = async () => {
+    setEnrolling(true);
+    try {
+      await enrollCourse(params.id as string);
+      toast.success("Enrolled successfully!");
+      mutate({ ...course, enrolled: true, progress: 0, enrollment_count: (course.enrollment_count || 0) + 1 }, false);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to enroll";
+      toast.error(msg);
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
+  const handleRate = async (rating: number) => {
+    setSubmitting(true);
+    try {
+      const res = await rateCourse(params.id as string, rating);
+      toast.success("Rating submitted");
+      mutate({ ...course, user_rating: rating, avg_rating: res.avg_rating, ratings_count: res.ratings_count }, false);
+    } catch {
+      toast.error("Failed to submit rating");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Banner */}
+      <div className="relative h-64 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <BookOpen className="w-24 h-24 text-white/10" />
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/20 to-transparent" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 -mt-16 relative z-10 pb-12">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <Link href={back.href} className="hover:text-violet-600 transition-colors flex items-center gap-1">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            {back.label}
+          </Link>
+          <span>/</span>
+          <span className="text-gray-400 truncate max-w-xs">{course.title}</span>
+        </div>
+
+        {/* Archived Banner */}
+        {isArchived && (
+          <div className="flex items-center gap-3 px-5 py-3 bg-gray-100 border border-gray-200 rounded-xl mb-6">
+            <Archive className="w-5 h-5 text-gray-500" />
+            <div>
+              <p className="text-sm font-semibold text-gray-700">Archived</p>
+              <p className="text-xs text-gray-500">This course was unassigned by an admin and is no longer active.</p>
+            </div>
+          </div>
+        )}
+        <Card className="p-0 border-0 shadow-lg mb-6">
+          <CardContent className="p-6 lg:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+                    <BookOpen className="w-7 h-7 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{course.title}</h1>
+                    {course.title_bm && <p className="text-base text-gray-400 mb-3">{course.title_bm}</p>}
+                    <div className="flex flex-wrap items-center gap-3 mb-3">
+                      {course.level && (
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          course.level === "advanced" ? "bg-red-50 text-red-600" :
+                          course.level === "intermediate" ? "bg-amber-50 text-amber-600" :
+                          "bg-green-50 text-green-600"
+                        }`}>
+                          {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+                        </span>
+                      )}
+                      {course.working_field && (
+                        <span className="flex items-center gap-1 text-sm text-gray-500">
+                          <Briefcase className="w-3.5 h-3.5" />
+                          {course.working_field}
+                        </span>
+                      )}
+                      {course.avg_rating && (
+                        <span className="flex items-center gap-1 text-sm text-gray-500">
+                          <Star className="w-3.5 h-3.5 text-yellow-400 fill-current" />
+                          <span className="font-medium">{course.avg_rating}</span>
+                          <span className="text-gray-400">({course.ratings_count})</span>
+                        </span>
+                      )}
+                      {course.enrollment_count > 0 && (
+                        <span className="flex items-center gap-1 text-sm text-gray-500">
+                          <Users className="w-3.5 h-3.5" />
+                          {course.enrollment_count} enrolled
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-gray-600 leading-relaxed">{course.description}</p>
+                    {course.description_bm && (
+                      <p className="text-gray-400 text-sm mt-2 leading-relaxed">{course.description_bm}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 shrink-0">
+                <PermissionGate permission="course-management">
+                  <Link
+                    href={`/courses/${params.id}/edit`}
+                    className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Edit
+                  </Link>
+                </PermissionGate>
+                {isArchived ? (
+                  <div className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl border border-gray-200">
+                    <Archive className="w-5 h-5" />
+                    <span className="font-semibold">Archived</span>
+                  </div>
+                ) : enrolled ? (
+                  <div className="flex items-center gap-2 px-5 py-2.5 bg-green-50 text-green-700 rounded-xl border border-green-200">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="font-semibold">Enrolled</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleEnroll}
+                    disabled={enrolling}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-colors font-semibold text-sm shadow-sm disabled:opacity-60"
+                  >
+                    {enrolling ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                    {enrolling ? "Enrolling..." : "Enroll Now"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Progress Bar (if enrolled and not archived) */}
+        {enrolled && !isArchived && (
+          <Card className="p-0 border-0 shadow-md mb-6">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <BarChart3 className="w-5 h-5 text-violet-500" />
+                  )}
+                  <span className="font-semibold text-gray-900">
+                    {isCompleted ? "Completed!" : "Your Progress"}
+                  </span>
+                </div>
+                <span className={`text-lg font-bold ${isCompleted ? "text-green-600" : "text-violet-600"}`}>
+                  {Math.round(progress)}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    isCompleted ? "bg-green-500" : "bg-gradient-to-r from-violet-500 to-indigo-500"
+                  }`}
+                  style={{ width: `${Math.min(progress, 100)}%` }}
+                />
+              </div>
+              {course.url && (
+                <div className="mt-3 flex justify-end">
+                  <Link
+                    href={course.url}
+                    target="_blank"
+                    className="flex items-center gap-1.5 text-sm text-violet-600 font-medium hover:text-violet-700 transition-colors"
+                  >
+                    Continue Learning <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Course Details */}
+            <Card className="p-0 border-0 shadow-md">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-violet-600" />
+                  About This Course
+                </h2>
+                {course.remark && (
+                  <div className="p-4 bg-violet-50 rounded-xl mb-4 border border-violet-100">
+                    <p className="text-sm text-violet-800 leading-relaxed">{course.remark}</p>
+                  </div>
+                )}
+                {!course.remark && course.description && (
+                  <p className="text-gray-600 leading-relaxed">{course.description}</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Course Link */}
+            {course.url && (
+              <Card className="p-0 border-0 shadow-md">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <ExternalLink className="w-5 h-5 text-violet-600" />
+                    Course Link
+                  </h2>
+                  <Link
+                    href={course.url}
+                    target="_blank"
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all font-medium text-sm shadow-sm"
+                  >
+                    <Play className="w-4 h-4" />
+                    Open Course
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Ratings & Reviews */}
+            <Card className="p-0 border-0 shadow-md">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
+                  <Star className="w-5 h-5 text-yellow-500" />
+                  Ratings & Reviews
+                </h2>
+
+                <div className="flex flex-col sm:flex-row gap-6 mb-6">
+                  {/* Average Score */}
+                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50 rounded-xl min-w-[140px]">
+                    <span className="text-4xl font-bold text-gray-900">{course.avg_rating ?? "—"}</span>
+                    <StarRating value={Math.round(course.avg_rating || 0)} readonly size="sm" />
+                    <p className="text-sm text-gray-500 mt-1">{totalRatings} rating{totalRatings !== 1 ? "s" : ""}</p>
+                  </div>
+
+                  {/* Distribution Bars */}
+                  <div className="flex-1 space-y-1.5">
+                    {[5, 4, 3, 2, 1].map((s) => (
+                      <RatingBar key={s} stars={s} count={dist[s] || 0} total={totalRatings} />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Submit Rating */}
+                {enrolled && (
+                  <div className="p-4 bg-violet-50 rounded-xl border border-violet-100 mb-6">
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      {course.user_rating ? "Update your rating" : "Rate this course"}
+                    </p>
+                    <StarRating
+                      value={course.user_rating || 0}
+                      onChange={submitting ? undefined : handleRate}
+                      size="lg"
+                    />
+                  </div>
+                )}
+
+                {/* Recent Reviews */}
+                {reviews.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Recent Reviews</h3>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {reviews.map((review: any, idx: number) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <UserAvatar name={review.user_name} size={36} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-gray-900">{review.user_name}</p>
+                            {review.created_at && (
+                              <span className="text-xs text-gray-400">
+                                {new Date(review.created_at).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                          <StarRating value={review.rating} readonly size="sm" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Course Info */}
+            <Card className="p-0 border-0 shadow-md">
+              <CardContent className="p-5">
+                <h3 className="font-semibold mb-4 text-xs uppercase tracking-wider text-gray-500">Course Information</h3>
+                <div className="space-y-4">
+                  {course.level && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 bg-violet-100 rounded-xl flex items-center justify-center">
+                        <BarChart3 className="w-4 h-4 text-violet-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">Level</p>
+                        <p className="text-sm font-medium text-gray-900 capitalize">{course.level}</p>
+                      </div>
+                    </div>
+                  )}
+                  {course.working_field && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <Briefcase className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">Field</p>
+                        <p className="text-sm font-medium text-gray-900">{course.working_field}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center">
+                      <Users className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400">Enrolled</p>
+                      <p className="text-sm font-medium text-gray-900">{course.enrollment_count || 0} users</p>
+                    </div>
+                  </div>
+                  {course.created_by && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center">
+                        <User className="w-4 h-4 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">Created by</p>
+                        <p className="text-sm font-medium text-gray-900">{course.created_by}</p>
+                      </div>
+                    </div>
+                  )}
+                  {course.created_at && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 bg-rose-100 rounded-xl flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-rose-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">Created</p>
+                        <p className="text-sm font-medium text-gray-900">{new Date(course.created_at).toLocaleDateString("en-MY", { year: "numeric", month: "long", day: "numeric" })}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+
+            {/* Peer Enrollments */}
+            {course.peer_enrollments && course.peer_enrollments.length > 0 && (
+              <Card className="p-0 border-0 shadow-md">
+                <CardContent className="p-5">
+                  <h3 className="font-semibold mb-3 text-xs uppercase tracking-wider text-gray-500">Also Enrolled</h3>
+                  <div className="space-y-2.5">
+                    {course.peer_enrollments.map((peer: { name: string; field?: string; progress: number }, idx: number) => (
+                      <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                        <UserAvatar name={peer.name} size={30} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{peer.name}</p>
+                          <p className="text-xs text-gray-400">{peer.field || "Staff"}</p>
+                        </div>
+                        <span className={`text-xs font-semibold ${peer.progress >= 100 ? "text-green-600" : "text-violet-600"}`}>
+                          {Math.round(peer.progress)}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {/* Quick Enroll CTA */}
+            {!enrolled && !isArchived && (
+              <Card className="p-0 border-0 shadow-md bg-gradient-to-br from-violet-600 to-indigo-600">
+                <CardContent className="p-5">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                      <Play className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-white mb-1">Ready to start?</h3>
+                    <p className="text-sm text-white/70 mb-4">Enroll now and begin learning at your own pace</p>
+                    <button
+                      onClick={handleEnroll}
+                      disabled={enrolling}
+                      className="w-full py-3 bg-white text-violet-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors disabled:opacity-60"
+                    >
+                      {enrolling ? "Enrolling..." : "Enroll Now — Free"}
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Course Link Sidebar */}
+            {course.url && (
+              <Card className="p-0 border-0 shadow-md">
+                <CardContent className="p-5">
+                  <Link
+                    href={course.url}
+                    target="_blank"
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-violet-50 transition-colors group"
+                  >
+                    <div className="w-9 h-9 bg-violet-100 rounded-xl flex items-center justify-center group-hover:bg-violet-200 transition-colors">
+                      <ExternalLink className="w-4 h-4 text-violet-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 group-hover:text-violet-600">External Course Link</p>
+                      <p className="text-xs text-gray-400 truncate">{course.url}</p>
+                    </div>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
