@@ -330,19 +330,31 @@ class CourseController extends Controller
             }
         }
 
-        $courses = $baseQuery->orderByDesc('enrollments_count')->limit(8)->get();
+        $courses = $baseQuery->get();
 
         $weakNames = [];
+        $weakScores = [];
         foreach ($weakSections as $code) {
             $comp = \App\Services\DsriCalculationService::COMPETENCIES[$code] ?? null;
             if ($comp) $weakNames[] = $comp['name_en'];
+            $field = strtolower($code) . '_score';
+            $weakScores[$code] = $latestResponse->$field ?? 0;
         }
 
-        $result = $courses->map(function ($c) use ($weakSections, $weakNames) {
+        $result = $courses->map(function ($c) use ($weakSections, $weakNames, $weakScores) {
             $mappings = $c->competencyMappings()->pluck('competency_code')->toArray();
             $matchPct = count($weakSections) > 0
                 ? round((count(array_intersect($mappings, $weakSections)) / count($weakSections)) * 100)
                 : (count($mappings) > 0 ? 40 : 0);
+
+            // Severity: sum of (weight / score) for matched weak competencies
+            // Lower score = higher severity = higher priority
+            $severity = 0;
+            foreach (array_intersect($mappings, $weakSections) as $code) {
+                $weight = \App\Services\DsriCalculationService::COMPETENCIES[$code]['weight'] ?? 1;
+                $score = $weakScores[$code] ?? 0;
+                $severity += $weight / max($score, 1);
+            }
 
             $aiExplanation = '';
             if ($matchPct > 0 && !empty($weakNames)) {
@@ -366,8 +378,12 @@ class CourseController extends Controller
                 'match_percentage' => $matchPct,
                 'competency_codes' => $mappings,
                 'ai_explanation' => $aiExplanation,
+                'severity' => round($severity, 2),
             ];
-        });
+        })
+        ->sortByDesc('severity')
+        ->values()
+        ->take(8);
 
         return response()->json([
             'courses' => $result,
