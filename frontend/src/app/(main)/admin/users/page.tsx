@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { useUsers, deleteUser, createUser, updateUser, assignCoursesToUser, unassignCoursesFromUser, useCourses, useAssignedCourses } from "@/hooks/useApi";
+import { useTranslation } from "@/i18n/context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ type SortDir = "asc" | "desc";
 const ROLES = ["Admin", "Staff", "Top Management", "Trainer"];
 
 export default function AdminUsersPage() {
+  const { t } = useTranslation();
   const { users, isLoading, mutate } = useUsers();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
@@ -92,7 +94,7 @@ export default function AdminUsersPage() {
   };
 
   const handleBulkDelete = async () => {
-    if (!confirm(`Delete ${selected.size} users?`)) return;
+    if (!confirm(t("admin.deleteConfirm", { count: selected.size }))) return;
     try {
       for (const id of Array.from(selected)) await deleteUser(String(id));
       toast.success(`Deleted ${selected.size} users`);
@@ -168,8 +170,8 @@ export default function AdminUsersPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
+      <div className="min-h-screen bg-background">
+        <div className="bg-card shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <Skeleton className="h-9 w-48 mb-1" />
             <Skeleton className="h-5 w-64" />
@@ -195,14 +197,14 @@ export default function AdminUsersPage() {
       case "Staff": return "bg-blue-100 text-blue-700";
       case "Trainer": return "bg-green-100 text-green-700";
       case "Top Management": return "bg-purple-100 text-purple-700";
-      default: return "bg-gray-100 text-gray-700";
+      default: return "bg-muted text-foreground";
     }
   };
 
   const getStatusBadge = (isActive: boolean) => {
     return isActive
       ? "bg-green-100 text-green-700"
-      : "bg-gray-100 text-gray-500";
+      : "bg-muted text-muted-foreground";
   };
 
   const formatDate = (date: string) => {
@@ -213,15 +215,15 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-background">
+      <div className="bg-card shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-600 mt-1">Manage user accounts and permissions</p>
+            <h1 className="text-3xl font-bold text-foreground">{t("admin.userManagementTitle")}</h1>
+            <p className="text-muted-foreground mt-1">{t("admin.userManagementDescription")}</p>
           </div>
           <Button onClick={() => { setForm({}); setShowAdd(true); }}>
-            <Plus className="w-4 h-4" /> Add User
+            <Plus className="w-4 h-4" /> {t("admin.addUser")}
           </Button>
         </div>
       </div>
@@ -229,19 +231,19 @@ export default function AdminUsersPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card><CardContent className="p-5"><div className="flex items-center gap-3"><div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm"><Users className="w-5 h-5 text-white" /></div><div><p className="text-sm text-gray-500">Total Users</p><p className="text-2xl font-bold">{allUsers.length}</p></div></div></CardContent></Card>
+          <Card><CardContent className="p-5"><div className="flex items-center gap-3"><div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm"><Users className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{t("admin.totalUsers")}</p><p className="text-2xl font-bold">{allUsers.length}</p></div></div></CardContent></Card>
           {roles.map((role: string) => {
             const count = allUsers.filter((u: any) => u.role === role).length;
             const cfg: Record<string, { icon: any; gradient: string; label: string }> = {
-              "Admin": { icon: ShieldCheck, gradient: "from-red-500 to-rose-600", label: "Admins" },
-              "Staff": { icon: UserCog, gradient: "from-sky-500 to-cyan-600", label: "Staff" },
-              "Top Management": { icon: Crown, gradient: "from-amber-500 to-orange-500", label: "Top Management" },
-              "Trainer": { icon: GraduationCap, gradient: "from-emerald-500 to-teal-600", label: "Trainers" },
+              "Admin": { icon: ShieldCheck, gradient: "from-red-500 to-rose-600", label: t("admin.adminsLabel") },
+              "Staff": { icon: UserCog, gradient: "from-sky-500 to-cyan-600", label: t("admin.staffLabel") },
+              "Top Management": { icon: Crown, gradient: "from-amber-500 to-orange-500", label: t("admin.topManagementLabel") },
+              "Trainer": { icon: GraduationCap, gradient: "from-emerald-500 to-teal-600", label: t("admin.trainersLabel") },
             };
             const c = cfg[role] || { icon: Users, gradient: "from-gray-400 to-gray-500", label: role };
             const Icon = c.icon;
             return (
-              <Card key={role}><CardContent className="p-5"><div className="flex items-center gap-3"><div className={`p-3 bg-gradient-to-br ${c.gradient} rounded-xl shadow-sm`}><Icon className="w-5 h-5 text-white" /></div><div><p className="text-sm text-gray-500">{c.label}</p><p className="text-2xl font-bold">{count}</p></div></div></CardContent></Card>
+              <Card key={role}><CardContent className="p-5"><div className="flex items-center gap-3"><div className={`p-3 bg-gradient-to-br ${c.gradient} rounded-xl shadow-sm`}><Icon className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{c.label}</p><p className="text-2xl font-bold">{count}</p></div></div></CardContent></Card>
             );
           }).slice(0, 3)}
         </div>
@@ -251,11 +253,11 @@ export default function AdminUsersPage() {
           <CardContent className="p-5">
             <div className="flex flex-wrap gap-4">
               <div className="relative flex-1 min-w-48">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input type="text" placeholder="Search users..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input type="text" placeholder={t("admin.searchUsers")} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
-              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm">
-                <option value="">All Roles</option>
+              <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-3 py-2 rounded-lg border border-border bg-card text-sm">
+                <option value="">{t("admin.allRoles")}</option>
                 {roles.map((r: string) => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
@@ -266,47 +268,47 @@ export default function AdminUsersPage() {
         <Card className="py-0">
           <CardContent className="p-0">
             <div className="flex items-center justify-between px-5 py-3 border-b">
-              <h2 className="text-base font-semibold text-gray-900">User Directory</h2>
-              <span className="text-sm text-gray-500">{filtered.length} users</span>
+              <h2 className="text-base font-semibold text-foreground">{t("admin.userDirectory")}</h2>
+              <span className="text-sm text-muted-foreground">{t("admin.usersCount", { count: filtered.length })}</span>
             </div>
             {selected.size > 0 && (
-              <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 border-b text-sm">
-                <span className="font-medium text-blue-700">{selected.size} selected</span>
+              <div className="flex items-center gap-3 px-4 py-2 bg-blue-500/10 border-b text-sm">
+                <span className="font-medium text-blue-700">{t("admin.selectedCount", { count: selected.size })}</span>
                 <button onClick={handleBulkDelete} className="flex items-center gap-1 text-red-600 hover:text-red-800 text-xs font-medium">
-                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                  <Trash2 className="w-3.5 h-3.5" /> {t("common.delete")}
                 </button>
               </div>
             )}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="sticky top-0 z-10 bg-gray-50">
-                  <tr className="bg-gray-50 border-b">
+                <thead className="sticky top-0 z-10 bg-background">
+                  <tr className="bg-background border-b">
                     <th className="p-4 w-10">
                       <input type="checkbox" checked={paged.length > 0 && selected.size === paged.length} onChange={toggleAll} className="rounded" />
                     </th>
-                    <th className="text-left p-4 font-medium text-gray-700 cursor-pointer select-none" onClick={() => toggleSort("name")}>
-                      <span className="flex items-center gap-1">User <SortIcon field="name" /></span>
+                    <th className="text-left p-4 font-medium text-foreground cursor-pointer select-none" onClick={() => toggleSort("name")}>
+                      <span className="flex items-center gap-1">{t("admin.tableUser")} <SortIcon field="name" /></span>
                     </th>
-                    <th className="text-left p-4 font-medium text-gray-700 cursor-pointer select-none" onClick={() => toggleSort("email")}>
-                      <span className="flex items-center gap-1">Email <SortIcon field="email" /></span>
+                    <th className="text-left p-4 font-medium text-foreground cursor-pointer select-none" onClick={() => toggleSort("email")}>
+                      <span className="flex items-center gap-1">{t("admin.tableEmail")} <SortIcon field="email" /></span>
                     </th>
-                    <th className="text-left p-4 font-medium text-gray-700 cursor-pointer select-none" onClick={() => toggleSort("role")}>
-                      <span className="flex items-center gap-1">Role <SortIcon field="role" /></span>
+                    <th className="text-left p-4 font-medium text-foreground cursor-pointer select-none" onClick={() => toggleSort("role")}>
+                      <span className="flex items-center gap-1">{t("admin.tableRole")} <SortIcon field="role" /></span>
                     </th>
-                    <th className="text-left p-4 font-medium text-gray-700">Field</th>
-                    <th className="text-left p-4 font-medium text-gray-700 cursor-pointer select-none" onClick={() => toggleSort("created_at")}>
-                      <span className="flex items-center gap-1">Date Joined <SortIcon field="created_at" /></span>
+                    <th className="text-left p-4 font-medium text-foreground">{t("admin.tableField")}</th>
+                    <th className="text-left p-4 font-medium text-foreground cursor-pointer select-none" onClick={() => toggleSort("created_at")}>
+                      <span className="flex items-center gap-1">{t("admin.tableDateJoined")} <SortIcon field="created_at" /></span>
                     </th>
-                    <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Actions</th>
+                    <th className="text-left p-4 font-medium text-foreground">{t("admin.tableStatus")}</th>
+                    <th className="text-left p-4 font-medium text-foreground">{t("admin.tableActions")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paged.length === 0 ? (
-                    <tr><td colSpan={8} className="p-8 text-center text-gray-500">No users found</td></tr>
+                    <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">{t("admin.noUsersFound")}</td></tr>
                   ) : (
                     paged.map((u: any) => (
-                      <tr key={u.id} className={`border-b hover:bg-gray-50 transition-colors ${selected.has(u.id) ? "bg-blue-50" : ""}`}>
+                      <tr key={u.id} className={`border-b hover:bg-accent transition-colors ${selected.has(u.id) ? "bg-blue-500/10" : ""}`}>
                         <td className="p-4">
                           <input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleOne(u.id)} className="rounded" />
                         </td>
@@ -316,31 +318,31 @@ export default function AdminUsersPage() {
                               <UserAvatar name={u.name} size={36} />
                               <OnlineIndicator userId={u.id} />
                             </div>
-                            <span className="font-medium text-gray-900">{u.name}</span>
+                            <span className="font-medium text-foreground">{u.name}</span>
                           </div>
                         </td>
-                        <td className="p-4 text-gray-600">{u.email}</td>
+                        <td className="p-4 text-muted-foreground">{u.email}</td>
                         <td className="p-4">
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadge(u.role)}`}>
                             {u.role}
                           </span>
                         </td>
-                        <td className="p-4 text-gray-600">{u.working_field || "-"}</td>
-                        <td className="p-4 text-gray-600">{formatDate(u.created_at)}</td>
+                        <td className="p-4 text-muted-foreground">{u.working_field || "-"}</td>
+                        <td className="p-4 text-muted-foreground">{formatDate(u.created_at)}</td>
                         <td className="p-4">
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(u.is_active ?? true)}`}>
-                            {(u.is_active ?? true) ? "Active" : "Inactive"}
+                            {(u.is_active ?? true) ? t("admin.statusActive") : t("admin.statusInactive")}
                           </span>
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-1">
-                            <button onClick={() => setViewUser(u)} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition-colors" title="View">
+                            <button onClick={() => setViewUser(u)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-blue-600 transition-colors" title={t("admin.viewTitle")}>
                               <Eye className="w-4 h-4" />
                             </button>
-                            <button onClick={() => openEdit(u)} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-amber-600 transition-colors" title="Edit">
+                            <button onClick={() => openEdit(u)} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-amber-600 transition-colors" title={t("admin.editTitle")}>
                               <Pencil className="w-4 h-4" />
                             </button>
-                            <button onClick={() => { setAssignUser(u); setSelectedCourses(new Set()); setAssignSearch(""); }} className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-violet-600 transition-colors" title="Assign Course">
+                            <button onClick={() => { setAssignUser(u); setSelectedCourses(new Set()); setAssignSearch(""); }} className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-violet-600 transition-colors" title={t("admin.assignCourseTitle")}>
                               <BookOpen className="w-4 h-4" />
                             </button>
                           </div>
@@ -352,17 +354,17 @@ export default function AdminUsersPage() {
               </table>
             </div>
             <div className="flex items-center justify-between px-4 py-3 border-t text-sm">
-              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+              <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
                 {[10, 25, 50].map((n) => (
-                  <button key={n} onClick={() => { setPageSize(n); setPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${pageSize === n ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}>{n}</button>
+                  <button key={n} onClick={() => { setPageSize(n); setPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${pageSize === n ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
                 ))}
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => setPage(1)} disabled={page === 1} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&laquo;</button>
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&lsaquo;</button>
-                <span className="px-3 text-gray-600">{page} / {totalPages}</span>
-                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&rsaquo;</button>
-                <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&raquo;</button>
+                <button onClick={() => setPage(1)} disabled={page === 1} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&laquo;</button>
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&lsaquo;</button>
+                <span className="px-3 text-muted-foreground">{page} / {totalPages}</span>
+                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&rsaquo;</button>
+                <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&raquo;</button>
               </div>
             </div>
           </CardContent>
@@ -373,24 +375,24 @@ export default function AdminUsersPage() {
       <Dialog open={!!viewUser} onOpenChange={(open) => { if (!open) setViewUser(null); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-            <DialogDescription>View user account information</DialogDescription>
+            <DialogTitle>{t("admin.userDetailsTitle")}</DialogTitle>
+            <DialogDescription>{t("admin.userDetailsDescription")}</DialogDescription>
           </DialogHeader>
           {viewUser && (
             <div className="grid gap-3 py-2">
               <div className="flex items-center gap-3 pb-3 border-b">
                 <UserAvatar name={viewUser.name} size={48} />
                 <div>
-                  <p className="font-semibold text-gray-900">{viewUser.name}</p>
-                  <p className="text-sm text-gray-500">{viewUser.email}</p>
+                  <p className="font-semibold text-foreground">{viewUser.name}</p>
+                  <p className="text-sm text-muted-foreground">{viewUser.email}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-gray-500">Role</span><p className="font-medium">{viewUser.role || "-"}</p></div>
-                <div><span className="text-gray-500">Status</span><p><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(viewUser.is_active ?? true)}`}>{(viewUser.is_active ?? true) ? "Active" : "Inactive"}</span></p></div>
-                <div><span className="text-gray-500">Working Field</span><p className="font-medium">{viewUser.working_field || "-"}</p></div>
-                <div><span className="text-gray-500">Job Level</span><p className="font-medium">{viewUser.job_level || "-"}</p></div>
-                <div className="col-span-2"><span className="text-gray-500">Date Joined</span><p className="font-medium">{formatDate(viewUser.created_at)}</p></div>
+                <div><span className="text-muted-foreground">{t("admin.roleLabel")}</span><p className="font-medium">{viewUser.role || "-"}</p></div>
+                <div><span className="text-muted-foreground">{t("admin.statusLabel")}</span><p><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(viewUser.is_active ?? true)}`}>{(viewUser.is_active ?? true) ? t("admin.statusActive") : t("admin.statusInactive")}</span></p></div>
+                <div><span className="text-muted-foreground">{t("admin.workingFieldLabel")}</span><p className="font-medium">{viewUser.working_field || "-"}</p></div>
+                <div><span className="text-muted-foreground">{t("admin.jobLevelLabel")}</span><p className="font-medium">{viewUser.job_level || "-"}</p></div>
+                <div className="col-span-2"><span className="text-muted-foreground">{t("admin.dateJoinedLabel")}</span><p className="font-medium">{formatDate(viewUser.created_at)}</p></div>
               </div>
             </div>
           )}
@@ -402,45 +404,45 @@ export default function AdminUsersPage() {
       <Dialog open={showAdd} onOpenChange={(open) => { if (!open) setShowAdd(false); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>Create a new user account</DialogDescription>
+            <DialogTitle>{t("admin.addNewUserTitle")}</DialogTitle>
+            <DialogDescription>{t("admin.addNewUserDescription")}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 py-2">
             <div className="grid gap-1.5">
-              <Label htmlFor="add-name">Name</Label>
-              <Input id="add-name" value={form.name || ""} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Full name" />
+              <Label htmlFor="add-name">{t("admin.nameLabel")}</Label>
+              <Input id="add-name" value={form.name || ""} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("admin.namePlaceholder")} />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="add-email">Email</Label>
-              <Input id="add-email" type="email" value={form.email || ""} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="Email address" />
+              <Label htmlFor="add-email">{t("admin.emailLabel")}</Label>
+              <Input id="add-email" type="email" value={form.email || ""} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder={t("admin.emailPlaceholder")} />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="add-password">Password</Label>
-              <Input id="add-password" type="password" value={form.password || ""} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder="Min 8 characters" />
+              <Label htmlFor="add-password">{t("admin.passwordLabel")}</Label>
+              <Input id="add-password" type="password" value={form.password || ""} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={t("admin.passwordPlaceholder")} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
-                <Label htmlFor="add-role">Role</Label>
+                <Label htmlFor="add-role">{t("admin.roleSelectLabel")}</Label>
                 <select id="add-role" value={form.role || "Staff"} onChange={(e) => setForm({ ...form, role: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="add-field">Working Field</Label>
-                <Input id="add-field" value={form.working_field || ""} onChange={(e) => setForm({ ...form, working_field: e.target.value })} placeholder="e.g. IT" />
+                <Label htmlFor="add-field">{t("admin.workingFieldFormLabel")}</Label>
+                <Input id="add-field" value={form.working_field || ""} onChange={(e) => setForm({ ...form, working_field: e.target.value })} placeholder={t("admin.workingFieldFormPlaceholder")} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
-                <Label htmlFor="add-level">Job Level</Label>
-                <Input id="add-level" value={form.job_level || ""} onChange={(e) => setForm({ ...form, job_level: e.target.value })} placeholder="e.g. Manager" />
+                <Label htmlFor="add-level">{t("admin.jobLevelFormLabel")}</Label>
+                <Input id="add-level" value={form.job_level || ""} onChange={(e) => setForm({ ...form, job_level: e.target.value })} placeholder={t("admin.jobLevelFormPlaceholder")} />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowAdd(false)}>{t("common.cancel")}</Button>
             <Button onClick={handleAdd} disabled={saving || !form.name || !form.email || !form.password}>
-              {saving ? "Creating..." : "Create User"}
+              {saving ? t("admin.creating") : t("admin.createUser")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -450,48 +452,48 @@ export default function AdminUsersPage() {
       <Dialog open={!!editUser} onOpenChange={(open) => { if (!open) { setEditUser(null); setForm({}); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Update user account information</DialogDescription>
+            <DialogTitle>{t("admin.editUserTitle")}</DialogTitle>
+            <DialogDescription>{t("admin.editUserDescription")}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-3 py-2">
             <div className="grid gap-1.5">
-              <Label htmlFor="edit-name">Name</Label>
+              <Label htmlFor="edit-name">{t("admin.nameLabel")}</Label>
               <Input id="edit-name" value={form.name || ""} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="edit-email">Email</Label>
+              <Label htmlFor="edit-email">{t("admin.emailLabel")}</Label>
               <Input id="edit-email" type="email" value={form.email || ""} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
-                <Label htmlFor="edit-role">Role</Label>
+                <Label htmlFor="edit-role">{t("admin.roleSelectLabel")}</Label>
                 <select id="edit-role" value={form.role || "Staff"} onChange={(e) => setForm({ ...form, role: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="edit-status">Status</Label>
+                <Label htmlFor="edit-status">{t("admin.statusLabel")}</Label>
                 <select id="edit-status" value={form.is_active ?? "1"} onChange={(e) => setForm({ ...form, is_active: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
-                  <option value="1">Active</option>
-                  <option value="0">Inactive</option>
+                  <option value="1">{t("admin.statusActive")}</option>
+                  <option value="0">{t("admin.statusInactive")}</option>
                 </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
-                <Label htmlFor="edit-field">Working Field</Label>
+                <Label htmlFor="edit-field">{t("admin.workingFieldFormLabel")}</Label>
                 <Input id="edit-field" value={form.working_field || ""} onChange={(e) => setForm({ ...form, working_field: e.target.value })} />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="edit-level">Job Level</Label>
+                <Label htmlFor="edit-level">{t("admin.jobLevelFormLabel")}</Label>
                 <Input id="edit-level" value={form.job_level || ""} onChange={(e) => setForm({ ...form, job_level: e.target.value })} />
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setEditUser(null); setForm({}); }}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setEditUser(null); setForm({}); }}>{t("common.cancel")}</Button>
             <Button onClick={handleEdit} disabled={saving}>
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? t("common.saving") : t("admin.saveChanges")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -501,16 +503,16 @@ export default function AdminUsersPage() {
       <Dialog open={!!assignUser} onOpenChange={(open) => { if (!open) { setAssignUser(null); setSelectedCourses(new Set()); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Assign Courses</DialogTitle>
-            <DialogDescription>Select courses to assign to {assignUser?.name}</DialogDescription>
+            <DialogTitle>{t("admin.assignCoursesTitle")}</DialogTitle>
+            <DialogDescription>{t("admin.assignCoursesDescription", { name: assignUser?.name })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <input
               type="text"
-              placeholder="Search courses..."
+              placeholder={t("admin.searchCourses")}
               value={assignSearch}
               onChange={(e) => setAssignSearch(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
             <div className="max-h-64 overflow-y-auto space-y-1">
               {(allCourses || [])
@@ -518,7 +520,7 @@ export default function AdminUsersPage() {
                 .map((c: any) => {
                   const isAssigned = assignedCourseIds.includes(c.id);
                   return (
-                    <label key={c.id} className={`flex items-center gap-3 p-2 rounded-lg ${isAssigned ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50 cursor-pointer"}`}>
+                    <label key={c.id} className={`flex items-center gap-3 p-2 rounded-lg ${isAssigned ? "opacity-50 cursor-not-allowed" : "hover:bg-accent cursor-pointer"}`}>
                       <input
                         type="checkbox"
                         checked={isAssigned || selectedCourses.has(c.id)}
@@ -533,16 +535,16 @@ export default function AdminUsersPage() {
                         className="rounded"
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 truncate">{c.title}</p>
-                        {c.level && <p className="text-xs text-gray-500">{c.level}</p>}
+                        <p className="text-sm font-medium text-foreground truncate">{c.title}</p>
+                        {c.level && <p className="text-xs text-muted-foreground">{c.level}</p>}
                       </div>
                       {isAssigned && (
                         <button
                           onClick={() => setRemoveTarget({ courseId: c.id, title: c.title })}
-                          className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors shrink-0"
+                          className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground hover:bg-red-500/10 hover:text-red-600 transition-colors shrink-0"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                          Remove
+                          {t("common.remove")}
                         </button>
                       )}
                     </label>
@@ -551,9 +553,9 @@ export default function AdminUsersPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setAssignUser(null); setSelectedCourses(new Set()); }}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setAssignUser(null); setSelectedCourses(new Set()); }}>{t("common.cancel")}</Button>
             <Button onClick={handleAssign} disabled={saving || selectedCourses.size === 0}>
-              {saving ? "Assigning..." : `Assign ${selectedCourses.size} Course(s)`}
+              {saving ? t("courses.assigning") : t("admin.assignButton", { count: selectedCourses.size })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -563,14 +565,13 @@ export default function AdminUsersPage() {
       <Dialog open={!!removeTarget} onOpenChange={(open) => { if (!open) setRemoveTarget(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Remove Course</DialogTitle>
+            <DialogTitle>{t("admin.removeCourseTitle")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove <strong>{removeTarget?.title}</strong> from <strong>{assignUser?.name}</strong>?
-              The course will be moved to their Archived tab.
+              {t("admin.removeCourseDescription", { title: removeTarget?.title ?? "", name: assignUser?.name ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemoveTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setRemoveTarget(null)}>{t("common.cancel")}</Button>
             <Button
               variant="destructive"
               onClick={async () => {
@@ -585,7 +586,7 @@ export default function AdminUsersPage() {
                 }
               }}
             >
-              Remove
+              {t("common.remove")}
             </Button>
           </DialogFooter>
         </DialogContent>

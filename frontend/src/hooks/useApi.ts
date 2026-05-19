@@ -171,11 +171,11 @@ export function useAssignedCourses(userId: string | null) {
 }
 
 export function useAssignedUsers(courseId: string | null) {
-  const { data, error, isLoading } = useSWR<number[]>(
+  const { data, error, isLoading, mutate } = useSWR<number[]>(
     courseId ? `/api/admin/courses/${courseId}/assigned-users` : null,
     fetcher
   );
-  return { assignedUserIds: data ?? [], isLoading, isError: error };
+  return { assignedUserIds: data ?? [], isLoading, isError: error, mutate };
 }
 
 export async function unassignCoursesFromUser(userId: string, courseIds: number[]) {
@@ -193,6 +193,21 @@ export function useAiInsights() {
 export function useDepartmentInsights() {
   const { data, error, isLoading } = useSWR("/api/ai/department-insights", fetcher);
   return { insights: data, isLoading, isError: error };
+}
+
+export function useLearningPath() {
+  const { data, error, isLoading } = useSWR("/api/ai/learning-path", fetcher);
+  return { data, isLoading, isError: error };
+}
+
+export function usePeerComparison() {
+  const { data, error, isLoading } = useSWR("/api/ai/peer-comparison", fetcher);
+  return { data, isLoading, isError: error };
+}
+
+export function useAssessmentReadiness() {
+  const { data, error, isLoading } = useSWR("/api/ai/readiness", fetcher);
+  return { data, isLoading, isError: error };
 }
 
 export function useDepartmentComparison() {

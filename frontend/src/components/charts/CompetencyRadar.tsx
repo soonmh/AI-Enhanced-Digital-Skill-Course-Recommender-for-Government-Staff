@@ -39,7 +39,7 @@ export function CompetencyRadar({ data, benchmark = 50 }: CompetencyRadarProps) 
             gridType="polygon"
             strokeDasharray=""
             polarRadius={[10, 20, 50, 80, 100]}
-            className="stroke-gray-200"
+            className="stroke-border"
           />
           <PolarAngleAxis
             dataKey="code"
@@ -151,14 +151,14 @@ export function CompetencyRadar({ data, benchmark = 50 }: CompetencyRadarProps) 
                 className="inline-block w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: colorInfo.fill }}
               />
-              <span className="font-semibold text-gray-700">{item.code}</span>
-              <span className="text-gray-400">{item.percentage}%</span>
+              <span className="font-semibold text-foreground">{item.code}</span>
+              <span className="text-muted-foreground">{item.percentage}%</span>
             </div>
           );
         })}
-        <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-gray-200">
+        <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-border">
           <span className="inline-block w-4 h-0 border-t-2 border-dashed border-gray-300" />
-          <span className="text-gray-400">Benchmark {benchmark}%</span>
+          <span className="text-muted-foreground">Benchmark {benchmark}%</span>
         </div>
       </div>
     </div>

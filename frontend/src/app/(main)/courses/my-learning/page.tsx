@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "@/i18n/context";
 import { useCourses } from "@/hooks/useApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -20,10 +21,10 @@ type ApiRecord = Record<string, any>;
 
 type TabKey = "in_progress" | "completed" | "archived";
 
-const tabs: { key: TabKey; label: string; icon: typeof Play }[] = [
-  { key: "in_progress", label: "In Progress", icon: Play },
-  { key: "completed", label: "Completed", icon: CheckCircle },
-  { key: "archived", label: "Archived", icon: Archive },
+const tabs: { key: TabKey; labelKey: string; icon: typeof Play }[] = [
+  { key: "in_progress", labelKey: "courses.tabInProgress", icon: Play },
+  { key: "completed", labelKey: "courses.tabCompleted", icon: CheckCircle },
+  { key: "archived", labelKey: "courses.tabArchived", icon: Archive },
 ];
 
 function classifyCourses(courses: ApiRecord[]) {
@@ -45,25 +46,25 @@ function classifyCourses(courses: ApiRecord[]) {
   return { in_progress: inProgress, completed: completed, archived: archived };
 }
 
-function CourseCard({ course, variant }: { course: ApiRecord; variant: "progress" | "completed" | "archived" }) {
+function CourseCard({ course, variant, t }: { course: ApiRecord; variant: "progress" | "completed" | "archived"; t: (key: string, params?: Record<string, string | number>) => string }) {
   const progress = course.progress ?? 0;
 
   const styles = {
     progress: {
       border: "border-l-blue-500",
-      badge: "bg-blue-50 text-blue-700",
+      badge: "bg-blue-500/10 text-blue-700",
       bar: "bg-blue-500",
       icon: <Play className="w-4 h-4 text-blue-500" />,
     },
     completed: {
       border: "border-l-green-500",
-      badge: "bg-green-50 text-green-700",
+      badge: "bg-green-500/10 text-green-700",
       bar: "bg-green-500",
       icon: <CheckCircle className="w-4 h-4 text-green-500" />,
     },
     archived: {
       border: "border-l-gray-400",
-      badge: "bg-gray-100 text-gray-600",
+      badge: "bg-muted text-muted-foreground",
       bar: "bg-gray-400",
       icon: <Archive className="w-4 h-4 text-gray-400" />,
     },
@@ -75,7 +76,7 @@ function CourseCard({ course, variant }: { course: ApiRecord; variant: "progress
     <Link href={`/courses/${course.id}?from=my-learning`}>
       <div
         className={cn(
-          "bg-white rounded-xl border border-gray-200 border-l-4 shadow-sm hover:shadow-md transition-all duration-200 h-full",
+          "bg-card rounded-xl border border-border border-l-4 shadow-sm hover:shadow-md transition-all duration-200 h-full",
           s.border,
           variant === "archived" && "opacity-70"
         )}
@@ -83,7 +84,7 @@ function CourseCard({ course, variant }: { course: ApiRecord; variant: "progress
         <div className="p-5">
           {/* Header */}
           <div className="flex items-start justify-between gap-2 mb-3">
-            <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm leading-snug">
+            <h3 className="font-semibold text-foreground line-clamp-2 text-sm leading-snug">
               {course.title}
             </h3>
             {s.icon}
@@ -93,17 +94,17 @@ function CourseCard({ course, variant }: { course: ApiRecord; variant: "progress
           <div className="flex items-center gap-2 mb-4">
             {course.level && (
               <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", s.badge)}>
-                {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+                {t(`common.level${course.level.charAt(0).toUpperCase() + course.level.slice(1)}`)}
               </span>
             )}
             {variant === "completed" && (
               <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
                 <Sparkles className="w-3 h-3" />
-                Completed
+                {t("courses.completedBadge")}
               </span>
             )}
             {variant === "archived" && (
-              <span className="text-xs text-gray-500">Removed by admin</span>
+              <span className="text-xs text-muted-foreground">{t("courses.removedByAdmin")}</span>
             )}
           </div>
 
@@ -111,10 +112,10 @@ function CourseCard({ course, variant }: { course: ApiRecord; variant: "progress
           {variant !== "archived" && (
             <div>
               <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="text-gray-500">Progress</span>
-                <span className="font-semibold text-gray-700">{Math.round(progress)}%</span>
+                <span className="text-muted-foreground">{t("courses.progressLabel")}</span>
+                <span className="font-semibold text-foreground">{Math.round(progress)}%</span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-2">
+              <div className="w-full bg-muted rounded-full h-2">
                 <div
                   className={cn("h-2 rounded-full transition-all duration-300", s.bar)}
                   style={{ width: `${Math.min(progress, 100)}%` }}
@@ -125,9 +126,9 @@ function CourseCard({ course, variant }: { course: ApiRecord; variant: "progress
 
           {/* Archived info */}
           {variant === "archived" && (
-            <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Clock className="w-3.5 h-3.5" />
-              <span>This course was unassigned by an admin</span>
+              <span>{t("courses.unassignedByAdmin")}</span>
             </div>
           )}
         </div>
@@ -136,23 +137,23 @@ function CourseCard({ course, variant }: { course: ApiRecord; variant: "progress
   );
 }
 
-function EmptyState({ tab }: { tab: TabKey }) {
-  const config = {
+function EmptyState({ tab, t }: { tab: TabKey; t: (key: string, params?: Record<string, string | number>) => string }) {
+  const config: Record<TabKey, { icon: React.ElementType; titleKey: string; descKey: string; action?: { labelKey: string; href: string } }> = {
     in_progress: {
       icon: BookOpen,
-      title: "No courses in progress",
-      desc: "Start learning by enrolling in a course",
-      action: { label: "Browse Courses", href: "/courses/recommended" },
+      titleKey: "courses.emptyInProgressTitle",
+      descKey: "courses.emptyInProgressDesc",
+      action: { labelKey: "courses.emptyInProgressAction", href: "/courses/recommended" },
     },
     completed: {
       icon: CheckCircle,
-      title: "No completed courses yet",
-      desc: "Keep going — finish a course to see it here",
+      titleKey: "courses.emptyCompletedTitle",
+      descKey: "courses.emptyCompletedDesc",
     },
     archived: {
       icon: Archive,
-      title: "No archived courses",
-      desc: "Courses removed by admin will appear here",
+      titleKey: "courses.emptyArchivedTitle",
+      descKey: "courses.emptyArchivedDesc",
     },
   };
 
@@ -161,17 +162,17 @@ function EmptyState({ tab }: { tab: TabKey }) {
 
   return (
     <div className="text-center py-16">
-      <div className="mx-auto w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+      <div className="mx-auto w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
         <Icon className="w-8 h-8 text-gray-300" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-700 mb-1">{c.title}</h3>
-      <p className="text-gray-500 mb-5 text-sm">{c.desc}</p>
+      <h3 className="text-lg font-semibold text-foreground mb-1">{t(c.titleKey)}</h3>
+      <p className="text-muted-foreground mb-5 text-sm">{t(c.descKey)}</p>
       {c.action && (
         <Link
           href={c.action.href}
           className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
         >
-          {c.action.label}
+          {t(c.action!.labelKey)}
         </Link>
       )}
     </div>
@@ -179,13 +180,14 @@ function EmptyState({ tab }: { tab: TabKey }) {
 }
 
 export default function MyLearningPage() {
+  const { t } = useTranslation();
   const { courses, isLoading } = useCourses();
   const [activeTab, setActiveTab] = useState<TabKey>("in_progress");
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
+      <div className="min-h-screen bg-background">
+        <div className="bg-card shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <Skeleton className="h-9 w-36 mb-1" />
             <Skeleton className="h-5 w-64" />
@@ -208,12 +210,12 @@ export default function MyLearningPage() {
   const activeCourses = grouped[activeTab];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-card shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <h1 className="text-3xl font-bold text-gray-900">My Learning</h1>
-          <p className="text-gray-600 mt-1">Track your enrolled courses and progress</p>
+          <h1 className="text-3xl font-bold text-foreground">{t("courses.myLearningTitle")}</h1>
+          <p className="text-muted-foreground mt-1">{t("courses.myLearningDescription")}</p>
         </div>
       </div>
 
@@ -224,9 +226,9 @@ export default function MyLearningPage() {
             const count = grouped[tab.key].length;
             const Icon = tab.icon;
             const colors = {
-              in_progress: "bg-blue-50 border-blue-200 text-blue-700",
-              completed: "bg-green-50 border-green-200 text-green-700",
-              archived: "bg-gray-50 border-gray-200 text-gray-600",
+              in_progress: "bg-blue-500/10 border-blue-500/20 text-blue-700",
+              completed: "bg-green-500/10 border-green-500/20 text-green-700",
+              archived: "bg-muted border-border text-muted-foreground",
             };
             return (
               <div
@@ -243,7 +245,7 @@ export default function MyLearningPage() {
               >
                 <Icon className="w-5 h-5" />
                 <div>
-                  <p className="text-xs font-medium opacity-80">{tab.label}</p>
+                  <p className="text-xs font-medium opacity-80">{t(tab.labelKey)}</p>
                   <p className="text-xl font-bold">{count}</p>
                 </div>
               </div>
@@ -253,7 +255,7 @@ export default function MyLearningPage() {
 
         {/* Course grid */}
         {activeCourses.length === 0 ? (
-          <EmptyState tab={activeTab} />
+          <EmptyState tab={activeTab} t={t} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {activeCourses.map((course: ApiRecord) => {
@@ -263,7 +265,7 @@ export default function MyLearningPage() {
                   : activeTab === "completed"
                   ? "completed"
                   : "archived";
-              return <CourseCard key={course.id} course={course} variant={variant} />;
+              return <CourseCard key={course.id} course={course} variant={variant} t={t} />;
             })}
           </div>
         )}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { updatePassword } from "@/hooks/useApi";
+import { useTranslation } from "@/i18n/context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 
 export default function PasswordPage() {
+  const { t } = useTranslation();
   const [current, setCurrent] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -27,29 +29,29 @@ export default function PasswordPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPass !== confirm) {
-      toast.error("Passwords don't match");
+      toast.error(t("settings.passwordMismatch"));
       return;
     }
     setSaving(true);
     try {
       await updatePassword(current, newPass);
-      toast.success("Password updated");
+      toast.success(t("settings.passwordUpdated"));
       setCurrent("");
       setNewPass("");
       setConfirm("");
     } catch {
-      toast.error("Failed to update password");
+      toast.error(t("settings.passwordUpdateFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-background">
       <div className="px-6 py-8 w-full max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Settings</h1>
-          <p className="text-gray-600 text-lg">Manage your profile and account settings</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">{t("settings.settingsTitle")}</h1>
+          <p className="text-muted-foreground text-lg">{t("settings.settingsDescription")}</p>
         </div>
 
         {/* Settings Nav Card */}
@@ -57,39 +59,57 @@ export default function PasswordPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <Settings className="w-6 h-6 text-blue-600" />
-              Settings Menu
+              {t("settings.settingsMenu")}
             </CardTitle>
-            <CardDescription>Navigate between settings sections</CardDescription>
+            <CardDescription>{t("settings.settingsMenuDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Link
                 href="/settings/profile"
-                className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-accent hover:border-accent transition-all duration-200"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 rounded-lg">
+                  <div className="p-2 bg-muted rounded-lg">
                     <User className="w-5 h-5 text-gray-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Profile</h3>
-                    <p className="text-sm text-gray-600">Personal information</p>
+                    <h3 className="font-medium text-foreground">{t("settings.profileTab")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("settings.profileTabDescription")}</p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </Link>
-              <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/30 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <Lock className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-blue-900">Password</h3>
-                    <p className="text-sm text-blue-600">Update your password</p>
+                    <h3 className="font-medium text-primary">{t("settings.passwordTab")}</h3>
+                    <p className="text-sm text-primary">{t("settings.passwordTabDescription")}</p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700">Current</Badge>
+                <Badge variant="secondary" className="bg-primary/20 text-primary">{t("settings.currentBadge")}</Badge>
               </div>
+              <Link
+                href="/settings/appearance"
+                className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-accent hover:border-accent transition-all duration-200"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-muted rounded-lg">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">{t("settings.appearanceTab")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("settings.appearanceTabDescription")}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -99,16 +119,16 @@ export default function PasswordPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <Shield className="w-6 h-6 text-blue-600" />
-              Update Password
+              {t("settings.updatePasswordTitle")}
             </CardTitle>
-            <CardDescription>Ensure your account is using a strong password</CardDescription>
+            <CardDescription>{t("settings.updatePasswordDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleSave} className="space-y-6">
               <div className="grid gap-2">
                 <Label htmlFor="current_password" className="flex items-center gap-2 text-sm font-medium">
-                  <Key className="w-4 h-4 text-gray-500" />
-                  Current password
+                  <Key className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.currentPasswordLabel")}
                 </Label>
                 <Input
                   id="current_password"
@@ -116,14 +136,14 @@ export default function PasswordPage() {
                   value={current}
                   onChange={(e) => setCurrent(e.target.value)}
                   required
-                  placeholder="Enter current password"
+                  placeholder={t("settings.currentPasswordPlaceholder")}
                   className="mt-1 block w-full"
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium">
-                  <Lock className="w-4 h-4 text-gray-500" />
-                  New password
+                  <Lock className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.newPasswordLabel")}
                 </Label>
                 <Input
                   id="password"
@@ -131,14 +151,14 @@ export default function PasswordPage() {
                   value={newPass}
                   onChange={(e) => setNewPass(e.target.value)}
                   required
-                  placeholder="Enter new password"
+                  placeholder={t("settings.newPasswordPlaceholder")}
                   className="mt-1 block w-full"
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password_confirmation" className="flex items-center gap-2 text-sm font-medium">
-                  <Eye className="w-4 h-4 text-gray-500" />
-                  Confirm password
+                  <Eye className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.confirmPasswordLabel")}
                 </Label>
                 <Input
                   id="password_confirmation"
@@ -146,13 +166,13 @@ export default function PasswordPage() {
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   required
-                  placeholder="Confirm new password"
+                  placeholder={t("settings.confirmPasswordPlaceholder")}
                   className="mt-1 block w-full"
                 />
               </div>
               <div className="flex items-center gap-4 pt-4 border-t">
-                <Button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700">
-                  {saving ? "Saving..." : "Update Password"}
+                <Button type="submit" disabled={saving} className="bg-primary hover:bg-primary/90">
+                  {saving ? t("common.saving") : t("settings.updatePassword")}
                 </Button>
               </div>
             </form>

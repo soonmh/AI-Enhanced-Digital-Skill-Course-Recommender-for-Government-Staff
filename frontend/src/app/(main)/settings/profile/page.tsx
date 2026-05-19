@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useUser, updateProfile } from "@/hooks/useApi";
+import { useTranslation } from "@/i18n/context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,6 +49,7 @@ const EXPERIENCE_RANGES = [
 
 export default function ProfilePage() {
   const { user } = useUser();
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -74,9 +76,9 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       await updateProfile(form);
-      toast.success("Profile updated");
+      toast.success(t("common.saved"));
     } catch {
-      toast.error("Failed to update profile");
+      toast.error(t("settings.profileUpdateFailed"));
     } finally {
       setSaving(false);
     }
@@ -86,11 +88,11 @@ export default function ProfilePage() {
     setForm({ ...form, [field]: e.target.value });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-background">
       <div className="px-6 py-8 w-full max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Settings</h1>
-          <p className="text-gray-600 text-lg">Manage your profile and account settings</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">{t("settings.settingsTitle")}</h1>
+          <p className="text-muted-foreground text-lg">{t("settings.settingsDescription")}</p>
         </div>
 
         {/* Settings Nav Card */}
@@ -98,38 +100,56 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <Settings className="w-6 h-6 text-blue-600" />
-              Settings Menu
+              {t("settings.settingsMenu")}
             </CardTitle>
-            <CardDescription>Navigate between settings sections</CardDescription>
+            <CardDescription>{t("settings.settingsMenuDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/30 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <User className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-blue-900">Profile</h3>
-                    <p className="text-sm text-blue-600">Personal information</p>
+                    <h3 className="font-medium text-primary">{t("settings.profileTab")}</h3>
+                    <p className="text-sm text-primary">{t("settings.profileTabDescription")}</p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700">Current</Badge>
+                <Badge variant="secondary" className="bg-primary/20 text-primary">{t("settings.currentBadge")}</Badge>
               </div>
               <Link
                 href="/settings/password"
-                className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-accent hover:border-accent transition-all duration-200"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 rounded-lg">
+                  <div className="p-2 bg-muted rounded-lg">
                     <Lock className="w-5 h-5 text-gray-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Password</h3>
-                    <p className="text-sm text-gray-600">Update your password</p>
+                    <h3 className="font-medium text-foreground">{t("settings.passwordTab")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("settings.passwordTabDescription")}</p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </Link>
+              <Link
+                href="/settings/appearance"
+                className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-accent hover:border-accent transition-all duration-200"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-muted rounded-lg">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">{t("settings.appearanceTab")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("settings.appearanceTabDescription")}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </Link>
             </div>
           </CardContent>
@@ -140,30 +160,30 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <User className="w-6 h-6 text-blue-600" />
-              Profile Information
+              {t("settings.profileInformation")}
             </CardTitle>
-            <CardDescription>Update your personal details</CardDescription>
+            <CardDescription>{t("settings.profileInformationDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleSave} className="space-y-6">
               <div className="grid gap-2">
                 <Label htmlFor="name" className="flex items-center gap-2 text-sm font-medium">
-                  <User className="w-4 h-4 text-gray-500" />
-                  Full name
+                  <User className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.fullNameLabel")}
                 </Label>
                 <Input
                   id="name"
                   value={form.name}
                   onChange={update("name")}
                   required
-                  placeholder="Enter your full name"
+                  placeholder={t("settings.fullNamePlaceholder")}
                   className="mt-1 block w-full"
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium">
-                  <Mail className="w-4 h-4 text-gray-500" />
-                  Email address
+                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.emailAddressLabel")}
                 </Label>
                 <Input
                   id="email"
@@ -171,14 +191,14 @@ export default function ProfilePage() {
                   value={form.email}
                   onChange={update("email")}
                   required
-                  placeholder="Enter your email"
+                  placeholder={t("settings.emailAddressPlaceholder")}
                   className="mt-1 block w-full"
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="working_field" className="flex items-center gap-2 text-sm font-medium">
-                  <Briefcase className="w-4 h-4 text-gray-500" />
-                  Working field
+                  <Briefcase className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.workingFieldLabel")}
                 </Label>
                 <select
                   id="working_field"
@@ -186,16 +206,16 @@ export default function ProfilePage() {
                   onChange={update("working_field")}
                   className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <option value="">Select working field</option>
+                  <option value="">{t("settings.selectWorkingField")}</option>
                   {WORKING_FIELDS.map((f) => (
-                    <option key={f} value={f}>{f}</option>
+                    <option key={f} value={f}>{t(`settings.workingField${f.replace(/[^a-zA-Z]/g, "")}`)}</option>
                   ))}
                 </select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="job_level" className="flex items-center gap-2 text-sm font-medium">
-                  <TrendingUp className="w-4 h-4 text-gray-500" />
-                  Job level
+                  <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.jobLevelLabel")}
                 </Label>
                 <select
                   id="job_level"
@@ -203,16 +223,16 @@ export default function ProfilePage() {
                   onChange={update("job_level")}
                   className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <option value="">Select job level</option>
+                  <option value="">{t("settings.selectJobLevel")}</option>
                   {JOB_LEVELS.map((l) => (
-                    <option key={l} value={l}>{l}</option>
+                    <option key={l} value={l}>{t(`settings.jobLevel${l.replace(/[^a-zA-Z]/g, "")}`)}</option>
                   ))}
                 </select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="experience_years" className="flex items-center gap-2 text-sm font-medium">
-                  <Clock className="w-4 h-4 text-gray-500" />
-                  Experience years
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  {t("settings.experienceYearsLabel")}
                 </Label>
                 <select
                   id="experience_years"
@@ -220,15 +240,15 @@ export default function ProfilePage() {
                   onChange={update("experience_years")}
                   className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <option value="">Select experience range</option>
+                  <option value="">{t("settings.selectExperienceRange")}</option>
                   {EXPERIENCE_RANGES.map((r) => (
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>
               </div>
               <div className="flex items-center gap-4 pt-4 border-t">
-                <Button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700">
-                  {saving ? "Saving..." : "Save Changes"}
+                <Button type="submit" disabled={saving} className="bg-primary hover:bg-primary/90">
+                  {saving ? t("common.saving") : t("settings.saveChanges")}
                 </Button>
               </div>
             </form>

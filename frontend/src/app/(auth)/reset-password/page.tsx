@@ -7,16 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import api from "@/lib/axios";
+import { useTranslation } from "@/i18n/context";
 
 export default function ResetPasswordPage() {
+  const { t } = useTranslation();
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">{t("common.loading")}</div>}>
       <ResetPasswordForm />
     </Suspense>
   );
 }
 
 function ResetPasswordForm() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
@@ -47,63 +50,63 @@ function ResetPasswordForm() {
   };
 
   return (
-    <Card className="border-0 shadow-xl backdrop-blur-sm bg-white/95">
+    <Card className="border-0 shadow-xl backdrop-blur-sm bg-card/95">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl font-bold text-gray-900">Reset Password</CardTitle>
-        <CardDescription className="text-gray-600">
-          Enter your new password below
+        <CardTitle className="text-2xl font-bold text-foreground">{t("auth.resetPasswordTitle")}</CardTitle>
+        <CardDescription className="text-muted-foreground">
+          {t("auth.resetPasswordDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6 pt-0">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Mail className="w-4 h-4 text-gray-500" />
-                Email address
+              <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                {t("auth.emailLabel")}
               </Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t("auth.emailPlaceholder")}
                 className="pl-4"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Lock className="w-4 h-4 text-gray-500" />
-                New password
+              <Label htmlFor="password" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Lock className="w-4 h-4 text-muted-foreground" />
+                {t("auth.newPasswordLabel")}
               </Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter new password"
+                placeholder={t("auth.newPasswordPlaceholder")}
                 className="pl-4"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password_confirmation" className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <Eye className="w-4 h-4 text-gray-500" />
-                Confirm password
+              <Label htmlFor="password_confirmation" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Eye className="w-4 h-4 text-muted-foreground" />
+                {t("auth.confirmPasswordLabel")}
               </Label>
               <Input
                 id="password_confirmation"
                 type="password"
                 value={passwordConfirmation}
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
-                placeholder="Confirm new password"
+                placeholder={t("auth.confirmPasswordPlaceholder")}
                 className="pl-4"
                 required
               />
             </div>
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">
+              <div className="p-3 text-sm text-red-600 bg-red-500/10 rounded-md border border-red-200">
                 {error}
               </div>
             )}
@@ -113,7 +116,7 @@ function ResetPasswordForm() {
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2.5 rounded-md disabled:opacity-50 transition-colors"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin mr-2 inline" />}
-              {loading ? "Resetting..." : "Reset Password"}
+              {loading ? t("auth.resetting") : t("auth.resetButton")}
             </button>
           </div>
         </form>

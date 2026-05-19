@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAssessmentResults } from "@/hooks/useApi";
+import { useTranslation } from "@/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,17 +29,17 @@ import {
 } from "lucide-react";
 
 function getDsriLevel(score: number) {
-  if (score >= 90) return { label: "Excellent", color: "bg-green-500", textColor: "text-green-700" };
-  if (score >= 70) return { label: "Good", color: "bg-yellow-500", textColor: "text-yellow-700" };
-  if (score >= 40) return { label: "Average", color: "bg-orange-500", textColor: "text-orange-700" };
-  return { label: "Needs Improvement", color: "bg-red-500", textColor: "text-red-700" };
+  if (score >= 90) return { label: "Excellent", color: "bg-green-500 dark:bg-green-600", textColor: "text-green-700 dark:text-green-300" };
+  if (score >= 70) return { label: "Good", color: "bg-yellow-500 dark:bg-yellow-600", textColor: "text-yellow-700 dark:text-yellow-300" };
+  if (score >= 40) return { label: "Average", color: "bg-orange-500 dark:bg-orange-600", textColor: "text-orange-700 dark:text-orange-300" };
+  return { label: "Needs Improvement", color: "bg-red-500 dark:bg-red-600", textColor: "text-red-700 dark:text-red-300" };
 }
 
 function getScoreColor(percent: number) {
-  if (percent >= 90) return "bg-green-100 border-green-200 text-green-800";
-  if (percent >= 70) return "bg-yellow-100 border-yellow-200 text-yellow-800";
-  if (percent >= 40) return "bg-orange-100 border-orange-200 text-orange-800";
-  return "bg-red-100 border-red-200 text-red-800";
+  if (percent >= 90) return "bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-700/40 text-green-800 dark:text-green-300";
+  if (percent >= 70) return "bg-yellow-100 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-700/40 text-yellow-800 dark:text-yellow-300";
+  if (percent >= 40) return "bg-orange-100 dark:bg-orange-900/30 border-orange-200 dark:border-orange-700/40 text-orange-800 dark:text-orange-300";
+  return "bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-700/40 text-red-800 dark:text-red-300";
 }
 
 function getScoreIcon(percent: number) {
@@ -49,10 +50,10 @@ function getScoreIcon(percent: number) {
 }
 
 function getProgressBg(score: number) {
-  if (score >= 90) return "bg-green-100";
-  if (score >= 70) return "bg-yellow-100";
-  if (score >= 40) return "bg-orange-100";
-  return "bg-red-500";
+  if (score >= 90) return "bg-green-100 dark:bg-green-900/30";
+  if (score >= 70) return "bg-yellow-100 dark:bg-yellow-900/30";
+  if (score >= 40) return "bg-orange-100 dark:bg-orange-900/30";
+  return "bg-red-500 dark:bg-red-600";
 }
 
 function formatDate(dateStr: string) {
@@ -71,13 +72,14 @@ function formatTime(dateStr: string) {
 }
 
 export default function AssessmentResultsPage() {
+  const { t } = useTranslation();
   const { data, isLoading } = useAssessmentResults();
   const [compareA, setCompareA] = useState<string>("");
   const [compareB, setCompareB] = useState<string>("");
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen bg-background">
         <div className="px-6 py-8 w-full max-w-7xl mx-auto">
           <div className="mb-8">
             <Skeleton className="h-10 w-64 mb-2" />
@@ -95,21 +97,21 @@ export default function AssessmentResultsPage() {
 
   if (!data?.latest) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="text-center py-16">
-            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-              <History className="w-8 h-8 text-gray-400" />
+            <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
+              <History className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Results Yet</h3>
-            <p className="text-gray-500 mb-6">
-              Take your first assessment to see your results here.
+            <h3 className="text-xl font-semibold text-foreground mb-2">{t("assessment.noResultsTitle")}</h3>
+            <p className="text-muted-foreground mb-6">
+              {t("assessment.noResultsDescription")}
             </p>
             <Link
               href="/assessment"
               className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Take Assessment
+              {t("assessment.takeAssessment")}
             </Link>
           </div>
         </div>
@@ -155,25 +157,25 @@ export default function AssessmentResultsPage() {
   const level = getDsriLevel(dsri);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-background">
       <div className="px-6 py-8 w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Assessment Results</h1>
-          <p className="text-gray-600 text-lg">Your digital skills readiness breakdown</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">{t("assessment.resultsTitle")}</h1>
+          <p className="text-muted-foreground text-lg">{t("assessment.resultsDescription")}</p>
         </div>
 
         {/* Score Header Card */}
-        <Card className="mb-8 overflow-hidden border-0 shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <Card className="mb-8 overflow-hidden border-0 shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 dark:from-violet-900 dark:via-indigo-950 dark:to-gray-900 text-white">
           <CardContent className="p-8">
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <div className="p-3 bg-card/20 rounded-xl backdrop-blur-sm">
                     <SquareChartGantt className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Latest DSRI</h2>
+                    <h2 className="text-2xl font-bold">{t("assessment.latestDsri")}</h2>
                     <div className="flex items-center gap-2 text-blue-100">
                       <Calendar className="w-4 h-4" />
                       <span>
@@ -201,7 +203,7 @@ export default function AssessmentResultsPage() {
                         ) : trend.direction === "down" ? (
                           <TrendingDown className="w-4 h-4 text-red-300" />
                         ) : (
-                          <Minus className="w-4 h-4 text-gray-300" />
+                          <Minus className="w-4 h-4 text-muted-foreground" />
                         )}
                         <span className="text-sm">
                           {trend.direction === "up" ? "+" : trend.direction === "down" ? "-" : ""}
@@ -213,9 +215,9 @@ export default function AssessmentResultsPage() {
                 </div>
               </div>
               <div className="w-full lg:w-80">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-1">Score Breakdown</h3>
-                  <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+                <div className="bg-card/10 backdrop-blur-sm rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-white mb-1">{t("assessment.scoreBreakdown")}</h3>
+                  <div className="w-full bg-muted rounded-full h-3 mb-2">
                     <div
                       className={`${getProgressBg(dsri)} h-3 rounded-full transition-all duration-300`}
                       style={{ width: `${dsri}%` }}
@@ -238,9 +240,9 @@ export default function AssessmentResultsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Target className="w-6 h-6 text-blue-600" />
-                Competency Overview
+                {t("assessment.competencyOverview")}
               </CardTitle>
-              <CardDescription>Visual breakdown of all competency areas</CardDescription>
+              <CardDescription>{t("assessment.competencyOverviewDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               <CompetencyRadar
@@ -268,9 +270,9 @@ export default function AssessmentResultsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-700">
                   <TrendingUp className="w-5 h-5" />
-                  Top Performing Areas
+                  {t("assessment.topPerformingAreas")}
                 </CardTitle>
-                <CardDescription>Your strongest digital skill areas</CardDescription>
+                <CardDescription>{t("assessment.topPerformingDescription")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {topPerforming.map(({ code, section, percent }, idx) => {
@@ -278,7 +280,7 @@ export default function AssessmentResultsPage() {
                   return (
                     <div
                       key={code}
-                      className="flex items-center gap-4 p-3 bg-green-50 rounded-lg border border-green-200"
+                      className="flex items-center gap-4 p-3 bg-green-500/10 rounded-lg border border-green-200"
                     >
                       <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
                         {idx + 1}
@@ -287,11 +289,11 @@ export default function AssessmentResultsPage() {
                         <h4 className="font-semibold text-green-800">
                           {comp?.nameEn || section.section_name}
                         </h4>
-                        <p className="text-sm text-green-600">
-                          Score: {section.score}/{section.max_score}
+                        <p className="text-sm text-green-600 dark:text-green-400">
+                          {t("assessment.scoreLabel", { score: section.score, max: section.max_score })}
                         </p>
                       </div>
-                      <Badge className="bg-green-100 text-green-700 border-green-200">
+                      <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700/40">
                         {percent}%
                       </Badge>
                     </div>
@@ -305,9 +307,9 @@ export default function AssessmentResultsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-orange-700">
                   <Target className="w-5 h-5" />
-                  Growth Opportunities
+                  {t("assessment.growthOpportunities")}
                 </CardTitle>
-                <CardDescription>Areas with the most room for improvement</CardDescription>
+                <CardDescription>{t("assessment.growthOpportunitiesDescription")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {growthOpportunities.map(({ code, section, percent }, idx) => {
@@ -315,20 +317,20 @@ export default function AssessmentResultsPage() {
                   return (
                     <div
                       key={code}
-                      className="flex items-center gap-4 p-3 bg-orange-50 rounded-lg border border-orange-200"
+                      className="flex items-center gap-4 p-3 bg-orange-50 dark:bg-orange-900/30 rounded-lg border border-orange-200 dark:border-orange-700/40"
                     >
-                      <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                      <div className="w-8 h-8 bg-orange-500 dark:bg-orange-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-orange-800">
+                        <h4 className="font-semibold text-orange-800 dark:text-orange-300">
                           {comp?.nameEn || section.section_name}
                         </h4>
-                        <p className="text-sm text-orange-600">
-                          Score: {section.score}/{section.max_score}
+                        <p className="text-sm text-orange-600 dark:text-orange-400">
+                          {t("assessment.scoreLabel", { score: section.score, max: section.max_score })}
                         </p>
                       </div>
-                      <Badge className="bg-orange-100 text-orange-700 border-orange-200">
+                      <Badge className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700/40">
                         {percent}%
                       </Badge>
                     </div>
@@ -345,9 +347,9 @@ export default function AssessmentResultsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <ClipboardList className="w-6 h-6 text-blue-600" />
-                Detailed Analysis
+                {t("assessment.detailedAnalysis")}
               </CardTitle>
-              <CardDescription>Breakdown by competency area</CardDescription>
+              <CardDescription>{t("assessment.detailedAnalysisDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -368,13 +370,13 @@ export default function AssessmentResultsPage() {
                           {comp?.nameEn || section.section_name}
                         </h3>
                         <p className="text-xs opacity-75">
-                          Weight: {comp?.weight || 0}%
+                          {t("assessment.weightLabelResults", { weight: comp?.weight || 0 })}
                         </p>
                       </div>
                       <div className="px-4 pb-4">
                         <div className="text-2xl font-bold mb-1">{section.score}</div>
                         <div className="text-sm font-medium">{percent}%</div>
-                        <div className="mt-3 w-full bg-white/50 rounded-full h-1.5">
+                        <div className="mt-3 w-full bg-card/50 rounded-full h-1.5">
                           <div
                             className="h-1.5 bg-current rounded-full transition-all duration-300"
                             style={{ width: `${percent}%` }}
@@ -395,9 +397,9 @@ export default function AssessmentResultsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <History className="w-6 h-6 text-purple-600" />
-                Assessment History
+                {t("assessment.assessmentHistory")}
               </CardTitle>
-              <CardDescription>Your past assessment results</CardDescription>
+              <CardDescription>{t("assessment.assessmentHistoryDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               {/* DSRI Trend Chart */}
@@ -421,21 +423,21 @@ export default function AssessmentResultsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gray-50">
-                      <th className="p-3 font-semibold text-gray-700">
+                    <tr className="bg-background">
+                      <th className="p-3 font-semibold text-foreground">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
-                          Date
+                          {t("reports.tableDate")}
                         </div>
                       </th>
-                      <th className="p-3 font-semibold text-gray-700 text-center">
+                      <th className="p-3 font-semibold text-foreground text-center">
                         <div className="flex items-center justify-center gap-2">
                           <Activity className="w-4 h-4" />
                           DSRI
                         </div>
                       </th>
                       {Array.from({ length: 10 }, (_, i) => (
-                        <th key={i + 1} className="p-3 font-semibold text-gray-700 text-center text-sm">
+                        <th key={i + 1} className="p-3 font-semibold text-foreground text-center text-sm">
                           C{i + 1}
                         </th>
                       ))}
@@ -445,18 +447,18 @@ export default function AssessmentResultsPage() {
                     {history.map((r: AssessmentRecord, idx: number) => (
                       <tr
                         key={r.id}
-                        className={`hover:bg-gray-50 transition-colors ${
-                          idx === 0 ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                        className={`hover:bg-background transition-colors ${
+                          idx === 0 ? "bg-blue-500/10 dark:bg-blue-900/30 border-l-4 border-l-blue-500 dark:border-l-blue-400" : ""
                         }`}
                       >
                         <td className="p-3 font-medium">
                           <div>
                             <div>{formatDate(r.submitted_at)}</div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-muted-foreground">
                               {formatTime(r.submitted_at)}
                             </div>
                             {idx === 0 && (
-                              <Badge variant="outline" className="mt-1 text-xs bg-blue-50 text-blue-700 border-blue-200">
+                              <Badge variant="outline" className="mt-1 text-xs bg-blue-500/10 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700/40">
                                 Latest
                               </Badge>
                             )}
@@ -466,12 +468,12 @@ export default function AssessmentResultsPage() {
                           <span
                             className={`font-bold text-lg ${
                               r.dsri >= 90
-                                ? "text-green-600"
+                                ? "text-green-600 dark:text-green-400"
                                 : r.dsri >= 70
-                                ? "text-yellow-600"
+                                ? "text-yellow-600 dark:text-yellow-400"
                                 : r.dsri >= 40
-                                ? "text-orange-600"
-                                : "text-red-600"
+                                ? "text-orange-600 dark:text-orange-400"
+                                : "text-red-600 dark:text-red-400"
                             }`}
                           >
                             {r.dsri}%
@@ -484,7 +486,7 @@ export default function AssessmentResultsPage() {
                             <td key={i + 1} className="p-3 text-center text-sm">
                               <div className="space-y-1">
                                 <div className="font-semibold">{r[key]}</div>
-                                <div className="text-xs text-gray-500">
+                                <div className="text-xs text-muted-foreground">
                                   ({Number(r[pctKey]).toFixed(1)}%)
                                 </div>
                               </div>
@@ -498,19 +500,19 @@ export default function AssessmentResultsPage() {
               </div>
 
               {/* Bottom Stats */}
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-gray-200">
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-border">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{history.length}</div>
-                  <div className="text-sm text-gray-600">Total Assessments</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{history.length}</div>
+                  <div className="text-sm text-muted-foreground">{t("assessment.totalAssessments")}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {Math.max(...history.map((r: AssessmentRecord) => r.dsri))}%
                   </div>
-                  <div className="text-sm text-gray-600">Best Score</div>
+                  <div className="text-sm text-muted-foreground">{t("assessment.bestScore")}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {(
                       history.reduce(
                         (acc: number, r: AssessmentRecord) => acc + (r.dsri || 0),
@@ -519,7 +521,7 @@ export default function AssessmentResultsPage() {
                     ).toFixed(1)}
                     %
                   </div>
-                  <div className="text-sm text-gray-600">Average Score</div>
+                  <div className="text-sm text-muted-foreground">{t("assessment.averageScore")}</div>
                 </div>
               </div>
             </CardContent>
@@ -532,20 +534,20 @@ export default function AssessmentResultsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <GitCompare className="w-6 h-6 text-purple-600" />
-                Compare Assessments
+                {t("assessment.compareAssessments")}
               </CardTitle>
-              <CardDescription>Compare two assessments side by side</CardDescription>
+              <CardDescription>{t("assessment.compareDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Assessment A</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">{t("assessment.assessmentA")}</label>
                   <select
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                     value={compareA}
                     onChange={(e) => setCompareA(e.target.value)}
                   >
-                    <option value="">Select an assessment...</option>
+                    <option value="">{t("assessment.selectAssessment")}</option>
                     {history.map((r: AssessmentRecord) => (
                       <option key={`a-${r.id}`} value={r.id}>
                         {formatDate(r.submitted_at)} — DSRI: {r.dsri}%
@@ -554,13 +556,13 @@ export default function AssessmentResultsPage() {
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Assessment B</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">{t("assessment.assessmentB")}</label>
                   <select
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                    className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                     value={compareB}
                     onChange={(e) => setCompareB(e.target.value)}
                   >
-                    <option value="">Select an assessment...</option>
+                    <option value="">{t("assessment.selectAssessment")}</option>
                     {history.map((r: AssessmentRecord) => (
                       <option key={`b-${r.id}`} value={r.id}>
                         {formatDate(r.submitted_at)} — DSRI: {r.dsri}%
@@ -614,12 +616,12 @@ export default function AssessmentResultsPage() {
                       if (improved.length === 0 && declined.length === 0) return null;
 
                       return (
-                        <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+                        <div className="mt-6 p-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-xl border border-indigo-100">
                           <h4 className="font-semibold text-indigo-900 mb-2 flex items-center gap-2">
                             <Activity className="w-4 h-4" />
-                            Comparison Insights
+                            {t("assessment.comparisonInsights")}
                           </h4>
-                          <div className="space-y-1.5 text-sm text-gray-700">
+                          <div className="space-y-1.5 text-sm text-foreground">
                             {dsriDelta !== 0 && (
                               <p>
                                 Overall DSRI {dsriDelta > 0 ? "improved" : "declined"} by {Math.abs(dsriDelta).toFixed(1)}%.
@@ -627,12 +629,12 @@ export default function AssessmentResultsPage() {
                             )}
                             {improved.length > 0 && (
                               <p className="text-green-700">
-                                Most improved: {improved.slice(0, 3).map((c) => `${c.code} (+${c.delta.toFixed(1)}%)`).join(", ")}
+                                {t("assessment.mostImproved", { items: improved.slice(0, 3).map((c) => `${c.code} (+${c.delta.toFixed(1)}%)`).join(", ") })}
                               </p>
                             )}
                             {declined.length > 0 && (
                               <p className="text-red-700">
-                                Needs attention: {declined.slice(0, 3).map((c) => `${c.code} (${c.delta.toFixed(1)}%)`).join(", ")}
+                                {t("assessment.needsAttention", { items: declined.slice(0, 3).map((c) => `${c.code} (${c.delta.toFixed(1)}%)`).join(", ") })}
                               </p>
                             )}
                           </div>
@@ -644,23 +646,23 @@ export default function AssessmentResultsPage() {
                     <div className="mt-6 overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="bg-gray-50">
-                            <th className="p-3 font-semibold text-gray-700 text-left">Competency</th>
-                            <th className="p-3 font-semibold text-gray-700 text-center">
+                          <tr className="bg-background">
+                            <th className="p-3 font-semibold text-foreground text-left">{t("assessment.competencyHeader")}</th>
+                            <th className="p-3 font-semibold text-foreground text-center">
                               {formatDate(recordA.submitted_at)}
                             </th>
-                            <th className="p-3 font-semibold text-gray-700 text-center">
+                            <th className="p-3 font-semibold text-foreground text-center">
                               {formatDate(recordB.submitted_at)}
                             </th>
-                            <th className="p-3 font-semibold text-gray-700 text-center">Change</th>
+                            <th className="p-3 font-semibold text-foreground text-center">{t("assessment.changeHeader")}</th>
                           </tr>
                         </thead>
                         <tbody>
                           {comparisonData.map(({ code, name, rawA, rawB, delta }) => (
-                            <tr key={code} className="border-b hover:bg-gray-50">
+                            <tr key={code} className="border-b hover:bg-background">
                               <td className="p-3">
                                 <span className="font-semibold">{code}</span>{" "}
-                                <span className="text-gray-500">{name}</span>
+                                <span className="text-muted-foreground">{name}</span>
                               </td>
                               <td className="p-3 text-center">{rawA}</td>
                               <td className="p-3 text-center">{rawB}</td>
@@ -668,10 +670,10 @@ export default function AssessmentResultsPage() {
                                 <span
                                   className={`font-semibold ${
                                     delta > 0
-                                      ? "text-green-600"
+                                      ? "text-green-600 dark:text-green-400"
                                       : delta < 0
                                       ? "text-red-600"
-                                      : "text-gray-500"
+                                      : "text-muted-foreground"
                                   }`}
                                 >
                                   {delta > 0 ? "+" : ""}
@@ -680,7 +682,7 @@ export default function AssessmentResultsPage() {
                               </td>
                             </tr>
                           ))}
-                          <tr className="bg-gray-50 font-bold">
+                          <tr className="bg-background font-bold">
                             <td className="p-3">DSRI</td>
                             <td className="p-3 text-center">{recordA.dsri}%</td>
                             <td className="p-3 text-center">{recordB.dsri}%</td>
@@ -688,10 +690,10 @@ export default function AssessmentResultsPage() {
                               <span
                                 className={
                                   recordB.dsri - recordA.dsri > 0
-                                    ? "text-green-600"
+                                    ? "text-green-600 dark:text-green-400"
                                     : recordB.dsri - recordA.dsri < 0
                                     ? "text-red-600"
-                                    : "text-gray-500"
+                                    : "text-muted-foreground"
                                 }
                               >
                                 {recordB.dsri - recordA.dsri > 0 ? "+" : ""}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { useTranslation } from "@/i18n/context";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import {
@@ -20,6 +21,7 @@ import {
   ChevronDown,
   Glasses,
   GraduationCap,
+  Lightbulb,
 } from "lucide-react";
 
 interface NavItem {
@@ -32,21 +34,27 @@ interface NavItem {
   children?: NavItem[];
 }
 
-const NAV_ITEMS: NavItem[] = [
+const getNavItems = (t: (key: string, params?: Record<string, string | number>) => string): NavItem[] => [
   {
     key: "dashboard",
-    label: "Dashboard",
+    label: t("nav.dashboard"),
     href: "/dashboard",
     icon: LayoutGrid,
   },
   {
+    key: "ai-insights",
+    label: t("nav.aiInsights"),
+    href: "/ai-insights",
+    icon: Lightbulb,
+  },
+  {
     key: "assessments",
-    label: "Assessments",
+    label: t("nav.assessments"),
     icon: ClipboardList,
     children: [
       {
         key: "take-assessment",
-        label: "Take Assessment",
+        label: t("nav.takeAssessment"),
         href: "/assessment",
         icon: TrendingUp,
         permission: "take-assessment",
@@ -54,7 +62,7 @@ const NAV_ITEMS: NavItem[] = [
       },
       {
         key: "assessment-results",
-        label: "Assessment Results",
+        label: t("nav.assessmentResults"),
         href: "/assessment/results",
         icon: Target,
         permission: "take-assessment",
@@ -66,26 +74,26 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     key: "courses",
-    label: "Courses",
+    label: t("nav.courses"),
     icon: BookOpen,
     children: [
       {
         key: "my-learning",
-        label: "My Learning",
+        label: t("nav.myLearning"),
         href: "/courses/my-learning",
         icon: GraduationCap,
         permission: "take-assessment",
       },
       {
         key: "manage-courses",
-        label: "Manage Courses",
+        label: t("nav.manageCourses"),
         href: "/courses/list",
         icon: FolderOpen,
         permission: "course-management",
       },
       {
         key: "recommended-courses",
-        label: "Recommended Courses",
+        label: t("nav.recommendedCourses"),
         href: "/courses/recommended",
         icon: TrendingUp,
         permission: "take-assessment",
@@ -94,21 +102,21 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     key: "user-report",
-    label: "User Report",
+    label: t("nav.userReport"),
     href: "/staff-analysis",
     icon: Users,
     permission: "user-reporting",
   },
   {
     key: "course-report",
-    label: "Course Report",
+    label: t("nav.courseReport"),
     href: "/course-report/course-progress",
     icon: FileText,
     permission: "course-reporting",
   },
   {
     key: "user-management",
-    label: "User Management",
+    label: t("nav.userManagement"),
     href: "/admin/users",
     icon: Users,
     roles: ["Admin"],
@@ -119,6 +127,7 @@ const NAV_ITEMS: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { t } = useTranslation();
   const permissions = session?.user?.permissions || [];
   const roles = session?.user?.roles || [];
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
@@ -155,7 +164,7 @@ export function Sidebar() {
         return item;
       });
 
-  const filteredItems = filterItems(NAV_ITEMS);
+  const filteredItems = filterItems(getNavItems(t));
 
   const isActive = (href?: string) => {
     if (!href) return false;
@@ -314,14 +323,14 @@ export function Sidebar() {
               )}
             >
               <Settings className="w-4 h-4 shrink-0" />
-              <span>Settings</span>
+              <span>{t("nav.settings")}</span>
             </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              <span>Log out</span>
+              <span>{t("nav.logOut")}</span>
             </button>
           </div>
         )}

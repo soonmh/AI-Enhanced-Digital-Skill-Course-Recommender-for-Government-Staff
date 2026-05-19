@@ -2,10 +2,21 @@
 
 import Link from "next/link";
 import { Brain } from "lucide-react";
+import { I18nProvider, useTranslation } from "@/i18n/context";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative overflow-hidden">
+    <I18nProvider>
+      <AuthLayoutContent>{children}</AuthLayoutContent>
+    </I18nProvider>
+  );
+}
+
+function AuthLayoutContent({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Animated background blobs */}
       <div className="absolute inset-0 opacity-40">
         <div className="absolute top-10 left-10 w-20 h-20 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse" />
@@ -18,12 +29,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute top-4 left-4 sm:top-8 sm:left-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Home
+            {t("auth.backToHome")}
           </Link>
         </div>
 
@@ -35,8 +46,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <Brain className="w-7 h-7 text-white" />
               </div>
               <div className="text-left">
-                <div className="text-2xl font-bold text-gray-900">DSRA</div>
-                <div className="text-sm text-gray-600">Digital Skills Readiness Assessment</div>
+                <div className="text-2xl font-bold text-foreground">{t("auth.brandName")}</div>
+                <div className="text-sm text-muted-foreground">{t("auth.brandSubtitle")}</div>
               </div>
             </Link>
           </div>
@@ -45,8 +56,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {children}
 
           {/* Copyright */}
-          <div className="text-center mt-6 text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} Digital Skills Readiness Assessment
+          <div className="text-center mt-6 text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} {t("landing.footerCopyright")}
           </div>
         </div>
       </div>

@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import api from "@/lib/axios";
+import { useTranslation } from "@/i18n/context";
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,30 +30,30 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <Card className="border-0 shadow-xl backdrop-blur-sm bg-white/95">
+    <Card className="border-0 shadow-xl backdrop-blur-sm bg-card/95">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-2xl font-bold text-gray-900">Forgot Password</CardTitle>
-        <CardDescription className="text-gray-600">Enter your email to receive a reset link</CardDescription>
+        <CardTitle className="text-2xl font-bold text-foreground">{t("auth.forgotPasswordTitle")}</CardTitle>
+        <CardDescription className="text-muted-foreground">{t("auth.forgotPasswordDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="p-6 pt-0">
         {sent ? (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-            <span className="text-sm text-green-700">Reset link sent to your email.</span>
+          <div className="mb-4 p-3 bg-green-500/10 border border-green-200 rounded-lg flex items-center gap-2">
+            <span className="text-sm text-green-700">{t("auth.resetLinkSent")}</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                  <Mail className="w-4 h-4 text-gray-500" />
-                  Email address
+                <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  {t("auth.emailLabel")}
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder={t("auth.emailPlaceholder")}
                   className="pl-4"
                   required
                   autoFocus
@@ -63,12 +65,12 @@ export default function ForgotPasswordPage() {
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2.5"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                {loading ? "Sending..." : "Send Reset Link"}
+                {loading ? t("auth.sending") : t("auth.sendResetLink")}
               </Button>
             </div>
-            <div className="text-center text-sm text-gray-600 pt-4 border-t">
-              <Link href="/login" className="text-blue-600 hover:text-blue-800 font-medium">
-                Back to login
+            <div className="text-center text-sm text-muted-foreground pt-4 border-t">
+              <Link href="/login" className="text-primary hover:text-primary/80 font-medium">
+                {t("auth.backToLogin")}
               </Link>
             </div>
           </form>

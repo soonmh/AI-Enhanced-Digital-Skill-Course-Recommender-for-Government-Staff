@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useTranslation } from "@/i18n/context";
 import { useCourse, enrollCourse, rateCourse } from "@/hooks/useApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,17 +60,18 @@ function RatingBar({ stars, count, total }: { stars: number; count: number; tota
   const pct = total > 0 ? (count / total) * 100 : 0;
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className="w-3 text-right text-gray-500">{stars}</span>
+      <span className="w-3 text-right text-muted-foreground">{stars}</span>
       <Star className="w-3 h-3 text-yellow-400 fill-current" />
-      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
         <div className="h-full bg-yellow-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
       </div>
-      <span className="w-6 text-right text-gray-400 text-xs">{count}</span>
+      <span className="w-6 text-right text-muted-foreground text-xs">{count}</span>
     </div>
   );
 }
 
 export default function CourseDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const searchParams = useSearchParams();
   const { course, isLoading, mutate } = useCourse(params.id as string);
@@ -79,16 +81,16 @@ export default function CourseDetailPage() {
   const from = searchParams.get("from");
 
   const backConfig: Record<string, { href: string; label: string }> = {
-    "my-learning": { href: "/courses/my-learning", label: "My Learning" },
-    recommended: { href: "/courses/recommended", label: "Recommended Courses" },
-    list: { href: "/courses/list", label: "Manage Courses" },
+    "my-learning": { href: "/courses/my-learning", label: t("courses.backToLearning") },
+    recommended: { href: "/courses/recommended", label: t("courses.backToRecommended") },
+    list: { href: "/courses/list", label: t("courses.backToManage") },
   };
-  const back = backConfig[from ?? ""] ?? { href: "/courses/my-learning", label: "Courses" };
+  const back = backConfig[from ?? ""] ?? { href: "/courses/my-learning", label: t("courses.backToCourses") };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
+      <div className="min-h-screen bg-background">
+        <div className="bg-card shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <Skeleton className="h-4 w-28 mb-6" />
             <Skeleton className="h-56 w-full rounded-xl mb-8" />
@@ -109,13 +111,13 @@ export default function CourseDetailPage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-8 h-8 text-gray-300" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Course not found</h3>
-          <Link href={back.href} className="text-violet-600 font-medium hover:underline">Back to {back.label}</Link>
+          <h3 className="text-lg font-semibold text-foreground mb-2">{t("courses.detailCourseNotFound")}</h3>
+          <Link href={back.href} className="text-violet-600 font-medium hover:underline">{t("courses.backToCourses")} {back.label}</Link>
         </div>
       </div>
     );
@@ -133,10 +135,10 @@ export default function CourseDetailPage() {
     setEnrolling(true);
     try {
       await enrollCourse(params.id as string);
-      toast.success("Enrolled successfully!");
+      toast.success(t("courses.enrolledSuccessfully"));
       mutate({ ...course, enrolled: true, progress: 0, enrollment_count: (course.enrollment_count || 0) + 1 }, false);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to enroll";
+      const msg = e instanceof Error ? e.message : t("courses.failedToEnroll");
       toast.error(msg);
     } finally {
       setEnrolling(false);
@@ -147,17 +149,17 @@ export default function CourseDetailPage() {
     setSubmitting(true);
     try {
       const res = await rateCourse(params.id as string, rating);
-      toast.success("Rating submitted");
+      toast.success(t("courses.ratingSubmitted"));
       mutate({ ...course, user_rating: rating, avg_rating: res.avg_rating, ratings_count: res.ratings_count }, false);
     } catch {
-      toast.error("Failed to submit rating");
+      toast.error(t("courses.failedToSubmitRating"));
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Hero Banner */}
       <div className="relative h-64 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]" />
@@ -169,22 +171,22 @@ export default function CourseDetailPage() {
 
       <div className="max-w-7xl mx-auto px-6 -mt-16 relative z-10 pb-12">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
           <Link href={back.href} className="hover:text-violet-600 transition-colors flex items-center gap-1">
             <ArrowLeft className="w-3.5 h-3.5" />
             {back.label}
           </Link>
           <span>/</span>
-          <span className="text-gray-400 truncate max-w-xs">{course.title}</span>
+          <span className="text-muted-foreground truncate max-w-xs">{course.title}</span>
         </div>
 
         {/* Archived Banner */}
         {isArchived && (
-          <div className="flex items-center gap-3 px-5 py-3 bg-gray-100 border border-gray-200 rounded-xl mb-6">
-            <Archive className="w-5 h-5 text-gray-500" />
+          <div className="flex items-center gap-3 px-5 py-3 bg-muted border border-border rounded-xl mb-6">
+            <Archive className="w-5 h-5 text-muted-foreground" />
             <div>
-              <p className="text-sm font-semibold text-gray-700">Archived</p>
-              <p className="text-xs text-gray-500">This course was unassigned by an admin and is no longer active.</p>
+              <p className="text-sm font-semibold text-foreground">{t("courses.archivedBannerTitle")}</p>
+              <p className="text-xs text-muted-foreground">{t("courses.archivedBannerDescription")}</p>
             </div>
           </div>
         )}
@@ -197,41 +199,41 @@ export default function CourseDetailPage() {
                     <BookOpen className="w-7 h-7 text-white" />
                   </div>
                   <div className="min-w-0">
-                    <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{course.title}</h1>
-                    {course.title_bm && <p className="text-base text-gray-400 mb-3">{course.title_bm}</p>}
+                    <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-1">{course.title}</h1>
+                    {course.title_bm && <p className="text-base text-muted-foreground mb-3">{course.title_bm}</p>}
                     <div className="flex flex-wrap items-center gap-3 mb-3">
                       {course.level && (
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          course.level === "advanced" ? "bg-red-50 text-red-600" :
-                          course.level === "intermediate" ? "bg-amber-50 text-amber-600" :
-                          "bg-green-50 text-green-600"
+                          course.level === "advanced" ? "bg-red-500/10 dark:bg-red-400/15 text-red-600 dark:text-red-400" :
+                          course.level === "intermediate" ? "bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400" :
+                          "bg-green-500/10 dark:bg-green-400/15 text-green-600 dark:text-green-400"
                         }`}>
-                          {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+                          {t(`common.level${course.level.charAt(0).toUpperCase() + course.level.slice(1)}`)}
                         </span>
                       )}
                       {course.working_field && (
-                        <span className="flex items-center gap-1 text-sm text-gray-500">
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Briefcase className="w-3.5 h-3.5" />
                           {course.working_field}
                         </span>
                       )}
                       {course.avg_rating && (
-                        <span className="flex items-center gap-1 text-sm text-gray-500">
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Star className="w-3.5 h-3.5 text-yellow-400 fill-current" />
                           <span className="font-medium">{course.avg_rating}</span>
-                          <span className="text-gray-400">({course.ratings_count})</span>
+                          <span className="text-muted-foreground">({course.ratings_count})</span>
                         </span>
                       )}
                       {course.enrollment_count > 0 && (
-                        <span className="flex items-center gap-1 text-sm text-gray-500">
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Users className="w-3.5 h-3.5" />
-                          {course.enrollment_count} enrolled
+                          {course.enrollment_count} {t("common.enrolled").toLowerCase()}
                         </span>
                       )}
                     </div>
-                    <p className="text-gray-600 leading-relaxed">{course.description}</p>
+                    <p className="text-muted-foreground leading-relaxed">{course.description}</p>
                     {course.description_bm && (
-                      <p className="text-gray-400 text-sm mt-2 leading-relaxed">{course.description_bm}</p>
+                      <p className="text-muted-foreground text-sm mt-2 leading-relaxed">{course.description_bm}</p>
                     )}
                   </div>
                 </div>
@@ -242,21 +244,21 @@ export default function CourseDetailPage() {
                 <PermissionGate permission="course-management">
                   <Link
                     href={`/courses/${params.id}/edit`}
-                    className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-accent transition-colors font-medium text-sm"
                   >
                     <Pencil className="w-4 h-4" />
-                    Edit
+                    {t("courses.editButton")}
                   </Link>
                 </PermissionGate>
                 {isArchived ? (
-                  <div className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-600 rounded-xl border border-gray-200">
+                  <div className="flex items-center gap-2 px-5 py-2.5 bg-muted text-muted-foreground rounded-xl border border-border">
                     <Archive className="w-5 h-5" />
-                    <span className="font-semibold">Archived</span>
+                    <span className="font-semibold">{t("courses.archivedBannerTitle")}</span>
                   </div>
                 ) : enrolled ? (
-                  <div className="flex items-center gap-2 px-5 py-2.5 bg-green-50 text-green-700 rounded-xl border border-green-200">
+                  <div className="flex items-center gap-2 px-5 py-2.5 bg-green-500/10 text-green-700 rounded-xl border border-green-200">
                     <CheckCircle2 className="w-5 h-5" />
-                    <span className="font-semibold">Enrolled</span>
+                    <span className="font-semibold">{t("common.enrolled")}</span>
                   </div>
                 ) : (
                   <button
@@ -269,7 +271,7 @@ export default function CourseDetailPage() {
                     ) : (
                       <Play className="w-4 h-4" />
                     )}
-                    {enrolling ? "Enrolling..." : "Enroll Now"}
+                    {enrolling ? t("common.enrolling") : t("courses.enrollNow")}
                   </button>
                 )}
               </div>
@@ -286,17 +288,17 @@ export default function CourseDetailPage() {
                   {isCompleted ? (
                     <CheckCircle2 className="w-5 h-5 text-green-500" />
                   ) : (
-                    <BarChart3 className="w-5 h-5 text-violet-500" />
+                    <BarChart3 className="w-5 h-5 text-violet-500 dark:text-violet-400" />
                   )}
-                  <span className="font-semibold text-gray-900">
-                    {isCompleted ? "Completed!" : "Your Progress"}
+                  <span className="font-semibold text-foreground">
+                    {isCompleted ? t("courses.completedLabel") : t("courses.yourProgress")}
                   </span>
                 </div>
-                <span className={`text-lg font-bold ${isCompleted ? "text-green-600" : "text-violet-600"}`}>
+                <span className={`text-lg font-bold ${isCompleted ? "text-green-600 dark:text-green-400" : "text-violet-600 dark:text-violet-400"}`}>
                   {Math.round(progress)}%
                 </span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     isCompleted ? "bg-green-500" : "bg-gradient-to-r from-violet-500 to-indigo-500"
@@ -309,9 +311,9 @@ export default function CourseDetailPage() {
                   <Link
                     href={course.url}
                     target="_blank"
-                    className="flex items-center gap-1.5 text-sm text-violet-600 font-medium hover:text-violet-700 transition-colors"
+                    className="flex items-center gap-1.5 text-sm text-violet-600 dark:text-violet-400 font-medium hover:text-violet-700 transition-colors"
                   >
-                    Continue Learning <ExternalLink className="w-3.5 h-3.5" />
+                    {t("courses.continueLearning")} <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               )}
@@ -325,17 +327,17 @@ export default function CourseDetailPage() {
             {/* Course Details */}
             <Card className="p-0 border-0 shadow-md">
               <CardContent className="p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-violet-600" />
-                  About This Course
+                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                  {t("courses.aboutThisCourse")}
                 </h2>
                 {course.remark && (
-                  <div className="p-4 bg-violet-50 rounded-xl mb-4 border border-violet-100">
+                  <div className="p-4 bg-violet-500/10 dark:bg-violet-400/15 rounded-xl mb-4 border border-violet-100 dark:border-violet-400/20">
                     <p className="text-sm text-violet-800 leading-relaxed">{course.remark}</p>
                   </div>
                 )}
                 {!course.remark && course.description && (
-                  <p className="text-gray-600 leading-relaxed">{course.description}</p>
+                  <p className="text-muted-foreground leading-relaxed">{course.description}</p>
                 )}
               </CardContent>
             </Card>
@@ -344,9 +346,9 @@ export default function CourseDetailPage() {
             {course.url && (
               <Card className="p-0 border-0 shadow-md">
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <ExternalLink className="w-5 h-5 text-violet-600" />
-                    Course Link
+                  <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <ExternalLink className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                    {t("courses.courseLink")}
                   </h2>
                   <Link
                     href={course.url}
@@ -354,7 +356,7 @@ export default function CourseDetailPage() {
                     className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all font-medium text-sm shadow-sm"
                   >
                     <Play className="w-4 h-4" />
-                    Open Course
+                    {t("courses.openCourse")}
                     <ExternalLink className="w-3.5 h-3.5 opacity-70" />
                   </Link>
                 </CardContent>
@@ -364,17 +366,17 @@ export default function CourseDetailPage() {
             {/* Ratings & Reviews */}
             <Card className="p-0 border-0 shadow-md">
               <CardContent className="p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-foreground mb-5 flex items-center gap-2">
                   <Star className="w-5 h-5 text-yellow-500" />
-                  Ratings & Reviews
+                  {t("courses.ratingsAndReviews")}
                 </h2>
 
                 <div className="flex flex-col sm:flex-row gap-6 mb-6">
                   {/* Average Score */}
-                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50 rounded-xl min-w-[140px]">
-                    <span className="text-4xl font-bold text-gray-900">{course.avg_rating ?? "—"}</span>
+                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-background rounded-xl min-w-[140px]">
+                    <span className="text-4xl font-bold text-foreground">{course.avg_rating ?? "—"}</span>
                     <StarRating value={Math.round(course.avg_rating || 0)} readonly size="sm" />
-                    <p className="text-sm text-gray-500 mt-1">{totalRatings} rating{totalRatings !== 1 ? "s" : ""}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t("courses.ratingsCount", { count: totalRatings })}</p>
                   </div>
 
                   {/* Distribution Bars */}
@@ -387,9 +389,9 @@ export default function CourseDetailPage() {
 
                 {/* Submit Rating */}
                 {enrolled && (
-                  <div className="p-4 bg-violet-50 rounded-xl border border-violet-100 mb-6">
-                    <p className="text-sm font-medium text-gray-700 mb-2">
-                      {course.user_rating ? "Update your rating" : "Rate this course"}
+                  <div className="p-4 bg-violet-500/10 dark:bg-violet-400/15 rounded-xl border border-violet-100 dark:border-violet-400/20 mb-6">
+                    <p className="text-sm font-medium text-foreground mb-2">
+                      {course.user_rating ? t("courses.updateYourRating") : t("courses.rateThisCourse")}
                     </p>
                     <StarRating
                       value={course.user_rating || 0}
@@ -402,16 +404,16 @@ export default function CourseDetailPage() {
                 {/* Recent Reviews */}
                 {reviews.length > 0 && (
                   <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Recent Reviews</h3>
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("courses.recentReviews")}</h3>
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {reviews.map((review: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                      <div key={idx} className="flex items-center gap-3 p-3 bg-background rounded-xl">
                         <UserAvatar name={review.user_name} size={36} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-gray-900">{review.user_name}</p>
+                            <p className="text-sm font-medium text-foreground">{review.user_name}</p>
                             {review.created_at && (
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-muted-foreground">
                                 {new Date(review.created_at).toLocaleDateString()}
                               </span>
                             )}
@@ -431,16 +433,16 @@ export default function CourseDetailPage() {
             {/* Course Info */}
             <Card className="p-0 border-0 shadow-md">
               <CardContent className="p-5">
-                <h3 className="font-semibold mb-4 text-xs uppercase tracking-wider text-gray-500">Course Information</h3>
+                <h3 className="font-semibold mb-4 text-xs uppercase tracking-wider text-muted-foreground">{t("courses.courseInformation")}</h3>
                 <div className="space-y-4">
                   {course.level && (
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-violet-100 rounded-xl flex items-center justify-center">
-                        <BarChart3 className="w-4 h-4 text-violet-600" />
+                      <div className="w-9 h-9 bg-violet-100 dark:bg-violet-400/15 rounded-xl flex items-center justify-center">
+                        <BarChart3 className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Level</p>
-                        <p className="text-sm font-medium text-gray-900 capitalize">{course.level}</p>
+                        <p className="text-xs text-muted-foreground">{t("courses.infoLevel")}</p>
+                        <p className="text-sm font-medium text-foreground capitalize">{course.level}</p>
                       </div>
                     </div>
                   )}
@@ -450,18 +452,18 @@ export default function CourseDetailPage() {
                         <Briefcase className="w-4 h-4 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Field</p>
-                        <p className="text-sm font-medium text-gray-900">{course.working_field}</p>
+                        <p className="text-xs text-muted-foreground">{t("courses.infoField")}</p>
+                        <p className="text-sm font-medium text-foreground">{course.working_field}</p>
                       </div>
                     </div>
                   )}
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center">
-                      <Users className="w-4 h-4 text-green-600" />
+                    <div className="w-9 h-9 bg-green-100 dark:bg-green-400/15 rounded-xl flex items-center justify-center">
+                      <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-400">Enrolled</p>
-                      <p className="text-sm font-medium text-gray-900">{course.enrollment_count || 0} users</p>
+                      <p className="text-xs text-muted-foreground">{t("courses.infoEnrolled")}</p>
+                      <p className="text-sm font-medium text-foreground">{t("courses.infoUsers", { count: course.enrollment_count || 0 })}</p>
                     </div>
                   </div>
                   {course.created_by && (
@@ -470,8 +472,8 @@ export default function CourseDetailPage() {
                         <User className="w-4 h-4 text-amber-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Created by</p>
-                        <p className="text-sm font-medium text-gray-900">{course.created_by}</p>
+                        <p className="text-xs text-muted-foreground">{t("courses.infoCreatedBy")}</p>
+                        <p className="text-sm font-medium text-foreground">{course.created_by}</p>
                       </div>
                     </div>
                   )}
@@ -481,8 +483,8 @@ export default function CourseDetailPage() {
                         <Calendar className="w-4 h-4 text-rose-600" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Created</p>
-                        <p className="text-sm font-medium text-gray-900">{new Date(course.created_at).toLocaleDateString("en-MY", { year: "numeric", month: "long", day: "numeric" })}</p>
+                        <p className="text-xs text-muted-foreground">{t("courses.infoCreated")}</p>
+                        <p className="text-sm font-medium text-foreground">{new Date(course.created_at).toLocaleDateString("en-MY", { year: "numeric", month: "long", day: "numeric" })}</p>
                       </div>
                     </div>
                   )}
@@ -495,16 +497,16 @@ export default function CourseDetailPage() {
             {course.peer_enrollments && course.peer_enrollments.length > 0 && (
               <Card className="p-0 border-0 shadow-md">
                 <CardContent className="p-5">
-                  <h3 className="font-semibold mb-3 text-xs uppercase tracking-wider text-gray-500">Also Enrolled</h3>
+                  <h3 className="font-semibold mb-3 text-xs uppercase tracking-wider text-muted-foreground">{t("courses.alsoEnrolled")}</h3>
                   <div className="space-y-2.5">
                     {course.peer_enrollments.map((peer: { name: string; field?: string; progress: number }, idx: number) => (
-                      <div key={idx} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                      <div key={idx} className="flex items-center gap-3 p-2 bg-background rounded-lg">
                         <UserAvatar name={peer.name} size={30} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{peer.name}</p>
-                          <p className="text-xs text-gray-400">{peer.field || "Staff"}</p>
+                          <p className="text-sm font-medium text-foreground truncate">{peer.name}</p>
+                          <p className="text-xs text-muted-foreground">{peer.field || "Staff"}</p>
                         </div>
-                        <span className={`text-xs font-semibold ${peer.progress >= 100 ? "text-green-600" : "text-violet-600"}`}>
+                        <span className={`text-xs font-semibold ${peer.progress >= 100 ? "text-green-600 dark:text-green-400" : "text-violet-600 dark:text-violet-400"}`}>
                           {Math.round(peer.progress)}%
                         </span>
                       </div>
@@ -521,14 +523,14 @@ export default function CourseDetailPage() {
                     <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
                       <Play className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="font-semibold text-white mb-1">Ready to start?</h3>
-                    <p className="text-sm text-white/70 mb-4">Enroll now and begin learning at your own pace</p>
+                    <h3 className="font-semibold text-white mb-1">{t("courses.readyToStart")}</h3>
+                    <p className="text-sm text-white/70 mb-4">{t("courses.readyToStartDescription")}</p>
                     <button
                       onClick={handleEnroll}
                       disabled={enrolling}
-                      className="w-full py-3 bg-white text-violet-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors disabled:opacity-60"
+                      className="w-full py-3 bg-white text-violet-700 rounded-xl font-semibold hover:bg-accent transition-colors disabled:opacity-60"
                     >
-                      {enrolling ? "Enrolling..." : "Enroll Now — Free"}
+                      {enrolling ? t("common.enrolling") : t("courses.enrollNowFree")}
                     </button>
                   </div>
                 </CardContent>
@@ -542,14 +544,14 @@ export default function CourseDetailPage() {
                   <Link
                     href={course.url}
                     target="_blank"
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-violet-50 transition-colors group"
+                    className="flex items-center gap-3 p-3 bg-background rounded-xl hover:bg-violet-500/10 dark:hover:bg-violet-400/15 transition-colors group"
                   >
-                    <div className="w-9 h-9 bg-violet-100 rounded-xl flex items-center justify-center group-hover:bg-violet-200 transition-colors">
-                      <ExternalLink className="w-4 h-4 text-violet-600" />
+                    <div className="w-9 h-9 bg-violet-100 dark:bg-violet-400/15 rounded-xl flex items-center justify-center group-hover:bg-violet-200 transition-colors">
+                      <ExternalLink className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 group-hover:text-violet-600">External Course Link</p>
-                      <p className="text-xs text-gray-400 truncate">{course.url}</p>
+                      <p className="text-sm font-medium text-foreground group-hover:text-violet-600 dark:text-violet-400">{t("courses.externalCourseLink")}</p>
+                      <p className="text-xs text-muted-foreground truncate">{course.url}</p>
                     </div>
                   </Link>
                 </CardContent>

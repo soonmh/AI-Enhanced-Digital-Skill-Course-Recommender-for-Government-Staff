@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { useTranslation } from "@/i18n/context";
 import { useCourses, useUsers, assignCourseToUsers, unassignUsersFromCourse, useAssignedUsers } from "@/hooks/useApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,15 +33,12 @@ import {
 } from "lucide-react";
 
 const LEVELS = ["All Levels", "beginner", "intermediate", "advanced"];
-const SORT_OPTIONS = [
-  { value: "newest", label: "Newest" },
-  { value: "rating", label: "Highest Rated" },
-  { value: "popular", label: "Most Enrolled" },
-  { value: "title", label: "Title A-Z" },
-] as const;
+const SORT_KEYS = ["sortNewest", "sortHighestRated", "sortMostEnrolled", "sortTitleAz"] as const;
+const SORT_VALUES = ["newest", "rating", "popular", "title"] as const;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default function ListCoursePage() {
+  const { t } = useTranslation();
   const { courses, isLoading } = useCourses();
   const { data: session } = useSession();
   const isAdmin = session?.user?.permissions?.includes("user-management");
@@ -93,11 +91,11 @@ export default function ListCoursePage() {
     setSaving(true);
     try {
       await assignCourseToUsers(String(assignCourse.id), Array.from(selectedUsers));
-      toast.success(`Assigned ${selectedUsers.size} user(s) to ${assignCourse.title}`);
+      toast.success(t("courses.assignedCount", { count: selectedUsers.size, title: assignCourse.title }));
       setAssignCourse(null);
       setSelectedUsers(new Set());
     } catch {
-      toast.error("Failed to assign users");
+      toast.error(t("courses.failedToAssign"));
     } finally {
       setSaving(false);
     }
@@ -105,7 +103,7 @@ export default function ListCoursePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen bg-background">
         <div className="px-6 py-8 w-full max-w-7xl mx-auto">
           <div className="mb-8">
             <Skeleton className="h-10 w-36 mb-2" />
@@ -129,15 +127,15 @@ export default function ListCoursePage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-background">
       <div className="px-6 py-8 w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Courses</h1>
-            <p className="text-gray-600 text-lg">
-              Browse and enroll in courses to improve your skills
-              <span className="text-gray-400 ml-2">({filtered.length} course{filtered.length !== 1 ? "s" : ""})</span>
+            <h1 className="text-4xl font-bold text-foreground mb-2">{t("courses.listTitle")}</h1>
+            <p className="text-muted-foreground text-lg">
+              {t("courses.listDescription")}
+              <span className="text-muted-foreground ml-2">{t("courses.courseCount", { count: filtered.length })}</span>
             </p>
           </div>
           {hasCourseMgmt && (
@@ -146,22 +144,22 @@ export default function ListCoursePage() {
               className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors font-medium shadow-sm"
             >
               <BookOpen className="w-4 h-4" />
-              Create Course
+              {t("courses.createCourse")}
             </Link>
           )}
         </div>
 
         {/* Search, Filters, View Toggle */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-4 mb-6">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-4 mb-6">
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search courses by title or description..."
+                placeholder={t("courses.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-white transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:bg-card transition-colors"
               />
             </div>
 
@@ -170,14 +168,14 @@ export default function ListCoursePage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none pl-9 pr-8 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
+                className="appearance-none pl-9 pr-8 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer"
               >
-                {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                {SORT_KEYS.map((key, i) => (
+                  <option key={SORT_VALUES[i]} value={SORT_VALUES[i]}>{t(`courses.${key}`)}</option>
                 ))}
               </select>
-              <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+              <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
             </div>
 
             {/* Filter toggle */}
@@ -185,30 +183,30 @@ export default function ListCoursePage() {
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
                 showFilters || levelFilter !== "All Levels"
-                  ? "bg-violet-50 border-violet-200 text-violet-700"
-                  : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                  ? "bg-violet-500/10 dark:bg-violet-400/15 border-violet-500/20 dark:border-violet-400/20 text-violet-700 dark:text-violet-300"
+                  : "border-border bg-background text-muted-foreground hover:bg-muted"
               }`}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Filters
+              {t("courses.filters")}
               {levelFilter !== "All Levels" && (
                 <span className="w-2 h-2 bg-violet-500 rounded-full" />
               )}
             </button>
 
             {/* View Toggle */}
-            <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex border border-border rounded-lg overflow-hidden">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-violet-100 text-violet-700" : "text-gray-400 hover:bg-gray-50"}`}
-                title="Grid view"
+                className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-violet-100 text-violet-700" : "text-muted-foreground hover:bg-accent"}`}
+                title={t("courses.gridView")}
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode("table")}
-                className={`p-2.5 transition-colors ${viewMode === "table" ? "bg-violet-100 text-violet-700" : "text-gray-400 hover:bg-gray-50"}`}
-                title="Table view"
+                className={`p-2.5 transition-colors ${viewMode === "table" ? "bg-violet-100 text-violet-700" : "text-muted-foreground hover:bg-accent"}`}
+                title={t("courses.tableView")}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -217,9 +215,9 @@ export default function ListCoursePage() {
 
           {/* Expandable Filters */}
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-border">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 font-medium mr-2">Level:</span>
+                <span className="text-sm text-muted-foreground font-medium mr-2">{t("courses.levelLabel")}</span>
                 {LEVELS.map((lv) => (
                   <button
                     key={lv}
@@ -227,10 +225,10 @@ export default function ListCoursePage() {
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                       levelFilter === lv
                         ? "bg-violet-600 text-white shadow-sm"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        : "bg-muted text-muted-foreground hover:bg-gray-200"
                     }`}
                   >
-                    {lv === "All Levels" ? "All" : lv.charAt(0).toUpperCase() + lv.slice(1)}
+                    {lv === "All Levels" ? t("common.all") : t(`common.level${lv.charAt(0).toUpperCase() + lv.slice(1)}`)}
                     {lv !== "All Levels" && levelCounts[lv] && (
                       <span className="ml-1 opacity-70">{levelCounts[lv]}</span>
                     )}
@@ -244,16 +242,16 @@ export default function ListCoursePage() {
         {/* Course Grid / Table */}
         {filtered.length === 0 ? (
           <div className="text-center py-20">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
               <BookOpen className="w-8 h-8 text-gray-300" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">No courses found</h3>
-            <p className="text-gray-500 mb-6">Try adjusting your search or filters.</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t("courses.noCoursesTitle")}</h3>
+            <p className="text-muted-foreground mb-6">{t("courses.noCoursesDescription")}</p>
             <button
               onClick={() => { setSearch(""); setLevelFilter("All Levels"); }}
-              className="px-4 py-2 text-violet-600 font-medium hover:bg-violet-50 rounded-lg transition-colors"
+              className="px-4 py-2 text-violet-600 dark:text-violet-400 font-medium hover:bg-violet-500/10 dark:hover:bg-violet-400/15 rounded-lg transition-colors"
             >
-              Clear all filters
+              {t("courses.clearAllFilters")}
             </button>
           </div>
         ) : viewMode === "grid" ? (
@@ -269,7 +267,7 @@ export default function ListCoursePage() {
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="px-2.5 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
-                          {(course.level || "beginner").charAt(0).toUpperCase() + (course.level || "beginner").slice(1)}
+                          {t(`common.level${(course.level || "beginner").charAt(0).toUpperCase() + (course.level || "beginner").slice(1)}`)}
                         </span>
                       </div>
                       {course.enrollment_count > 0 && (
@@ -283,12 +281,12 @@ export default function ListCoursePage() {
                 </Link>
                 <CardContent className="p-5 flex-1 flex flex-col">
                   <Link href={`/courses/${course.id}?from=list`}>
-                    <h3 className="font-semibold text-gray-900 mb-1.5 line-clamp-2 hover:text-violet-600 transition-colors group-hover:text-violet-600">
+                    <h3 className="font-semibold text-foreground mb-1.5 line-clamp-2 hover:text-violet-600 transition-colors group-hover:text-violet-600">
                       {course.title}
                     </h3>
-                    <p className="text-sm text-gray-500 line-clamp-2 mb-4">{course.description}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{course.description}</p>
                   </Link>
-                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
                     <div className="flex items-center gap-1.5">
                       <div className="flex items-center">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -302,14 +300,14 @@ export default function ListCoursePage() {
                           />
                         ))}
                       </div>
-                      <span className="text-sm font-medium text-gray-700">{course.avg_rating ?? "—"}</span>
+                      <span className="text-sm font-medium text-foreground">{course.avg_rating ?? "—"}</span>
                       {course.ratings_count > 0 && (
-                        <span className="text-xs text-gray-400">({course.ratings_count})</span>
+                        <span className="text-xs text-muted-foreground">({course.ratings_count})</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
                       {course.working_field && (
-                        <span className="text-xs text-gray-400">{course.working_field}</span>
+                        <span className="text-xs text-muted-foreground">{course.working_field}</span>
                       )}
                       {isAdmin && (
                         <button
@@ -319,8 +317,8 @@ export default function ListCoursePage() {
                             setSelectedUsers(new Set());
                             setAssignSearch("");
                           }}
-                          className="p-1.5 rounded-lg hover:bg-violet-50 text-violet-400 hover:text-violet-600 transition-colors"
-                          title="Assign to users"
+                          className="p-1.5 rounded-lg hover:bg-violet-500/10 text-violet-400 hover:text-violet-600 transition-colors"
+                          title={t("courses.assign")}
                         >
                           <UserPlus className="w-4 h-4" />
                         </button>
@@ -332,33 +330,33 @@ export default function ListCoursePage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden">
+          <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50/80 border-b border-gray-200">
-                  <th className="text-left p-4 font-semibold text-gray-600">Course</th>
-                  <th className="text-left p-4 font-semibold text-gray-600">Level</th>
-                  <th className="text-left p-4 font-semibold text-gray-600">Rating</th>
-                  <th className="text-left p-4 font-semibold text-gray-600">Enrolled</th>
-                  {isAdmin && <th className="text-left p-4 font-semibold text-gray-600 w-28">Actions</th>}
+                <tr className="bg-background/80 border-b border-border">
+                  <th className="text-left p-4 font-semibold text-muted-foreground">{t("courses.tableCourse")}</th>
+                  <th className="text-left p-4 font-semibold text-muted-foreground">{t("courses.tableLevel")}</th>
+                  <th className="text-left p-4 font-semibold text-muted-foreground">{t("courses.tableRating")}</th>
+                  <th className="text-left p-4 font-semibold text-muted-foreground">{t("courses.tableEnrolled")}</th>
+                  {isAdmin && <th className="text-left p-4 font-semibold text-muted-foreground w-28">{t("courses.tableActions")}</th>}
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((course: any) => (
-                  <tr key={course.id} className="border-b border-gray-100 hover:bg-violet-50/30 transition-colors group">
+                  <tr key={course.id} className="border-b border-border hover:bg-violet-50/30 transition-colors group">
                     <td className="p-4">
-                      <Link href={`/courses/${course.id}?from=list`} className="font-medium text-gray-900 hover:text-violet-600 transition-colors">
+                      <Link href={`/courses/${course.id}?from=list`} className="font-medium text-foreground hover:text-violet-600 transition-colors">
                         {course.title}
                       </Link>
-                      <p className="text-xs text-gray-400 mt-1 line-clamp-1">{course.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{course.description}</p>
                     </td>
                     <td className="p-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        course.level === "advanced" ? "bg-red-50 text-red-600" :
-                        course.level === "intermediate" ? "bg-amber-50 text-amber-600" :
-                        "bg-green-50 text-green-600"
+                        course.level === "advanced" ? "bg-red-500/10 dark:bg-red-400/15 text-red-600 dark:text-red-400" :
+                        course.level === "intermediate" ? "bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400" :
+                        "bg-green-500/10 dark:bg-green-400/15 text-green-600 dark:text-green-400"
                       }`}>
-                        {(course.level || "beginner").charAt(0).toUpperCase() + (course.level || "beginner").slice(1)}
+                        {t(`common.level${(course.level || "beginner").charAt(0).toUpperCase() + (course.level || "beginner").slice(1)}`)}
                       </span>
                     </td>
                     <td className="p-4">
@@ -377,12 +375,12 @@ export default function ListCoursePage() {
                         </div>
                         <span className="text-sm font-medium">{course.avg_rating ?? "—"}</span>
                         {course.ratings_count > 0 && (
-                          <span className="text-xs text-gray-400">({course.ratings_count})</span>
+                          <span className="text-xs text-muted-foreground">({course.ratings_count})</span>
                         )}
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className="text-sm text-gray-600">{course.enrollment_count || 0}</span>
+                      <span className="text-sm text-muted-foreground">{course.enrollment_count || 0}</span>
                     </td>
                     {isAdmin && (
                       <td className="p-4">
@@ -392,9 +390,9 @@ export default function ListCoursePage() {
                             setSelectedUsers(new Set());
                             setAssignSearch("");
                           }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-violet-600 bg-violet-50 hover:bg-violet-100 transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-500/10 dark:bg-violet-400/15 hover:bg-violet-500/20 transition-colors"
                         >
-                          <UserPlus className="w-3.5 h-3.5" /> Assign
+                          <UserPlus className="w-3.5 h-3.5" /> {t("courses.assign")}
                         </button>
                       </td>
                     )}
@@ -410,18 +408,18 @@ export default function ListCoursePage() {
       <Dialog open={!!assignCourse} onOpenChange={(open) => { if (!open) { setAssignCourse(null); setSelectedUsers(new Set()); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Assign Users</DialogTitle>
-            <DialogDescription>Select users to assign to &ldquo;{assignCourse?.title}&rdquo;</DialogDescription>
+            <DialogTitle>{t("courses.assignUsersTitle")}</DialogTitle>
+            <DialogDescription>{t("courses.assignUsersDescription", { title: assignCourse?.title || "" })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search users..."
+                placeholder={t("courses.searchUsers")}
                 value={assignSearch}
                 onChange={(e) => setAssignSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="w-full pl-10 pr-4 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
               />
             </div>
             <div className="max-h-64 overflow-y-auto space-y-1">
@@ -430,7 +428,7 @@ export default function ListCoursePage() {
                 .map((u: any) => {
                   const isAssigned = assignedUserIds.includes(u.id);
                   return (
-                    <label key={u.id} className={`flex items-center gap-3 p-2.5 rounded-lg ${isAssigned ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50 cursor-pointer"} transition-colors`}>
+                    <label key={u.id} className={`flex items-center gap-3 p-2.5 rounded-lg ${isAssigned ? "opacity-50 cursor-not-allowed" : "hover:bg-accent cursor-pointer"} transition-colors`}>
                       <input
                         type="checkbox"
                         checked={isAssigned || selectedUsers.has(u.id)}
@@ -442,20 +440,20 @@ export default function ListCoursePage() {
                             return next;
                           });
                         }}
-                        className="rounded text-violet-600 focus:ring-violet-500"
+                        className="rounded text-violet-600 dark:text-violet-400 focus:ring-violet-500"
                       />
                       <UserAvatar name={u.name} size={28} />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 truncate">{u.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                        <p className="text-sm font-medium text-foreground truncate">{u.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                       </div>
                       {isAssigned && (
                         <button
                           onClick={() => setRemoveUserTarget({ userId: u.id, name: u.name })}
-                          className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors shrink-0"
+                          className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground hover:bg-red-500/10 hover:text-red-600 transition-colors shrink-0"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                          Remove
+                          {t("common.remove")}
                         </button>
                       )}
                     </label>
@@ -464,9 +462,9 @@ export default function ListCoursePage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setAssignCourse(null); setSelectedUsers(new Set()); }}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setAssignCourse(null); setSelectedUsers(new Set()); }}>{t("common.cancel")}</Button>
             <Button onClick={handleAssign} disabled={saving || selectedUsers.size === 0}>
-              {saving ? "Assigning..." : `Assign ${selectedUsers.size} User(s)`}
+              {saving ? t("courses.assigning") : t("courses.assignButton", { count: selectedUsers.size })}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -476,29 +474,29 @@ export default function ListCoursePage() {
       <Dialog open={!!removeUserTarget} onOpenChange={(open) => { if (!open) setRemoveUserTarget(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Remove User</DialogTitle>
+            <DialogTitle>{t("courses.removeUserTitle")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove <strong>{removeUserTarget?.name}</strong> from <strong>{assignCourse?.title}</strong>?
-              The course will be moved to their Archived tab.
+              {t("courses.removeUserFromCourse", { name: removeUserTarget?.name || "", title: assignCourse?.title || "" })}
+              {" "}{t("courses.archivedMoved")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemoveUserTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setRemoveUserTarget(null)}>{t("common.cancel")}</Button>
             <Button
               variant="destructive"
               onClick={async () => {
                 if (!removeUserTarget || !assignCourse) return;
                 try {
                   await unassignUsersFromCourse(String(assignCourse.id), [removeUserTarget.userId]);
-                  toast.success(`Removed ${removeUserTarget.name} from ${assignCourse.title}`);
+                  toast.success(t("courses.removedUser", { name: removeUserTarget.name, title: assignCourse.title }));
                   mutateAssigned();
                   setRemoveUserTarget(null);
                 } catch {
-                  toast.error("Failed to remove user");
+                  toast.error(t("courses.failedToRemoveUser"));
                 }
               }}
             >
-              Remove
+              {t("common.remove")}
             </Button>
           </DialogFooter>
         </DialogContent>

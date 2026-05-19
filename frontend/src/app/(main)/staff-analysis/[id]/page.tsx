@@ -29,15 +29,15 @@ import {
 } from "lucide-react";
 
 function getScoreColor(score: number) {
-  if (score >= 70) return "text-green-600";
-  if (score >= 40) return "text-orange-600";
-  return "text-red-600";
+  if (score >= 70) return "text-green-600 dark:text-green-400";
+  if (score >= 40) return "text-orange-600 dark:text-orange-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 function getScoreBg(pct: number) {
-  if (pct >= 70) return "bg-green-50 border-green-200";
-  if (pct >= 40) return "bg-yellow-50 border-yellow-200";
-  return "bg-red-50 border-red-200";
+  if (pct >= 70) return "bg-green-500/10 border-green-500/20";
+  if (pct >= 40) return "bg-yellow-500/10 border-yellow-500/20";
+  return "bg-red-500/10 border-red-500/20";
 }
 
 function getProgressBarColor(pct: number) {
@@ -47,16 +47,16 @@ function getProgressBarColor(pct: number) {
 }
 
 function getDsriLevel(score: number) {
-  if (score >= 90) return { label: "Excellent", color: "#22c55e", bg: "bg-green-50", ring: "#22c55e" };
+  if (score >= 90) return { label: "Excellent", color: "#22c55e", bg: "bg-green-500/10", ring: "#22c55e" };
   if (score >= 70) return { label: "Good", color: "#84cc16", bg: "bg-lime-50", ring: "#84cc16" };
-  if (score >= 40) return { label: "Average", color: "#f59e0b", bg: "bg-amber-50", ring: "#f59e0b" };
-  return { label: "Needs Work", color: "#ef4444", bg: "bg-red-50", ring: "#ef4444" };
+  if (score >= 40) return { label: "Average", color: "#f59e0b", bg: "bg-amber-500/10", ring: "#f59e0b" };
+  return { label: "Needs Work", color: "#ef4444", bg: "bg-red-500/10", ring: "#ef4444" };
 }
 
 function getStatusBadge(status: string) {
   if (status === "completed") return "bg-green-100 text-green-800";
   if (status === "active") return "bg-blue-100 text-blue-800";
-  return "bg-gray-100 text-gray-800";
+  return "bg-muted text-foreground";
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -68,8 +68,8 @@ export default function StaffReportPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
+      <div className="min-h-screen bg-background">
+        <div className="bg-card shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <div className="flex items-center gap-4">
               <Skeleton className="h-10 w-10 rounded-lg" />
@@ -98,10 +98,10 @@ export default function StaffReportPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Staff not found</h3>
+          <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">Staff not found</h3>
           <Link href="/staff-analysis" className="text-violet-600 font-medium">Back to staff analysis</Link>
         </div>
       </div>
@@ -121,19 +121,19 @@ export default function StaffReportPage() {
   const courseRate = totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-card shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/staff-analysis" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <Link href="/staff-analysis" className="p-2 hover:bg-muted rounded-lg transition-colors">
+                <ArrowLeft className="w-5 h-5 text-muted-foreground" />
               </Link>
               <UserAvatar name={staff.name} size={44} />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{staff.name}</h1>
-                <p className="text-gray-500 text-sm">{staff.email} {staff.working_field ? `· ${staff.working_field}` : ""} {staff.job_level ? `· ${staff.job_level}` : ""}</p>
+                <h1 className="text-2xl font-bold text-foreground">{staff.name}</h1>
+                <p className="text-muted-foreground text-sm">{staff.email} {staff.working_field ? `· ${staff.working_field}` : ""} {staff.job_level ? `· ${staff.job_level}` : ""}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ export default function StaffReportPage() {
                   exportToCsv(`${staff.name.replace(/\s+/g, "-")}-report.csv`, headers, rows);
                   toast.success("Exported staff report");
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-sm hover:bg-accent transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Export
@@ -169,7 +169,7 @@ export default function StaffReportPage() {
                   <BarChart3 className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">DSRI Score</p>
+                  <p className="text-sm text-muted-foreground">DSRI Score</p>
                   <p className={`text-2xl font-bold ${getScoreColor(dsriRound)}`}>
                     {dsriRound || "-"}
                   </p>
@@ -184,8 +184,8 @@ export default function StaffReportPage() {
                   <FileText className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Assessments</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalAssessments}</p>
+                  <p className="text-sm text-muted-foreground">Assessments</p>
+                  <p className="text-2xl font-bold text-foreground">{totalAssessments}</p>
                 </div>
               </div>
             </CardContent>
@@ -197,8 +197,8 @@ export default function StaffReportPage() {
                   <BookOpen className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Courses Enrolled</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalCourses}</p>
+                  <p className="text-sm text-muted-foreground">Courses Enrolled</p>
+                  <p className="text-2xl font-bold text-foreground">{totalCourses}</p>
                 </div>
               </div>
             </CardContent>
@@ -210,8 +210,8 @@ export default function StaffReportPage() {
                   <CircleCheck className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Courses Completed</p>
-                  <p className="text-2xl font-bold text-gray-900">{completedCourses} <span className="text-sm font-normal text-gray-500">({courseRate}%)</span></p>
+                  <p className="text-sm text-muted-foreground">Courses Completed</p>
+                  <p className="text-2xl font-bold text-foreground">{completedCourses} <span className="text-sm font-normal text-muted-foreground">({courseRate}%)</span></p>
                 </div>
               </div>
             </CardContent>
@@ -223,13 +223,13 @@ export default function StaffReportPage() {
           <div className="lg:col-span-2">
             <Card className="mb-8">
               <CardContent className="p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-violet-600" />
+                <h2 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                   Competency Profile
                 </h2>
                 {Object.keys(sectionScores).length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
                     <p>No assessment data available</p>
                   </div>
                 ) : (
@@ -251,22 +251,22 @@ export default function StaffReportPage() {
                         <div key={code} className={`rounded-lg p-3 border ${getScoreBg(section.percentage)}`}>
                           <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-gray-600">{code}</span>
-                              <span className="text-xs text-gray-600 truncate">{section.name}</span>
+                              <span className="text-xs font-bold text-muted-foreground">{code}</span>
+                              <span className="text-xs text-muted-foreground truncate">{section.name}</span>
                             </div>
                             <span className={`text-sm font-bold ${getScoreColor(section.percentage)}`}>
                               {section.percentage}%
                             </span>
                           </div>
-                          <div className="w-full bg-white/60 rounded-full h-1.5 overflow-hidden">
+                          <div className="w-full bg-card/60 rounded-full h-1.5 overflow-hidden">
                             <div
                               className={`h-1.5 rounded-full ${getProgressBarColor(section.percentage)} transition-all duration-700 ease-out`}
                               style={{ width: `${Math.min(section.percentage, 100)}%` }}
                             />
                           </div>
                           <div className="flex items-center justify-between mt-1">
-                            <span className="text-[10px] text-gray-400">{section.score}/{section.max_score}</span>
-                            <span className="text-[10px] text-gray-400">Weight: {section.weight}</span>
+                            <span className="text-[10px] text-muted-foreground">{section.score}/{section.max_score}</span>
+                            <span className="text-[10px] text-muted-foreground">Weight: {section.weight}</span>
                           </div>
                         </div>
                       ))}
@@ -280,7 +280,7 @@ export default function StaffReportPage() {
             {assessmentHistory.length >= 2 && (
               <Card className="mb-8">
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                     <BarChart3 className="w-5 h-5 text-blue-600" />
                     DSRI Trend
                   </h2>
@@ -304,40 +304,40 @@ export default function StaffReportPage() {
             <Card className="py-0">
               <CardContent className="p-0">
                 <div className="flex items-center justify-between px-6 py-4 border-b">
-                  <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-violet-600" />
+                  <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                     Assessment History
                   </h2>
-                  <span className="text-sm text-gray-500">{assessmentHistory.length} records</span>
+                  <span className="text-sm text-muted-foreground">{assessmentHistory.length} records</span>
                 </div>
                 {assessmentHistory.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Calendar className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Calendar className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
                     <p>No assessment history</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 text-sm">
+                    <table className="min-w-full divide-y divide-border text-sm">
                       <thead>
-                        <tr className="bg-gray-50">
-                          <th className="text-left p-3 font-medium text-gray-700">Date</th>
-                          <th className="text-left p-3 font-medium text-gray-700">DSRI</th>
+                        <tr className="bg-background">
+                          <th className="text-left p-3 font-medium text-foreground">Date</th>
+                          <th className="text-left p-3 font-medium text-foreground">DSRI</th>
                           {["C1","C2","C3","C4","C5","C6","C7","C8","C9","C10"].map(c => (
-                            <th key={c} className="text-left p-3 font-medium text-gray-700">{c}</th>
+                            <th key={c} className="text-left p-3 font-medium text-foreground">{c}</th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100">
+                      <tbody className="divide-y divide-border">
                         {assessmentHistory.map((a: ApiRecord, i: number) => (
-                          <tr key={a.id} className={`hover:bg-gray-50 ${i === 0 ? "bg-violet-50/50" : ""}`}>
-                            <td className="p-3 text-gray-600">
+                          <tr key={a.id} className={`hover:bg-accent ${i === 0 ? "bg-violet-50/50" : ""}`}>
+                            <td className="p-3 text-muted-foreground">
                               {a.submitted_at ? new Date(a.submitted_at).toLocaleDateString() : "-"}
                             </td>
                             <td className={`p-3 font-bold ${getScoreColor(a.dsri)}`}>
                               {a.dsri ? Math.round(a.dsri) : "-"}
                             </td>
                             {["c1","c2","c3","c4","c5","c6","c7","c8","c9","c10"].map(c => (
-                              <td key={c} className="p-3 text-gray-600">{a[`${c}_score`] ?? "-"}</td>
+                              <td key={c} className="p-3 text-muted-foreground">{a[`${c}_score`] ?? "-"}</td>
                             ))}
                           </tr>
                         ))}
@@ -356,15 +356,15 @@ export default function StaffReportPage() {
               const level = getDsriLevel(dsriRound);
               const trend = assessmentHistory.length >= 2 ? (() => {
                 const diff = assessmentHistory[0].dsri - assessmentHistory[1].dsri;
-                if (diff > 0) return { icon: TrendingUp, text: `+${Math.round(diff)} from previous`, color: "text-green-600" };
+                if (diff > 0) return { icon: TrendingUp, text: `+${Math.round(diff)} from previous`, color: "text-green-600 dark:text-green-400" };
                 if (diff < 0) return { icon: TrendingDown, text: `${Math.round(diff)} from previous`, color: "text-red-600" };
-                return { icon: Minus, text: "No change", color: "text-gray-500" };
+                return { icon: Minus, text: "No change", color: "text-muted-foreground" };
               })() : null;
               const TrendIcon = trend?.icon;
               return (
                 <Card>
                   <CardContent className="p-6">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                       <Award className="w-4 h-4 text-amber-500" />
                       DSRI Overview
                     </h3>
@@ -388,17 +388,17 @@ export default function StaffReportPage() {
                     )}
                     {totalAssessments > 0 && (
                       <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                        <div className="bg-gray-50 rounded-lg p-2">
-                          <p className="text-lg font-bold text-gray-900">{totalAssessments}</p>
-                          <p className="text-[10px] text-gray-500">Assessments</p>
+                        <div className="bg-background rounded-lg p-2">
+                          <p className="text-lg font-bold text-foreground">{totalAssessments}</p>
+                          <p className="text-[10px] text-muted-foreground">Assessments</p>
                         </div>
-                        <div className="bg-gray-50 rounded-lg p-2">
-                          <p className="text-lg font-bold text-gray-900">{Math.max(...assessmentHistory.map((a: ApiRecord) => Math.round(a.dsri || 0)))}</p>
-                          <p className="text-[10px] text-gray-500">Best Score</p>
+                        <div className="bg-background rounded-lg p-2">
+                          <p className="text-lg font-bold text-foreground">{Math.max(...assessmentHistory.map((a: ApiRecord) => Math.round(a.dsri || 0)))}</p>
+                          <p className="text-[10px] text-muted-foreground">Best Score</p>
                         </div>
-                        <div className="bg-gray-50 rounded-lg p-2">
-                          <p className="text-lg font-bold text-gray-900">{Math.round(assessmentHistory.reduce((s: number, a: ApiRecord) => s + (a.dsri || 0), 0) / totalAssessments)}</p>
-                          <p className="text-[10px] text-gray-500">Average</p>
+                        <div className="bg-background rounded-lg p-2">
+                          <p className="text-lg font-bold text-foreground">{Math.round(assessmentHistory.reduce((s: number, a: ApiRecord) => s + (a.dsri || 0), 0) / totalAssessments)}</p>
+                          <p className="text-[10px] text-muted-foreground">Average</p>
                         </div>
                       </div>
                     )}
@@ -410,45 +410,45 @@ export default function StaffReportPage() {
             {/* Course Progress */}
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-violet-600" />
+                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                   Course Progress
                 </h2>
                 {totalCourses > 0 && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="mb-4 p-3 bg-background rounded-lg">
                     <div className="flex items-center justify-between text-sm mb-2">
-                      <span className="text-gray-600">Overall Completion</span>
+                      <span className="text-muted-foreground">Overall Completion</span>
                       <span className="font-semibold">{courseRate}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                       <div className={`h-2 rounded-full transition-all duration-700 ease-out ${getProgressBarColor(courseRate)}`} style={{ width: `${courseRate}%` }} />
                     </div>
                   </div>
                 )}
                 {courseAnalysis.length === 0 ? (
-                  <div className="text-center py-6 text-gray-500">
-                    <BookOpen className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+                  <div className="text-center py-6 text-muted-foreground">
+                    <BookOpen className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
                     <p>No course enrollments</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {courseAnalysis.map((c: ApiRecord) => (
-                      <div key={c.course_id} className="bg-gray-50 rounded-lg p-3">
+                      <div key={c.course_id} className="bg-background rounded-lg p-3">
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="font-medium text-gray-900 text-sm truncate flex-1 mr-2">
+                          <span className="font-medium text-foreground text-sm truncate flex-1 mr-2">
                             {c.course_title || `Course #${c.course_id}`}
                           </span>
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${getStatusBadge(c.status)}`}>
                             {c.status}
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                        <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                           <div
                             className={`h-1.5 rounded-full transition-all duration-700 ease-out ${getProgressBarColor(c.progress)}`}
                             style={{ width: `${c.progress}%` }}
                           />
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">{Math.round(c.progress)}% complete</div>
+                        <div className="text-xs text-muted-foreground mt-1">{Math.round(c.progress)}% complete</div>
                       </div>
                     ))}
                   </div>

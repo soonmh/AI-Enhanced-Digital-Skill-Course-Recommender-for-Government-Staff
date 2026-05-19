@@ -45,7 +45,7 @@ export default function CreateCoursePage() {
     setForm({ ...form, [field]: e.target.value });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-background">
       <div className="px-6 py-8 w-full max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Create Course</h1>
@@ -124,7 +124,7 @@ export default function CreateCoursePage() {
               {uploadMode === "file" ? (
                 <div className="grid gap-2">
                   <Label>File</Label>
-                  <input type="file" className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100" />
+                  <input type="file" className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-violet-500/10 file:text-violet-700 hover:file:bg-violet-100" />
                 </div>
               ) : (
                 <div className="grid gap-2">
@@ -135,7 +135,7 @@ export default function CreateCoursePage() {
             </CardContent>
           </Card>
 
-          {error && <div className="p-3 mb-4 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">{error}</div>}
+          {error && <div className="p-3 mb-4 text-sm text-red-600 bg-red-500/10 rounded-md border border-red-200">{error}</div>}
           <div className="flex gap-3">
             <Button type="submit" disabled={saving} className="bg-violet-600 hover:bg-violet-700">
               {saving ? "Creating..." : "Create Course"}

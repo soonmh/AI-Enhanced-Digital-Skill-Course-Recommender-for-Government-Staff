@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useDashboard } from "@/hooks/useApi";
+import { useTranslation } from "@/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,10 +29,10 @@ import { AiInsightCard } from "@/components/dashboard/AiInsightCard";
 import { LearningPathProgress } from "@/components/dashboard/LearningPathProgress";
 
 function getDsriLevel(score: number) {
-  if (score >= 90) return { label: "Excellent", color: "bg-green-500", ring: "#22c55e", bg: "bg-green-50" };
-  if (score >= 70) return { label: "Good", color: "bg-emerald-500", ring: "#10b981", bg: "bg-emerald-50" };
-  if (score >= 40) return { label: "Average", color: "bg-amber-500", ring: "#f59e0b", bg: "bg-amber-50" };
-  return { label: "Needs Work", color: "bg-red-500", ring: "#ef4444", bg: "bg-red-50" };
+  if (score >= 90) return { label: "Excellent", color: "bg-green-500", ring: "#22c55e", bg: "bg-green-500/10" };
+  if (score >= 70) return { label: "Good", color: "bg-emerald-500", ring: "#10b981", bg: "bg-emerald-500/10" };
+  if (score >= 40) return { label: "Average", color: "bg-amber-500", ring: "#f59e0b", bg: "bg-amber-500/10" };
+  return { label: "Needs Work", color: "bg-red-500", ring: "#ef4444", bg: "bg-red-500/10" };
 }
 
 function getDsriTextColor(score: number) {
@@ -41,7 +42,7 @@ function getDsriTextColor(score: number) {
 }
 
 function scoreCellColor(val: number | null | undefined) {
-  if (val == null) return "text-gray-400";
+  if (val == null) return "text-muted-foreground";
   if (val >= 70) return "text-emerald-600 font-semibold";
   if (val >= 40) return "text-amber-600 font-medium";
   return "text-red-500 font-medium";
@@ -50,10 +51,11 @@ function scoreCellColor(val: number | null | undefined) {
 export default function DashboardPage() {
   const { data: session } = useSession();
   const { dashboard, isLoading } = useDashboard();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen bg-background">
         <div className="px-6 py-8 w-full max-w-7xl mx-auto">
           <div className="mb-8">
             <Skeleton className="h-10 w-64 mb-2" />
@@ -80,14 +82,14 @@ export default function DashboardPage() {
   const hasAssessment = latestScore > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-background">
       <div className="px-6 py-8 w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Welcome, {session?.user?.name || "User"}!
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            {t("dashboard.welcome", { name: session?.user?.name || "User" })}
           </h1>
-          <p className="text-gray-500 text-lg">Track your digital skills journey</p>
+          <p className="text-muted-foreground text-lg">{t("dashboard.subtitle")}</p>
         </div>
 
         {/* Stats Cards */}
@@ -98,12 +100,12 @@ export default function DashboardPage() {
               <div className="flex-1 px-5 py-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Latest DSRI Score</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.latestDsriScore")}</p>
                     <div className="flex items-baseline gap-2 mt-2">
                       <span className="text-4xl font-extrabold tracking-tight" style={{ color: hasAssessment ? getDsriLevel(latestScore).ring : "#111827" }}>
                         {latestScore ? Math.round(latestScore) : "--"}
                       </span>
-                      <span className="text-lg font-medium text-gray-400">%</span>
+                      <span className="text-lg font-medium text-muted-foreground">%</span>
                     </div>
                     {hasAssessment && (
                       <Badge className={`${getDsriLevel(latestScore).color} text-white border-0 text-[10px] mt-2 rounded-md`}>
@@ -125,14 +127,14 @@ export default function DashboardPage() {
               <div className="flex-1 px-5 py-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Assessments</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.totalAssessments")}</p>
                     <div className="flex items-baseline gap-2 mt-2">
-                      <span className="text-4xl font-extrabold tracking-tight text-gray-900">
+                      <span className="text-4xl font-extrabold tracking-tight text-foreground">
                         {stats?.total_assessments ?? 0}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-2">
-                      {(stats?.total_assessments ?? 0) > 0 ? "Keep improving!" : "Start your journey"}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {(stats?.total_assessments ?? 0) > 0 ? t("dashboard.keepImproving") : t("dashboard.startYourJourney")}
                     </p>
                   </div>
                   <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-sm">
@@ -145,18 +147,18 @@ export default function DashboardPage() {
 
           <Card className="shadow-sm hover:shadow-md transition-shadow overflow-hidden !p-0 !gap-0 !py-0">
             <div className="flex h-full">
-              <div className="w-1.5 shrink-0 bg-violet-500" />
+              <div className="w-1.5 shrink-0 bg-violet-500 dark:bg-violet-600" />
               <div className="flex-1 px-5 py-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Courses In Progress</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("dashboard.coursesInProgress")}</p>
                     <div className="flex items-baseline gap-2 mt-2">
-                      <span className="text-4xl font-extrabold tracking-tight text-gray-900">
+                      <span className="text-4xl font-extrabold tracking-tight text-foreground">
                         {stats?.courses_in_progress ?? 0}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-2">
-                      {(stats?.courses_in_progress ?? 0) > 0 ? "Continue learning" : "Start a course"}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {(stats?.courses_in_progress ?? 0) > 0 ? t("dashboard.continueLearning") : t("dashboard.startACourse")}
                     </p>
                   </div>
                   <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-sm">
@@ -174,9 +176,9 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="w-5 h-5 text-blue-600" />
-                DSRI Trend
+                {t("dashboard.dsriTrend")}
               </CardTitle>
-              <CardDescription>Your DSRI score over time</CardDescription>
+              <CardDescription>{t("dashboard.dsriTrendDescription")}</CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <DsriTrendLine
@@ -206,9 +208,9 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ClipboardList className="w-5 h-5 text-blue-600" />
-                  Assessment Progress
+                  {t("dashboard.assessmentProgress")}
                 </CardTitle>
-                <CardDescription>Your digital skills journey</CardDescription>
+                <CardDescription>{t("dashboard.assessmentProgressDescription")}</CardDescription>
               </CardHeader>
               <CardContent className="p-6 pt-0">
                 {hasAssessment ? (
@@ -225,8 +227,8 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900">Latest Assessment</h4>
-                        <p className="text-sm text-gray-500 mt-0.5">Your most recent result</p>
+                        <h4 className="font-semibold text-foreground">{t("dashboard.latestAssessment")}</h4>
+                        <p className="text-sm text-muted-foreground mt-0.5">{t("dashboard.latestAssessmentDescription")}</p>
                         <Badge className={`${getDsriLevel(latestScore).color} text-white border-0 text-xs mt-2`}>
                           {getDsriLevel(latestScore).label}
                         </Badge>
@@ -240,16 +242,16 @@ export default function DashboardPage() {
                     <div className="flex gap-3">
                       <Link
                         href="/assessment"
-                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-sm"
+                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 dark:bg-indigo-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 dark:hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-sm"
                       >
                         <TrendingUp className="w-4 h-4" />
-                        Take New Assessment
+                        {t("dashboard.takeNewAssessment")}
                       </Link>
                       <Link
                         href="/assessment/results"
-                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                        className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
                       >
-                        View Results
+                        {t("dashboard.viewResults")}
                         <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
@@ -259,18 +261,18 @@ export default function DashboardPage() {
                     <div className="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mb-4">
                       <Target className="w-8 h-8 text-indigo-400" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                      Start Your Assessment Journey
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
+                      {t("dashboard.startYourAssessmentJourney")}
                     </h3>
-                    <p className="text-gray-500 mb-5 max-w-sm mx-auto">
-                      Take your first digital skills assessment to get personalized recommendations.
+                    <p className="text-muted-foreground mb-5 max-w-sm mx-auto">
+                      {t("dashboard.startYourAssessmentJourneyDesc")}
                     </p>
                     <Link
                       href="/assessment"
                       className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-sm"
                     >
                       <TrendingUp className="w-4 h-4" />
-                      Take First Assessment
+                      {t("dashboard.takeFirstAssessment")}
                     </Link>
                   </div>
                 )}
@@ -283,29 +285,29 @@ export default function DashboardPage() {
             <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-green-600" />
-                  Quick Actions
+                  <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  {t("dashboard.quickActions")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 pt-0 space-y-2.5">
                 {[
-                  { href: "/courses/recommended", icon: BookOpen, bg: "from-emerald-500 to-green-600", title: "Browse Courses", desc: "Enhance your skills" },
-                  { href: "/assessment/results", icon: ClipboardList, bg: "from-violet-500 to-purple-600", title: "View Progress", desc: "Track your growth" },
-                  { href: "/settings/profile", icon: User, bg: "from-amber-500 to-orange-500", title: "Update Profile", desc: "Manage account" },
+                  { href: "/courses/recommended", icon: BookOpen, bg: "from-emerald-500 to-green-600", title: t("dashboard.browseCourses"), desc: t("dashboard.browseCoursesDesc") },
+                  { href: "/assessment/results", icon: ClipboardList, bg: "from-violet-500 to-purple-600", title: t("dashboard.viewProgress"), desc: t("dashboard.viewProgressDesc") },
+                  { href: "/settings/profile", icon: User, bg: "from-amber-500 to-orange-500", title: t("dashboard.updateProfile"), desc: t("dashboard.updateProfileDesc") },
                 ].map((action) => (
                   <Link
                     key={action.href}
                     href={action.href}
-                    className="flex items-center gap-3 w-full rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm hover:shadow-md hover:border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all group"
+                    className="flex items-center gap-3 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm hover:shadow-md hover:border-border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all group"
                   >
                     <div className={`p-2 bg-gradient-to-br ${action.bg} rounded-lg shadow-sm`}>
                       <action.icon className="w-4 h-4 text-white" />
                     </div>
                     <div className="text-left">
-                      <div className="font-medium text-gray-800">{action.title}</div>
-                      <div className="text-[11px] text-gray-400">{action.desc}</div>
+                      <div className="font-medium text-foreground">{action.title}</div>
+                      <div className="text-[11px] text-muted-foreground">{action.desc}</div>
                     </div>
-                    <ChevronRight className="w-4 h-4 ml-auto text-gray-300 group-hover:text-gray-500 transition-colors" />
+                    <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground group-hover:text-muted-foreground transition-colors" />
                   </Link>
                 ))}
               </CardContent>
@@ -319,9 +321,9 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="w-5 h-5 text-indigo-600" />
-                Competency Roadmap
+                {t("dashboard.competencyRoadmap")}
               </CardTitle>
-              <CardDescription>Your learning path across all competency areas</CardDescription>
+              <CardDescription>{t("dashboard.competencyRoadmapDescription")}</CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <LearningPathProgress sectionScores={dashboard.latestSectionScores} />
@@ -335,34 +337,34 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-amber-500" />
-                Recommended Courses
+                {t("dashboard.recommendedCourses")}
               </CardTitle>
-              <CardDescription>Courses tailored to your skill gaps</CardDescription>
+              <CardDescription>{t("dashboard.recommendedCoursesDescription")}</CardDescription>
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {courses.slice(0, 3).map((course) => (
                   <div
                     key={course.id}
-                    className="rounded-xl border border-gray-100 p-4 hover:shadow-lg hover:border-gray-200 transition-all group"
+                    className="rounded-xl border border-border p-4 hover:shadow-lg hover:border-border transition-all group"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <h4 className="font-semibold text-gray-900 text-sm leading-snug">{course.title}</h4>
+                      <h4 className="font-semibold text-foreground text-sm leading-snug">{course.title}</h4>
                     </div>
-                    <p className="text-xs text-gray-500 mb-3 line-clamp-2">{course.description}</p>
+                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{course.description}</p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                        <span className="text-xs text-gray-500 font-medium">
+                        <span className="text-xs text-muted-foreground font-medium">
                           {course.level || "Beginner"}
                         </span>
                       </div>
                       <Link
                         href={course.url || "/courses"}
-                        className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors group-hover:bg-indigo-100"
+                        className="inline-flex items-center gap-1 rounded-lg bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors group-hover:bg-indigo-100"
                       >
                         <CirclePlay className="w-3.5 h-3.5" />
-                        Start
+                        {t("dashboard.start")}
                       </Link>
                     </div>
                   </div>
@@ -372,9 +374,9 @@ export default function DashboardPage() {
                 <div className="mt-5 text-center">
                   <Link
                     href="/courses/recommended"
-                    className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
                   >
-                    View All Recommended
+                    {t("dashboard.viewAllRecommended")}
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -388,23 +390,23 @@ export default function DashboardPage() {
           <Card className="shadow-sm hover:shadow-md transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <History className="w-5 h-5 text-violet-600" />
-                Assessment History
+                <History className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                {t("dashboard.assessmentHistory")}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 pt-0">
-              <div className="overflow-x-auto rounded-lg border border-gray-100">
+              <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gradient-to-b from-gray-50 to-gray-100/80">
-                      <th className="text-left py-3 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                    <tr className="bg-gradient-to-b from-background to-muted/80">
+                      <th className="text-left py-3 px-3 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                         Date
                       </th>
                       <th className="py-3 px-3 text-[11px] font-bold text-indigo-600 uppercase tracking-wider text-center bg-indigo-50/50">
                         DSRI
                       </th>
                       {Object.keys(COMPETENCIES).map((c) => (
-                        <th key={c} className="py-3 px-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">
+                        <th key={c} className="py-3 px-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">
                           {c}
                         </th>
                       ))}
@@ -414,15 +416,15 @@ export default function DashboardPage() {
                     {history.map((r: AssessmentRecord, idx: number) => (
                       <tr
                         key={r.id}
-                        className={`transition-colors border-t border-gray-50 ${
-                          idx === 0 ? "bg-indigo-50/30" : "hover:bg-gray-50/50"
+                        className={`transition-colors border-t border-border ${
+                          idx === 0 ? "bg-indigo-50/30" : "hover:bg-accent/50"
                         }`}
                       >
-                        <td className="py-2.5 px-3 font-medium text-gray-700">
+                        <td className="py-2.5 px-3 font-medium text-foreground">
                           <div className="flex items-center gap-2">
                             {new Date(r.submitted_at).toLocaleDateString()}
                             {idx === 0 && (
-                              <Badge variant="outline" className="text-[10px] bg-indigo-50 text-indigo-600 border-indigo-200 border-0 px-1.5 py-0">
+                              <Badge variant="outline" className="text-[10px] bg-indigo-500/10 text-indigo-600 border-indigo-500/20 border-0 px-1.5 py-0">
                                 Latest
                               </Badge>
                             )}

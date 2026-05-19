@@ -39,7 +39,7 @@ export function LearningPathProgress({ sectionScores }: LearningPathProgressProp
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+      <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
         <span>{strongCount}/10 competencies strong</span>
         {weakCount > 0 && (
           <Link href="/courses/recommended" className="text-indigo-600 hover:text-indigo-800 font-medium">
@@ -52,14 +52,14 @@ export function LearningPathProgress({ sectionScores }: LearningPathProgressProp
           const Icon = status.icon;
           return (
             <div key={code} className="flex items-center gap-3">
-              <div className="w-10 text-xs font-bold text-gray-500">{code}</div>
+              <div className="w-10 text-xs font-bold text-muted-foreground">{code}</div>
               <Icon className={`w-4 h-4 shrink-0 ${status.color}`} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-gray-700 truncate">{config.nameEn}</span>
+                  <span className="text-xs font-medium text-foreground truncate">{config.nameEn}</span>
                   <span className={`text-xs font-bold ml-2 ${status.color}`}>{pct}%</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${status.bg} transition-all duration-700 ease-out`}
                     style={{ width: `${pct}%` }}

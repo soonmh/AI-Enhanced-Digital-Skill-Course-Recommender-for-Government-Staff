@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useCourseProgress } from "@/hooks/useApi";
 import { exportToCsv } from "@/lib/export";
+import { useTranslation } from "@/i18n/context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -29,13 +30,14 @@ function getProgressColor(pct: number) {
 function getStatusBadge(status: string) {
   if (status === "completed") return "bg-green-100 text-green-800";
   if (status === "active") return "bg-blue-100 text-blue-800";
-  return "bg-gray-100 text-gray-800";
+  return "bg-muted text-foreground";
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiRecord = Record<string, any>;
 
 export default function CourseProgressPage() {
+  const { t } = useTranslation();
   const { data, isLoading } = useCourseProgress();
   const [search, setSearch] = useState("");
   const tableRef = useRef<HTMLDivElement>(null);
@@ -48,8 +50,8 @@ export default function CourseProgressPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
+      <div className="min-h-screen bg-background">
+        <div className="bg-card shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <Skeleton className="h-9 w-48 mb-1" />
             <Skeleton className="h-5 w-72" />
@@ -92,12 +94,12 @@ export default function CourseProgressPage() {
   const pagedUsers = filteredUsers.slice((userPage - 1) * userPageSize, userPage * userPageSize);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-card shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <h1 className="text-3xl font-bold text-gray-900">Course Progress</h1>
-          <p className="text-gray-600 mt-1">Track course performance and learner progress</p>
+          <h1 className="text-3xl font-bold text-foreground">{t("reports.courseProgressTitle")}</h1>
+          <p className="text-muted-foreground mt-1">{t("reports.courseProgressDescription")}</p>
         </div>
       </div>
 
@@ -108,8 +110,8 @@ export default function CourseProgressPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Courses</p>
-                  <p className="text-3xl font-bold text-gray-900">{summary.total_courses}</p>
+                  <p className="text-sm text-muted-foreground">{t("reports.totalCourses")}</p>
+                  <p className="text-3xl font-bold text-foreground">{summary.total_courses}</p>
                 </div>
                 <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-sm">
                   <BookOpen className="w-6 h-6 text-white" />
@@ -121,8 +123,8 @@ export default function CourseProgressPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Enrollments</p>
-                  <p className="text-3xl font-bold text-gray-900">{summary.total_enrollments}</p>
+                  <p className="text-sm text-muted-foreground">{t("reports.totalEnrollments")}</p>
+                  <p className="text-3xl font-bold text-foreground">{summary.total_enrollments}</p>
                 </div>
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-sm">
                   <Users className="w-6 h-6 text-white" />
@@ -134,8 +136,8 @@ export default function CourseProgressPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Avg Completion Rate</p>
-                  <p className="text-3xl font-bold text-gray-900">{summary.avg_completion_rate}%</p>
+                  <p className="text-sm text-muted-foreground">{t("reports.avgCompletionRate")}</p>
+                  <p className="text-3xl font-bold text-foreground">{summary.avg_completion_rate}%</p>
                 </div>
                 <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-sm">
                   <Trophy className="w-6 h-6 text-white" />
@@ -147,8 +149,8 @@ export default function CourseProgressPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Avg Progress</p>
-                  <p className="text-3xl font-bold text-gray-900">{summary.avg_progress}%</p>
+                  <p className="text-sm text-muted-foreground">{t("reports.avgProgress")}</p>
+                  <p className="text-3xl font-bold text-foreground">{summary.avg_progress}%</p>
                 </div>
                 <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-sm">
                   <TrendingUp className="w-6 h-6 text-white" />
@@ -163,25 +165,25 @@ export default function CourseProgressPage() {
           {/* Top by Enrollment */}
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-blue-600" />
-                Popular by Enrollment
+                {t("reports.popularByEnrollment")}
               </h3>
               {topCourses.enrollment?.length === 0 ? (
-                <div className="text-center py-6 text-gray-400 text-sm">No enrollment data</div>
+                <div className="text-center py-6 text-muted-foreground text-sm">{t("reports.noEnrollmentData")}</div>
               ) : (
                 <div className="space-y-3">
                   {topCourses.enrollment?.map((c: ApiRecord, i: number) => (
-                    <div key={c.id} className="p-3 bg-gray-50 rounded-lg">
+                    <div key={c.id} className="p-3 bg-background rounded-lg">
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-3 min-w-0">
                           <span className="w-6 h-6 flex items-center justify-center text-xs font-bold bg-violet-100 text-violet-700 rounded-full shrink-0">{i + 1}</span>
-                          <span className="font-medium text-gray-900 text-sm truncate">{c.title}</span>
+                          <span className="font-medium text-foreground text-sm truncate">{c.title}</span>
                         </div>
-                        <span className="text-sm text-gray-600 shrink-0 ml-2">{c.enrollment_count} enrolled</span>
+                        <span className="text-sm text-muted-foreground shrink-0 ml-2">{t("reports.enrolledCount", { count: c.enrollment_count })}</span>
                       </div>
                       <div className="pl-9">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="w-full bg-muted rounded-full h-1.5">
                           <div className="h-1.5 rounded-full bg-blue-500" style={{ width: `${Math.min(c.completion_rate || 0, 100)}%` }} />
                         </div>
                       </div>
@@ -195,25 +197,25 @@ export default function CourseProgressPage() {
           {/* Top by Progress */}
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Activity className="w-5 h-5 text-sky-600" />
-                Highest Avg Progress
+                Highest Progress
               </h3>
               {topCourses.progress?.length === 0 ? (
-                <div className="text-center py-6 text-gray-400 text-sm">No progress data</div>
+                <div className="text-center py-6 text-muted-foreground text-sm">No progress data found</div>
               ) : (
                 <div className="space-y-3">
                   {topCourses.progress?.map((c: ApiRecord, i: number) => (
-                    <div key={c.id} className="p-3 bg-gray-50 rounded-lg">
+                    <div key={c.id} className="p-3 bg-background rounded-lg">
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-3 min-w-0">
                           <span className="w-6 h-6 flex items-center justify-center text-xs font-bold bg-sky-100 text-sky-700 rounded-full shrink-0">{i + 1}</span>
-                          <span className="font-medium text-gray-900 text-sm truncate">{c.title}</span>
+                          <span className="font-medium text-foreground text-sm truncate">{c.title}</span>
                         </div>
                         <span className="text-sm font-medium text-sky-600 shrink-0 ml-2">{Math.round(c.avg_progress)}%</span>
                       </div>
                       <div className="pl-9">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="w-full bg-muted rounded-full h-1.5">
                           <div className={`h-1.5 rounded-full ${getProgressColor(c.avg_progress)}`} style={{ width: `${Math.min(c.avg_progress, 100)}%` }} />
                         </div>
                       </div>
@@ -227,25 +229,25 @@ export default function CourseProgressPage() {
           {/* Top by Completion */}
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-green-600" />
-                Highest Completion Rate
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-green-600 dark:text-green-400" />
+                Highest Completion
               </h3>
               {topCourses.completion?.length === 0 ? (
-                <div className="text-center py-6 text-gray-400 text-sm">No completion data</div>
+                <div className="text-center py-6 text-muted-foreground text-sm">No completion data found</div>
               ) : (
                 <div className="space-y-3">
                   {topCourses.completion?.map((c: ApiRecord, i: number) => (
-                    <div key={c.id} className="p-3 bg-gray-50 rounded-lg">
+                    <div key={c.id} className="p-3 bg-background rounded-lg">
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-3 min-w-0">
                           <span className="w-6 h-6 flex items-center justify-center text-xs font-bold bg-green-100 text-green-700 rounded-full shrink-0">{i + 1}</span>
-                          <span className="font-medium text-gray-900 text-sm truncate">{c.title}</span>
+                          <span className="font-medium text-foreground text-sm truncate">{c.title}</span>
                         </div>
                         <span className="text-sm font-medium text-green-600 shrink-0 ml-2">{c.completion_rate}%</span>
                       </div>
                       <div className="pl-9">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div className="w-full bg-muted rounded-full h-1.5">
                           <div className="h-1.5 rounded-full bg-green-500" style={{ width: `${Math.min(c.completion_rate || 0, 100)}%` }} />
                         </div>
                       </div>
@@ -260,25 +262,25 @@ export default function CourseProgressPage() {
         {/* Tabs */}
         <div className="flex items-center gap-4 mb-6">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder={tab === "courses" ? "Search courses..." : "Search users..."}
+              placeholder={tab === "courses" ? t("reports.searchCourses") : t("admin.searchUsers")}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCoursePage(1); setUserPage(1); }}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
             />
           </div>
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 bg-muted rounded-lg p-1">
             <button
               onClick={() => setTab("courses")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === "courses" ? "bg-white shadow text-gray-900" : "text-gray-600"}`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === "courses" ? "bg-card shadow text-foreground" : "text-muted-foreground"}`}
             >
               Courses
             </button>
             <button
               onClick={() => setTab("users")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === "users" ? "bg-white shadow text-gray-900" : "text-gray-600"}`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === "users" ? "bg-card shadow text-foreground" : "text-muted-foreground"}`}
             >
               Users
             </button>
@@ -301,9 +303,9 @@ export default function CourseProgressPage() {
                 ]);
                 exportToCsv("user-progress.csv", headers, rows);
               }
-              toast.success("Exported report");
+              toast.success(t("reports.exportCsv"));
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-sm hover:bg-accent transition-colors"
           >
             <Download className="w-4 h-4" />
             Export CSV
@@ -315,9 +317,9 @@ export default function CourseProgressPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {pagedCourses.length === 0 ? (
-                <div className="col-span-2 text-center py-12 text-gray-400">
+                <div className="col-span-2 text-center py-12 text-muted-foreground">
                   <BookOpen className="w-12 h-12 mx-auto mb-3" />
-                  <p>No courses found</p>
+                  <p>{t("reports.noCoursesFound")}</p>
                 </div>
               ) : (
                 pagedCourses.map((c: ApiRecord) => (
@@ -325,35 +327,35 @@ export default function CourseProgressPage() {
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h3 className="font-semibold text-gray-900">{c.title}</h3>
+                          <h3 className="font-semibold text-foreground">{c.title}</h3>
                           <div className="flex items-center gap-2 mt-1">
                             {c.level && <span className="px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full text-xs">{c.level}</span>}
                           </div>
                         </div>
-                        <BarChart3 className="w-5 h-5 text-gray-400" />
+                        <BarChart3 className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div className="grid grid-cols-4 gap-4 mb-4">
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-gray-900">{c.enrollment_count}</p>
-                          <p className="text-xs text-gray-500">Enrolled</p>
+                          <p className="text-2xl font-bold text-foreground">{c.enrollment_count}</p>
+                          <p className="text-xs text-muted-foreground">{t("common.enrolled")}</p>
                         </div>
                         <div className="text-center">
                           <p className="text-2xl font-bold text-blue-600">{Math.round(c.avg_progress)}%</p>
-                          <p className="text-xs text-gray-500">Progress</p>
+                          <p className="text-xs text-muted-foreground">{t("common.progress")}</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-green-600">{c.completion_rate}%</p>
-                          <p className="text-xs text-gray-500">Completed</p>
+                          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{c.completion_rate}%</p>
+                          <p className="text-xs text-muted-foreground">{t("common.completed")}</p>
                         </div>
                         <div className="text-center">
                           <div className="flex items-center justify-center gap-1">
                             <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                            <p className="text-2xl font-bold text-gray-900">{c.avg_rating ?? "—"}</p>
+                            <p className="text-2xl font-bold text-foreground">{c.avg_rating ?? "—"}</p>
                           </div>
-                          <p className="text-xs text-gray-500">{c.ratings_count || 0} rating{c.ratings_count === 1 ? "" : "s"}</p>
+                          <p className="text-xs text-muted-foreground">{c.ratings_count || 0} rating{c.ratings_count === 1 ? "" : "s"}</p>
                         </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-muted rounded-full h-2">
                         <div className={`h-2 rounded-full transition-all ${getProgressColor(c.avg_progress)}`} style={{ width: `${c.avg_progress}%` }} />
                       </div>
                     </CardContent>
@@ -362,18 +364,18 @@ export default function CourseProgressPage() {
               )}
             </div>
             <div className="flex items-center justify-between mt-6 text-sm">
-              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+              <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
                 {[4, 6, 8, 12].map((n) => (
-                  <button key={n} onClick={() => { setCoursePageSize(n); setCoursePage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${coursePageSize === n ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}>{n}</button>
+                  <button key={n} onClick={() => { setCoursePageSize(n); setCoursePage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${coursePageSize === n ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
                 ))}
               </div>
               {courseTotalPages > 1 && (
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setCoursePage(1)} disabled={coursePage === 1} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&laquo;</button>
-                  <button onClick={() => setCoursePage((p) => Math.max(1, p - 1))} disabled={coursePage === 1} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&lsaquo;</button>
-                  <span className="px-3 text-gray-600">{coursePage} / {courseTotalPages}</span>
-                  <button onClick={() => setCoursePage((p) => Math.min(courseTotalPages, p + 1))} disabled={coursePage === courseTotalPages} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&rsaquo;</button>
-                  <button onClick={() => setCoursePage(courseTotalPages)} disabled={coursePage === courseTotalPages} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&raquo;</button>
+                  <button onClick={() => setCoursePage(1)} disabled={coursePage === 1} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&laquo;</button>
+                  <button onClick={() => setCoursePage((p) => Math.max(1, p - 1))} disabled={coursePage === 1} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&lsaquo;</button>
+                  <span className="px-3 text-muted-foreground">{coursePage} / {courseTotalPages}</span>
+                  <button onClick={() => setCoursePage((p) => Math.min(courseTotalPages, p + 1))} disabled={coursePage === courseTotalPages} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&rsaquo;</button>
+                  <button onClick={() => setCoursePage(courseTotalPages)} disabled={coursePage === courseTotalPages} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&raquo;</button>
                 </div>
               )}
             </div>
@@ -385,36 +387,36 @@ export default function CourseProgressPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm table-fixed">
                   <thead className="sticky top-0 z-10">
-                    <tr className="bg-gray-50 border-b">
-                      <th className="text-left p-4 font-medium text-gray-700" style={{ width: "40%" }}>User</th>
-                      <th className="text-left p-4 font-medium text-gray-700" style={{ width: "12%" }}>Courses</th>
-                      <th className="text-left p-4 font-medium text-gray-700" style={{ width: "12%" }}>Completed</th>
-                      <th className="text-left p-4 font-medium text-gray-700" style={{ width: "22%" }}>Avg Progress</th>
-                      <th className="text-left p-4 font-medium text-gray-700" style={{ width: "14%" }}>Status</th>
+                    <tr className="bg-background border-b">
+                      <th className="text-left p-4 font-medium text-foreground" style={{ width: "40%" }}>{t("reports.tableUser")}</th>
+                      <th className="text-left p-4 font-medium text-foreground" style={{ width: "12%" }}>{t("reports.tableCourses")}</th>
+                      <th className="text-left p-4 font-medium text-foreground" style={{ width: "12%" }}>{t("common.completed")}</th>
+                      <th className="text-left p-4 font-medium text-foreground" style={{ width: "22%" }}>{t("reports.avgProgress")}</th>
+                      <th className="text-left p-4 font-medium text-foreground" style={{ width: "14%" }}>{t("reports.tableStatus")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pagedUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="p-8 text-center text-gray-500">No users found</td>
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground">{t("reports.noUsersFound")}</td>
                       </tr>
                     ) : (
                       pagedUsers.map((u: ApiRecord) => (
-                        <tr key={u.id} className="border-b hover:bg-gray-50 transition-colors">
+                        <tr key={u.id} className="border-b hover:bg-accent transition-colors">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
                               <UserAvatar name={u.name} size={32} />
                               <div className="truncate">
-                                <p className="font-medium text-gray-900 truncate">{u.name}</p>
-                                <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                                <p className="font-medium text-foreground truncate">{u.name}</p>
+                                <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                               </div>
                             </div>
                           </td>
-                          <td className="p-4 text-gray-900">{u.total_courses}</td>
-                          <td className="p-4 text-gray-900">{u.completed_courses}</td>
+                          <td className="p-4 text-foreground">{u.total_courses}</td>
+                          <td className="p-4 text-foreground">{u.completed_courses}</td>
                           <td className="p-4">
                             <div className="flex items-center gap-2">
-                              <div className="w-20 bg-gray-200 rounded-full h-2">
+                              <div className="w-20 bg-muted rounded-full h-2">
                                 <div className={`h-2 rounded-full ${getProgressColor(u.avg_progress)}`} style={{ width: `${u.avg_progress}%` }} />
                               </div>
                               <span className="text-sm">{Math.round(u.avg_progress)}%</span>
@@ -432,17 +434,17 @@ export default function CourseProgressPage() {
                 </table>
               </div>
               <div className="flex items-center justify-between px-4 py-3 border-t text-sm">
-                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+                <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
                   {[5, 6, 10, 25].map((n) => (
-                    <button key={n} onClick={() => { setUserPageSize(n); setUserPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${userPageSize === n ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"}`}>{n}</button>
+                    <button key={n} onClick={() => { setUserPageSize(n); setUserPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${userPageSize === n ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
                   ))}
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => { setUserPage(1); scrollToTable(); }} disabled={userPage === 1} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&laquo;</button>
-                  <button onClick={() => { setUserPage((p) => Math.max(1, p - 1)); scrollToTable(); }} disabled={userPage === 1} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&lsaquo;</button>
-                  <span className="px-3 text-gray-600">{userPage} / {userTotalPages}</span>
-                  <button onClick={() => { setUserPage((p) => Math.min(userTotalPages, p + 1)); scrollToTable(); }} disabled={userPage === userTotalPages} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&rsaquo;</button>
-                  <button onClick={() => { setUserPage(userTotalPages); scrollToTable(); }} disabled={userPage === userTotalPages} className="px-2 py-1 rounded hover:bg-gray-100 disabled:opacity-40">&raquo;</button>
+                  <button onClick={() => { setUserPage(1); scrollToTable(); }} disabled={userPage === 1} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&laquo;</button>
+                  <button onClick={() => { setUserPage((p) => Math.max(1, p - 1)); scrollToTable(); }} disabled={userPage === 1} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&lsaquo;</button>
+                  <span className="px-3 text-muted-foreground">{userPage} / {userTotalPages}</span>
+                  <button onClick={() => { setUserPage((p) => Math.min(userTotalPages, p + 1)); scrollToTable(); }} disabled={userPage === userTotalPages} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&rsaquo;</button>
+                  <button onClick={() => { setUserPage(userTotalPages); scrollToTable(); }} disabled={userPage === userTotalPages} className="px-2 py-1 rounded hover:bg-muted disabled:opacity-40">&raquo;</button>
                 </div>
               </div>
             </CardContent>

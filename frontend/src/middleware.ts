@@ -16,5 +16,6 @@ export const config = {
     "/settings/:path*",
     "/staff-analysis/:path*",
     "/course-report/:path*",
+    "/ai-insights/:path*",
   ],
 };

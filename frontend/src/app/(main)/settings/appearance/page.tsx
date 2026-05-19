@@ -1,124 +1,164 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
-import { updateLanguage } from "@/hooks/useApi";
-import { User, Lock, Sun, Moon } from "lucide-react";
+import { useTranslation } from "@/i18n/context";
+import { User, Lock, Sun, Moon, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export default function AppearancePage() {
-  const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
-  const currentLocale = session?.user?.locale || "en";
+  const { locale, setLocale, t } = useTranslation();
 
-  const handleLanguageChange = async (locale: string) => {
+  const handleLanguageChange = async (newLocale: "en" | "ms") => {
     try {
-      await updateLanguage(locale);
-      window.location.reload();
+      await setLocale(newLocale);
     } catch {}
   };
 
   return (
-    <div className="px-4 py-6">
-      <Heading title="Settings" description="Manage your profile and account settings" />
-      <div className="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-x-12 lg:space-y-0">
-        <aside className="w-full max-w-xl lg:w-48">
-          <nav className="flex flex-col space-x-0 space-y-1">
-            <NavLink href="/settings/profile" icon={User} title="Profile" />
-            <NavLink href="/settings/password" icon={Lock} title="Password" />
-          </nav>
-        </aside>
-        <div className="flex-1 md:max-w-2xl">
-          <section className="max-w-xl space-y-12">
-            <header>
-              <h3 className="mb-0.5 text-base font-medium">Appearance settings</h3>
-              <p className="text-sm text-muted-foreground">
-                Update your account&apos;s appearance settings
-              </p>
-            </header>
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">Language</h4>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleLanguageChange("en")}
-                  className={`flex-1 flex items-center justify-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    currentLocale === "en"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  <span>🇬🇧</span>
-                  <span>EN</span>
-                </button>
-                <button
-                  onClick={() => handleLanguageChange("ms")}
-                  className={`flex-1 flex items-center justify-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                    currentLocale === "ms"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  <span>🇲🇾</span>
-                  <span>MY</span>
-                </button>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium">Theme</h4>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setTheme("light")}
-                  className={`flex-1 flex items-center justify-center gap-2 rounded px-3 py-2 text-xs font-medium transition-colors ${
-                    theme === "light"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  <Sun className="w-3.5 h-3.5" />
-                  <span>Light</span>
-                </button>
-                <button
-                  onClick={() => setTheme("dark")}
-                  className={`flex-1 flex items-center justify-center gap-2 rounded px-3 py-2 text-xs font-medium transition-colors ${
-                    theme === "dark"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  <Moon className="w-3.5 h-3.5" />
-                  <span>Dark</span>
-                </button>
-              </div>
-            </div>
-          </section>
+    <div className="min-h-screen bg-background">
+      <div className="px-6 py-8 w-full max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-2">{t("settings.settingsTitle")}</h1>
+          <p className="text-muted-foreground text-lg">{t("settings.settingsDescription")}</p>
         </div>
+
+        <Card className="mb-8 border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {t("settings.settingsMenu")}
+            </CardTitle>
+            <CardDescription>{t("settings.settingsMenuDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Link
+                href="/settings/profile"
+                className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-accent hover:border-gray-300 transition-all duration-200"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-muted rounded-lg">
+                    <User className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">{t("settings.profileTab")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("settings.profileTabDescription")}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </Link>
+              <Link
+                href="/settings/password"
+                className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-accent hover:border-gray-300 transition-all duration-200"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-muted rounded-lg">
+                    <Lock className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-foreground">{t("settings.passwordTab")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("settings.passwordTabDescription")}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </Link>
+              <div className="flex items-center justify-between p-4 bg-blue-500/10 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-blue-900">{t("settings.appearanceTab")}</h3>
+                    <p className="text-sm text-blue-600">{t("settings.appearanceTabDescription")}</p>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700">{t("settings.currentBadge")}</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-8 border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
+              {t("settings.appearanceTitle")}
+            </CardTitle>
+            <CardDescription>{t("settings.appearanceDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-8">
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">{t("settings.languageLabel")}</Label>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleLanguageChange("en")}
+                    className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors border ${
+                      locale === "en"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-card text-foreground border-border hover:bg-accent"
+                    }`}
+                  >
+                    <span>🇬🇧</span>
+                    <span>{t("settings.english")}</span>
+                  </button>
+                  <button
+                    onClick={() => handleLanguageChange("ms")}
+                    className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors border ${
+                      locale === "ms"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-card text-foreground border-border hover:bg-accent"
+                    }`}
+                  >
+                    <span>🇲🇾</span>
+                    <span>{t("settings.bahasaMelayu")}</span>
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">{t("settings.themeLabel")}</Label>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setTheme("light")}
+                    className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors border ${
+                      theme === "light"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-card text-foreground border-border hover:bg-accent"
+                    }`}
+                  >
+                    <Sun className="w-4 h-4" />
+                    <span>{t("settings.light")}</span>
+                  </button>
+                  <button
+                    onClick={() => setTheme("dark")}
+                    className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium transition-colors border ${
+                      theme === "dark"
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-card text-foreground border-border hover:bg-accent"
+                    }`}
+                  >
+                    <Moon className="w-4 h-4" />
+                    <span>{t("settings.dark")}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>
-  );
-}
-
-function NavLink({ href, icon: Icon, title }: { href: string; icon: React.ElementType; title: string }) {
-  const pathname = usePathname();
-  const active = pathname === href;
-  return (
-    <Link
-      href={href}
-      className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-        active ? "bg-muted" : "hover:bg-muted/50"
-      }`}
-    >
-      <Icon className="w-4 h-4" />
-      {title}
-    </Link>
-  );
-}
-
-function Heading({ title, description }: { title: string; description?: string }) {
-  return (
-    <div className="mb-8 space-y-0.5">
-      <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-      {description && <p className="text-sm text-muted-foreground">{description}</p>}
     </div>
   );
 }

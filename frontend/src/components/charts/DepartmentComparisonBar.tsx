@@ -75,16 +75,16 @@ function RichTooltip({ active, payload, label }: any) {
   const bottom2 = compEntries.length > 5 ? compEntries.slice(-2) : [];
 
   return (
-    <div className="bg-white rounded-xl shadow-xl border border-gray-100 p-4 min-w-[280px] max-w-[320px]">
+    <div className="bg-card rounded-xl shadow-xl border border-border p-4 min-w-[280px] max-w-[320px]">
       <div className="flex items-center justify-between mb-3">
-        <p className="font-bold text-gray-900 text-sm">{label}</p>
-        <span className="text-[10px] text-gray-400">{staffCount} staff</span>
+        <p className="font-bold text-foreground text-sm">{label}</p>
+        <span className="text-[10px] text-muted-foreground">{staffCount} staff</span>
       </div>
 
       {/* DSRI Badge */}
       {dsriEntry && (
         <div className="flex items-center justify-between mb-3 px-3 py-2 rounded-lg" style={{ backgroundColor: getDsriColor(dsriVal) + "15" }}>
-          <span className="text-xs font-semibold text-gray-600">Overall DSRI</span>
+          <span className="text-xs font-semibold text-muted-foreground">Overall DSRI</span>
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium" style={{ color: getDsriColor(dsriVal) }}>{getDsriLabel(dsriVal)}</span>
             <span className="text-sm font-bold" style={{ color: getDsriColor(dsriVal) }}>{Math.round(dsriVal)}%</span>
@@ -99,11 +99,11 @@ function RichTooltip({ active, payload, label }: any) {
           return (
             <div key={entry.dataKey} className="flex items-center gap-2">
               <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
-              <span className="text-[11px] text-gray-500 w-8 shrink-0">{entry.dataKey}</span>
-              <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <span className="text-[11px] text-muted-foreground w-8 shrink-0">{entry.dataKey}</span>
+              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                 <div className="h-full rounded-full transition-all" style={{ width: `${entry.value}%`, backgroundColor: entry.color }} />
               </div>
-              <span className="text-[11px] font-bold text-gray-700 w-10 text-right">{Math.round(entry.value)}%</span>
+              <span className="text-[11px] font-bold text-foreground w-10 text-right">{Math.round(entry.value)}%</span>
             </div>
           );
         })}
@@ -112,16 +112,16 @@ function RichTooltip({ active, payload, label }: any) {
       {/* Bottom competencies */}
       {bottom2.length > 0 && (
         <>
-          <div className="border-t border-gray-100 my-2" />
+          <div className="border-t border-border my-2" />
           <div className="space-y-1.5">
             {bottom2.map((entry: any) => (
               <div key={entry.dataKey} className="flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
-                <span className="text-[11px] text-gray-500 w-8 shrink-0">{entry.dataKey}</span>
-                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <span className="text-[11px] text-muted-foreground w-8 shrink-0">{entry.dataKey}</span>
+                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{ width: `${entry.value}%`, backgroundColor: entry.color }} />
                 </div>
-                <span className="text-[11px] font-bold text-gray-700 w-10 text-right">{Math.round(entry.value)}%</span>
+                <span className="text-[11px] font-bold text-foreground w-10 text-right">{Math.round(entry.value)}%</span>
               </div>
             ))}
           </div>
@@ -155,11 +155,11 @@ export function DepartmentComparisonBar({ departments, competencies }: Departmen
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+        <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
           <button
             onClick={() => setLayout("grouped")}
             className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-              layout === "grouped" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"
+              layout === "grouped" ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Grouped
@@ -167,13 +167,13 @@ export function DepartmentComparisonBar({ departments, competencies }: Departmen
           <button
             onClick={() => setLayout("stacked")}
             className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-              layout === "stacked" ? "bg-white shadow text-gray-900" : "text-gray-500 hover:text-gray-700"
+              layout === "stacked" ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Stacked
           </button>
         </div>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-muted-foreground">
           All {competencies.length} competencies &middot; {departments.length} fields
         </span>
       </div>
@@ -266,20 +266,20 @@ export function DepartmentComparisonBar({ departments, competencies }: Departmen
       </ResponsiveContainer>
 
       {/* Insight badges */}
-      <div className="flex items-center justify-center gap-4 mt-2 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-center gap-4 mt-2 pt-3 border-t border-border">
         {strongest && (
           <div className="flex items-center gap-1.5 text-xs">
             <Trophy className="w-3.5 h-3.5 text-green-500" />
-            <span className="text-gray-500">Strongest:</span>
-            <span className="font-semibold text-gray-700">{strongest.name}</span>
-            <span className="font-bold text-green-600">{Math.round(strongest.avg_dsri)}%</span>
+            <span className="text-muted-foreground">Strongest:</span>
+            <span className="font-semibold text-foreground">{strongest.name}</span>
+            <span className="font-bold text-green-600 dark:text-green-400">{Math.round(strongest.avg_dsri)}%</span>
           </div>
         )}
         {weakest && weakest.name !== strongest?.name && (
           <div className="flex items-center gap-1.5 text-xs">
             <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-gray-500">Needs Focus:</span>
-            <span className="font-semibold text-gray-700">{weakest.name}</span>
+            <span className="text-muted-foreground">Needs Focus:</span>
+            <span className="font-semibold text-foreground">{weakest.name}</span>
             <span className="font-bold text-amber-600">{Math.round(weakest.avg_dsri)}%</span>
           </div>
         )}

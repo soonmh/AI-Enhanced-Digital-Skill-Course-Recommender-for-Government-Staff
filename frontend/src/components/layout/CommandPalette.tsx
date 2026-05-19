@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
+import { useTranslation } from "@/i18n/context";
 import { Command } from "cmdk";
 import {
   LayoutGrid,
@@ -33,6 +34,7 @@ export function CommandPalette() {
   const router = useRouter();
   const { data: session } = useSession();
   const { setTheme } = useTheme();
+  const { t } = useTranslation();
   const permissions = session?.user?.permissions || [];
   const roles = session?.user?.roles || [];
 
@@ -40,17 +42,17 @@ export function CommandPalette() {
   const hasRole = (r?: string[]) => !r || r.length === 0 || r.some((role) => roles.includes(role));
 
   const items: CommandItem[] = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutGrid, href: "/dashboard" },
-    { id: "take-assessment", label: "Take Assessment", icon: TrendingUp, href: "/assessment", permission: "take-assessment", roles: ["Admin", "Staff", "Trainer"] },
-    { id: "assessment-results", label: "Assessment Results", icon: Target, href: "/assessment/results", permission: "take-assessment", roles: ["Admin", "Staff", "Trainer"] },
-    { id: "manage-courses", label: "Manage Courses", icon: FolderOpen, href: "/courses/list", permission: "course-management" },
-    { id: "recommended-courses", label: "Recommended Courses", icon: TrendingUp, href: "/courses/recommended", permission: "take-assessment" },
-    { id: "user-report", label: "User Report", icon: Users, href: "/staff-analysis", permission: "user-reporting" },
-    { id: "course-report", label: "Course Report", icon: FileText, href: "/course-report/course-progress", permission: "course-reporting" },
-    { id: "user-management", label: "User Management", icon: Users, href: "/admin/users", permission: "user-management", roles: ["Admin"] },
-    { id: "settings", label: "Settings", icon: Settings, href: "/settings/profile" },
-    { id: "theme-light", label: "Switch to Light Mode", icon: Sun, action: () => setTheme("light") },
-    { id: "theme-dark", label: "Switch to Dark Mode", icon: Moon, action: () => setTheme("dark") },
+    { id: "dashboard", label: t("nav.dashboard"), icon: LayoutGrid, href: "/dashboard" },
+    { id: "take-assessment", label: t("nav.takeAssessment"), icon: TrendingUp, href: "/assessment", permission: "take-assessment", roles: ["Admin", "Staff", "Trainer"] },
+    { id: "assessment-results", label: t("nav.assessmentResults"), icon: Target, href: "/assessment/results", permission: "take-assessment", roles: ["Admin", "Staff", "Trainer"] },
+    { id: "manage-courses", label: t("nav.manageCourses"), icon: FolderOpen, href: "/courses/list", permission: "course-management" },
+    { id: "recommended-courses", label: t("nav.recommendedCourses"), icon: TrendingUp, href: "/courses/recommended", permission: "take-assessment" },
+    { id: "user-report", label: t("nav.userReport"), icon: Users, href: "/staff-analysis", permission: "user-reporting" },
+    { id: "course-report", label: t("nav.courseReport"), icon: FileText, href: "/course-report/course-progress", permission: "course-reporting" },
+    { id: "user-management", label: t("nav.userManagement"), icon: Users, href: "/admin/users", permission: "user-management", roles: ["Admin"] },
+    { id: "settings", label: t("nav.settings"), icon: Settings, href: "/settings/profile" },
+    { id: "theme-light", label: t("nav.switchToLightMode"), icon: Sun, action: () => setTheme("light") },
+    { id: "theme-dark", label: t("nav.switchToDarkMode"), icon: Moon, action: () => setTheme("dark") },
   ];
 
   const filtered = items.filter((item) => hasPermission(item.permission) && hasRole(item.roles));
@@ -88,13 +90,13 @@ export function CommandPalette() {
           <div className="flex items-center border-b px-3">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <Command.Input
-              placeholder="Search pages and actions..."
+              placeholder={t("nav.searchPagesActions")}
               className="flex h-12 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
           <Command.List className="max-h-64 overflow-y-auto p-2">
             <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
-              No results found.
+              {t("nav.noResultsFound")}
             </Command.Empty>
             {filtered.map((item) => {
               const Icon = item.icon;

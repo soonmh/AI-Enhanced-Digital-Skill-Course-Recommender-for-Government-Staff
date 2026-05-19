@@ -358,10 +358,12 @@ class CourseController extends Controller
 
             $aiExplanation = '';
             if ($matchPct > 0 && !empty($weakNames)) {
+                $locale = $user->locale ?? 'en';
                 $aiExplanation = $this->aiService->generateCourseExplanation(
                     $c->title,
                     $c->description ?? '',
-                    $weakNames
+                    $weakNames,
+                    $locale
                 );
             }
 

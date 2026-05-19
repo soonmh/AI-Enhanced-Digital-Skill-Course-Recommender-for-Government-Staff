@@ -15,8 +15,9 @@ class GenerateAiInsights
     {
         try {
             $response = $event->response;
-            $recommendations = $this->aiService->generateRecommendations($response);
-            $skillGaps = $this->aiService->predictSkillGaps($response->user);
+            $locale = $response->user->locale ?? 'en';
+            $recommendations = $this->aiService->generateRecommendations($response, $locale);
+            $skillGaps = $this->aiService->predictSkillGaps($response->user, $locale);
 
             AiRecommendation::updateOrCreate(
                 [

@@ -41,6 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // AI Insights
     Route::get('/ai/insights', [AiInsightController::class, 'personalInsights']);
+    Route::get('/ai/learning-path', [AiInsightController::class, 'learningPath']);
+    Route::get('/ai/peer-comparison', [AiInsightController::class, 'peerComparison']);
+    Route::get('/ai/readiness', [AiInsightController::class, 'readinessCheck']);
     Route::middleware('permission:user-reporting')->group(function () {
         Route::get('/ai/department-insights', [AiInsightController::class, 'departmentInsights']);
     });

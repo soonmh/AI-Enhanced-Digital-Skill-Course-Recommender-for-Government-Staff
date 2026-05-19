@@ -42,15 +42,15 @@ export default function EditCoursePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-violet-600" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-violet-600 dark:text-violet-400" />
       </div>
     );
   }
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h3 className="text-lg font-semibold text-gray-700 mb-2">Course not found</h3>
           <Link href="/courses/list" className="text-violet-600 font-medium">Back to courses</Link>
@@ -91,7 +91,7 @@ export default function EditCoursePage() {
     setForm({ ...form, [field]: e.target.value });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-background">
       <div className="px-6 py-8 w-full max-w-4xl mx-auto">
         <Link href={`/courses/${params.id}`} className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium mb-6">
           <ArrowLeft className="w-4 h-4" />
@@ -155,7 +155,7 @@ export default function EditCoursePage() {
             </CardContent>
           </Card>
 
-          {error && <div className="p-3 mb-4 text-sm text-red-600 bg-red-50 rounded-md border border-red-200">{error}</div>}
+          {error && <div className="p-3 mb-4 text-sm text-red-600 bg-red-500/10 rounded-md border border-red-200">{error}</div>}
           <div className="flex justify-between">
             <div className="flex gap-3">
               <Button type="submit" disabled={saving} className="bg-violet-600 hover:bg-violet-700">

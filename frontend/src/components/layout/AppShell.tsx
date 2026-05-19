@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SessionProvider, useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { Toaster } from "sonner";
 import { Sidebar } from "./Sidebar";
 import { CommandPalette } from "./CommandPalette";
+import { I18nProvider, useTranslation, useSessionLocaleSync } from "@/i18n/context";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -38,24 +39,25 @@ function BreadcrumbItem({ label, href, isLast }: { label: string; href?: string;
 
 function Breadcrumbs() {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const breadcrumbMap: Record<string, string> = {
-    "/dashboard": "Dashboard",
-    "/assessment": "Assessments",
-    "/assessment/start": "Take Assessment",
-    "/assessment/results": "Results",
-    "/courses": "Courses",
-    "/courses/list": "Manage Courses",
-    "/courses/recommended": "Recommended",
-    "/courses/my-learning": "My Learning",
-    "/courses/create": "Create Course",
-    "/admin/users": "User Management",
-    "/staff-analysis": "Staff Analysis",
-    "/course-report": "Course Report",
-    "/course-report/course-progress": "Course Progress",
-    "/settings/profile": "Profile",
-    "/settings/password": "Password",
-    "/settings/appearance": "Appearance",
+    "/dashboard": t("nav.dashboard"),
+    "/assessment": t("nav.assessments"),
+    "/assessment/start": t("nav.takeAssessment"),
+    "/assessment/results": t("nav.assessmentResults"),
+    "/courses": t("nav.courses"),
+    "/courses/list": t("nav.manageCourses"),
+    "/courses/recommended": t("nav.recommendedCourses"),
+    "/courses/my-learning": t("nav.myLearning"),
+    "/courses/create": t("courses.createTitle"),
+    "/admin/users": t("nav.userManagement"),
+    "/staff-analysis": t("nav.userReport"),
+    "/course-report": t("nav.courseReport"),
+    "/course-report/course-progress": t("reports.courseProgressTitle"),
+    "/settings/profile": t("settings.profileTab"),
+    "/settings/password": t("settings.passwordTab"),
+    "/settings/appearance": t("settings.appearanceTab"),
   };
 
   const segments = pathname.split("/").filter(Boolean);
@@ -93,18 +95,20 @@ function Breadcrumbs() {
   );
 }
 
-function timeAgo(dateStr: string) {
+function timeAgo(dateStr: string, t: (key: string, params?: Record<string, string | number>) => string) {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return "just now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
+  if (seconds < 60) return t("notifications.justNow");
+  if (seconds < 3600) return t("notifications.minutesAgo", { count: Math.floor(seconds / 60) });
+  if (seconds < 86400) return t("notifications.hoursAgo", { count: Math.floor(seconds / 3600) });
+  return t("notifications.daysAgo", { count: Math.floor(seconds / 86400) });
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <div className="flex min-h-screen">
+      <I18nProvider>
+        <SessionLocaleSync />
+        <div className="flex min-h-screen">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <TopBar />
@@ -115,12 +119,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <CommandPalette />
       <Toaster richColors position="top-right" />
+      </I18nProvider>
     </SessionProvider>
   );
 }
 
 function TopBar() {
   const { data: session } = useSession();
+  const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -181,7 +187,7 @@ function TopBar() {
           <button
             onClick={() => setSearchOpen(true)}
             className="p-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-            title="Search (Ctrl+K)"
+            title={t("nav.searchCtrlK")}
           >
             <Search className="h-4 w-4" />
           </button>
@@ -191,7 +197,7 @@ function TopBar() {
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-          title={theme === "dark" ? "Light Mode" : "Dark Mode"}
+          title={theme === "dark" ? t("nav.switchToLightMode") : t("nav.switchToDarkMode")}
         >
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
@@ -201,7 +207,7 @@ function TopBar() {
           <button
             onClick={() => setNotifOpen(!notifOpen)}
             className="p-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors relative"
-            title="Notifications"
+            title={t("nav.notifications")}
           >
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
@@ -217,21 +223,21 @@ function TopBar() {
               <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
               <div className="absolute right-0 top-full mt-1 z-50 w-80 rounded-lg border bg-popover shadow-lg animate-in slide-in-from-top-1 duration-150">
                 <div className="flex items-center justify-between px-4 py-3 border-b">
-                  <span className="text-sm font-semibold">Notifications</span>
+                  <span className="text-sm font-semibold">{t("nav.notifications")}</span>
                   {unreadCount > 0 && (
                     <button
                       onClick={handleMarkAllRead}
                       className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
                     >
                       <CheckCheck className="w-3.5 h-3.5" />
-                      Mark all read
+                      {t("nav.markAllRead")}
                     </button>
                   )}
                 </div>
                 <div className="max-h-72 overflow-y-auto">
                   {notifList.length === 0 ? (
                     <div className="p-6 text-center text-sm text-muted-foreground">
-                      No notifications
+                      {t("nav.noNotifications")}
                     </div>
                   ) : (
                     notifList.slice(0, 15).map((n: any) => (
@@ -255,7 +261,7 @@ function TopBar() {
                             {n.body && (
                               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
                             )}
-                            <p className="text-[11px] text-muted-foreground mt-1">{timeAgo(n.created_at)}</p>
+                            <p className="text-[11px] text-muted-foreground mt-1">{timeAgo(n.created_at, t)}</p>
                           </div>
                         </div>
                       </button>
@@ -294,14 +300,14 @@ function TopBar() {
                   className="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground"
                 >
                   <Settings className="w-4 h-4" />
-                  <span>Settings</span>
+                  <span>{t("nav.settings")}</span>
                 </Link>
                 <button
                   onClick={() => { setProfileOpen(false); signOut({ callbackUrl: "/" }); }}
                   className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground text-muted-foreground"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Log out</span>
+                  <span>{t("nav.logOut")}</span>
                 </button>
               </div>
             </>
@@ -310,4 +316,18 @@ function TopBar() {
       </div>
     </header>
   );
+}
+
+function SessionLocaleSync() {
+  const { data: session } = useSession();
+  const { setLocaleState } = useSessionLocaleSync();
+  const sessionLocale = session?.user?.locale as ("en" | "ms") | undefined;
+
+  useEffect(() => {
+    if (sessionLocale) {
+      setLocaleState(sessionLocale);
+    }
+  }, [sessionLocale, setLocaleState]);
+
+  return null;
 }

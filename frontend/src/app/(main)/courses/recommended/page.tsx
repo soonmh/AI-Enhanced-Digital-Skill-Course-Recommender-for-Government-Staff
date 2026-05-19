@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useTranslation } from "@/i18n/context";
 import { useRecommendedCourses } from "@/hooks/useApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,22 +19,23 @@ import {
 } from "lucide-react";
 
 const SORT_OPTIONS = [
-  { value: "match", label: "Best Match" },
-  { value: "rating", label: "Highest Rated" },
-  { value: "popular", label: "Most Popular" },
+  { value: "match", labelKey: "courses.sortBestMatch" },
+  { value: "rating", labelKey: "courses.sortHighestRated" },
+  { value: "popular", labelKey: "courses.sortMostEnrolled" },
 ] as const;
 
 const GRADIENTS = [
-  "from-violet-500 via-purple-500 to-indigo-600",
-  "from-emerald-500 via-teal-500 to-cyan-600",
-  "from-rose-500 via-pink-500 to-fuchsia-600",
-  "from-amber-500 via-orange-500 to-red-500",
-  "from-sky-500 via-blue-500 to-indigo-600",
-  "from-lime-500 via-green-500 to-emerald-600",
+  "from-violet-500 via-purple-500 to-indigo-600 dark:from-violet-700 dark:via-purple-700 dark:to-indigo-800",
+  "from-emerald-500 via-teal-500 to-cyan-600 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800",
+  "from-rose-500 via-pink-500 to-fuchsia-600 dark:from-rose-700 dark:via-pink-700 dark:to-fuchsia-800",
+  "from-amber-500 via-orange-500 to-red-500 dark:from-amber-700 dark:via-orange-700 dark:to-red-700",
+  "from-sky-500 via-blue-500 to-indigo-600 dark:from-sky-700 dark:via-blue-700 dark:to-indigo-800",
+  "from-lime-500 via-green-500 to-emerald-600 dark:from-lime-700 dark:via-green-700 dark:to-emerald-800",
 ];
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default function RecommendedCoursesPage() {
+  const { t } = useTranslation();
   const { courses, hasAssessment, weakSections, isLoading } = useRecommendedCourses();
   const [sortBy, setSortBy] = useState("match");
   const [competencyFilter, setCompetencyFilter] = useState("");
@@ -60,7 +62,7 @@ export default function RecommendedCoursesPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen bg-background">
         <div className="px-6 py-8 w-full max-w-7xl mx-auto">
           <div className="mb-8">
             <Skeleton className="h-10 w-72 mb-2" />
@@ -77,7 +79,7 @@ export default function RecommendedCoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-background">
       <div className="px-6 py-8 w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-start justify-between mb-8">
@@ -86,33 +88,33 @@ export default function RecommendedCoursesPage() {
               <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-4xl font-bold text-gray-900">Recommended for You</h1>
+              <h1 className="text-4xl font-bold text-foreground">{t("courses.recommendedTitle")}</h1>
             </div>
-            <p className="text-gray-600 text-lg">
+            <p className="text-muted-foreground text-lg">
               {hasAssessment
-                ? "Courses selected to address your skill gaps based on your latest assessment"
-                : "Popular courses picked for you — take an assessment for personalized recommendations"}
+                ? t("courses.recommendedDescriptionWithAssessment")
+                : t("courses.recommendedDescriptionNoAssessment")}
             </p>
           </div>
         </div>
 
         {/* Skill Gaps Banner */}
         {hasAssessment && weakSections.length > 0 && (
-          <Card className="border-0 shadow-md mb-6 bg-gradient-to-r from-amber-50 to-orange-50">
+          <Card className="border-0 shadow-md mb-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30">
             <CardContent className="p-5">
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-amber-100 rounded-lg">
-                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1.5">Skill Areas to Improve</h3>
+                  <h3 className="font-semibold text-foreground mb-1.5">{t("courses.skillAreasToImprove")}</h3>
                   <div className="flex flex-wrap gap-2">
                     {weakSections.map((code: string) => {
                       const comp = COMPETENCIES[code as keyof typeof COMPETENCIES];
                       return comp ? (
                         <span
                           key={code}
-                          className="px-3 py-1 bg-white rounded-full text-sm font-medium text-amber-700 shadow-sm border border-amber-200"
+                          className="px-3 py-1 bg-card rounded-full text-sm font-medium text-amber-700 shadow-sm border border-amber-200"
                         >
                           {code}: {comp.nameEn}
                         </span>
@@ -127,7 +129,7 @@ export default function RecommendedCoursesPage() {
 
         {/* No Assessment Banner */}
         {!hasAssessment && (
-          <Card className="border-0 shadow-md mb-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <Card className="border-0 shadow-md mb-6 bg-gradient-to-r from-blue-500/10 to-indigo-500/10">
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -135,8 +137,8 @@ export default function RecommendedCoursesPage() {
                     <BarChart3 className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Get Personalized Recommendations</h3>
-                    <p className="text-sm text-gray-600">Take a digital skills assessment to get course recommendations matched to your skill gaps.</p>
+                    <h3 className="font-semibold text-foreground">{t("courses.getPersonalizedRecommendations")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("courses.getPersonalizedDescription")}</p>
                   </div>
                 </div>
                 <Link
@@ -144,7 +146,7 @@ export default function RecommendedCoursesPage() {
                   className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
                 >
                   <Target className="w-4 h-4" />
-                  Take Assessment
+                  {t("courses.takeAssessment")}
                 </Link>
               </div>
             </CardContent>
@@ -154,18 +156,18 @@ export default function RecommendedCoursesPage() {
         {/* Toolbar */}
         {sorted.length > 0 && (
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Sparkles className="w-4 h-4 text-emerald-500" />
-              <span>{sorted.length} course{sorted.length !== 1 ? "s" : ""} recommended</span>
+              <span>{t("courses.courseRecommended", { count: sorted.length })}</span>
             </div>
             <div className="flex items-center gap-3">
               {weakSections.length > 0 && (
                 <select
                   value={competencyFilter}
                   onChange={(e) => setCompetencyFilter(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-600"
+                  className="px-3 py-1.5 rounded-lg border border-border bg-card text-sm text-muted-foreground"
                 >
-                  <option value="">All Competencies</option>
+                  <option value="">{t("courses.allCompetencies")}</option>
                   {weakSections.map((code: string) => {
                     const comp = COMPETENCIES[code as keyof typeof COMPETENCIES];
                     return (
@@ -176,21 +178,21 @@ export default function RecommendedCoursesPage() {
                   })}
                 </select>
               )}
-              <div className="flex items-center gap-1.5 bg-white rounded-lg border border-gray-200 p-0.5">
+              <div className="flex items-center gap-1.5 bg-card rounded-lg border border-border p-0.5">
               {SORT_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setSortBy(opt.value)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     sortBy === opt.value
-                      ? "bg-emerald-50 text-emerald-700 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "bg-emerald-500/10 text-emerald-700 shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {opt.value === "match" && <Target className="w-3 h-3" />}
                   {opt.value === "rating" && <Star className="w-3 h-3" />}
                   {opt.value === "popular" && <Users className="w-3 h-3" />}
-                  {opt.label}
+                  {t(opt.labelKey)}
                 </button>
               ))}
             </div>
@@ -201,17 +203,17 @@ export default function RecommendedCoursesPage() {
         {/* Course Grid */}
         {(!sorted || sorted.length === 0) ? (
           <div className="text-center py-20">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Sparkles className="w-8 h-8 text-gray-300" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">No recommendations yet</h3>
-            <p className="text-gray-500 mb-6">Take an assessment first to get personalized course recommendations.</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t("courses.noRecommendationsTitle")}</h3>
+            <p className="text-muted-foreground mb-6">{t("courses.noRecommendationsDescription")}</p>
             <Link
               href="/assessment"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors font-medium"
             >
               <Target className="w-4 h-4" />
-              Take Assessment
+              {t("courses.takeAssessment")}
             </Link>
           </div>
         ) : (
@@ -231,13 +233,13 @@ export default function RecommendedCoursesPage() {
                       <div className="absolute top-3 left-3 flex items-center gap-2">
                         <span className="flex items-center gap-1 px-2.5 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
                           <Sparkles className="w-3 h-3" />
-                          Recommended
+                          {t("courses.recommendedBadge")}
                         </span>
                       </div>
                       <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
                         {course.level && (
                           <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
-                            {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+                            {t(`common.level${course.level.charAt(0).toUpperCase() + course.level.slice(1)}`)}
                           </span>
                         )}
                       </div>
@@ -261,38 +263,38 @@ export default function RecommendedCoursesPage() {
                   </Link>
                   <CardContent className="p-5 flex-1 flex flex-col">
                     <Link href={`/courses/${course.id}?from=recommended`}>
-                      <h3 className="font-semibold text-gray-900 mb-1.5 line-clamp-2 hover:text-emerald-600 transition-colors group-hover:text-emerald-600">
+                      <h3 className="font-semibold text-foreground mb-1.5 line-clamp-2 hover:text-emerald-600 transition-colors group-hover:text-emerald-600">
                         {course.title}
                       </h3>
-                      <p className="text-sm text-gray-500 line-clamp-2 mb-4">{course.description}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{course.description}</p>
                     </Link>
                     {course.ai_explanation && (
                       <p className="text-xs text-indigo-600 italic line-clamp-2 mb-3 bg-indigo-50/50 px-2 py-1 rounded">
                         {course.ai_explanation}
                       </p>
                     )}
-                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-border">
                       {matchPct != null && hasAssessment ? (
                         <div className="flex items-center gap-2">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                            matchPct >= 70 ? "bg-green-100" : matchPct >= 40 ? "bg-amber-100" : "bg-gray-100"
+                            matchPct >= 70 ? "bg-green-100" : matchPct >= 40 ? "bg-amber-100" : "bg-muted"
                           }`}>
                             <TrendingUp className={`w-4 h-4 ${
-                              matchPct >= 70 ? "text-green-600" : matchPct >= 40 ? "text-amber-600" : "text-gray-400"
+                              matchPct >= 70 ? "text-green-600 dark:text-green-400" : matchPct >= 40 ? "text-amber-600 dark:text-amber-400" : "text-gray-400"
                             }`} />
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">{matchPct}% match</p>
-                            <p className="text-xs text-gray-400">to your skill gaps</p>
+                            <p className="text-sm font-semibold text-foreground">{t("courses.percentMatch", { pct: matchPct })}</p>
+                            <p className="text-xs text-muted-foreground">{t("courses.toYourSkillGaps")}</p>
                           </div>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">
-                          {course.working_field || "General"}
+                        <span className="text-xs text-muted-foreground">
+                          {course.working_field || t("courses.general")}
                         </span>
                       )}
                       <span className="text-sm text-emerald-600 font-medium group-hover:translate-x-0.5 transition-transform">
-                        View Course →
+                        {t("courses.viewCourse")}
                       </span>
                     </div>
                   </CardContent>
