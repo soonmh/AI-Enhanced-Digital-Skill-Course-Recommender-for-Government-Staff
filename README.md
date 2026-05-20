@@ -303,7 +303,7 @@ REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 
 GEMINI_API_KEY=                    # Google Gemini API key
-GEMINI_MODEL=gemini-2.0-flash-lite
+GEMINI_MODEL=gemini-3.1-flash-lite
 
 RECOMMENDATION_AB_TESTING=false    # Enable A/B testing for recommendation engine
 RECOMMENDATION_CONTROL_RATIO=0.5   # Ratio of users in control group
