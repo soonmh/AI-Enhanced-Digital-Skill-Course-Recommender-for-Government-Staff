@@ -4,7 +4,7 @@
 [![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)](https://redis.io/)
-[![Google Gemini](https://img.shields.io/badge/Gemini_AI-2.0_Flash_Lite-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+[![Google Gemini](https://img.shields.io/badge/Gemini_AI-3.1_Flash_Lite-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Socket.io](https://img.shields.io/badge/Socket.io-4-010101?logo=socket.io&logoColor=white)](https://socket.io/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
@@ -80,7 +80,7 @@ A full-stack web-based **Digital Skill Course Recommendation System** designed f
 - Adaptive blending — shifts from content-only (new users) to 50/50 hybrid (users with peer data)
 - AI-generated explanations referencing specific scores and peer comparison data
 - Per-course competency breakdown showing user's exact scores for each covered skill
-- Powered by Google Gemini 2.0 Flash Lite
+- Powered by Google Gemini 3.1 Flash Lite
 
 ### Analytics & Reporting
 - Individual assessment history with trend charts
@@ -123,7 +123,7 @@ A full-stack web-based **Digital Skill Course Recommendation System** designed f
 | | Predis | 3.4 |
 | **Database** | PostgreSQL | 16 |
 | **Cache / Queue** | Redis | 7 |
-| **AI** | Google Gemini API | 2.0 Flash Lite |
+| **AI** | Google Gemini API | 3.1 Flash Lite |
 | **Real-time** | Node.js + Express | — |
 | | Socket.io | 4.8 |
 | | ioredis | 5.4 |
@@ -709,7 +709,7 @@ Set `RECOMMENDATION_AB_TESTING=true` in `.env` to enable. Users are deterministi
 
 ## AI Integration
 
-The system integrates with **Google Gemini 2.0 Flash Lite** for four AI-powered features:
+The system integrates with **Google Gemini 3.1 Flash Lite** for four AI-powered features:
 
 | Feature | Trigger | Output |
 |---------|---------|--------|
