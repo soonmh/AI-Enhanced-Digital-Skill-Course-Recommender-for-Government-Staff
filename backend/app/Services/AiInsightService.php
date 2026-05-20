@@ -277,6 +277,46 @@ PROMPT;
         });
     }
 
+    public function generateEnhancedCourseExplanation(string $courseTitle, string $courseDescription, array $explanationData, string $locale = 'en'): string
+    {
+        $matchedComps = $explanationData['matched_competencies'] ?? [];
+        if (empty($matchedComps)) {
+            return '';
+        }
+
+        $compText = collect($matchedComps)->map(fn($c) => "{$c['name']} ({$c['code']}): {$c['user_pct']}%")->implode(', ');
+        $dsri = $explanationData['dsri'] ?? 0;
+        $peerCount = $explanationData['peer_count'] ?? 0;
+        $courseLevel = $explanationData['course_level'] ?? 'beginner';
+        $avgRating = $explanationData['course_avg_rating'] ?? null;
+
+        $peerContext = $peerCount > 0 && $avgRating
+            ? " {$peerCount} learners with similar skill profiles rated this course {$avgRating}/5."
+            : '';
+
+        $cacheKey = "ai_enhanced_course_exp:" . md5($courseTitle . $compText . $locale . $peerCount);
+
+        return Cache::remember($cacheKey, now()->addHours(12), function () use ($courseTitle, $courseDescription, $compText, $dsri, $peerContext, $courseLevel, $locale) {
+            $prompt = <<<PROMPT
+You are recommending a course to a Malaysian government staff member.
+
+Course: {$courseTitle} ({$courseLevel} level)
+Description: {$courseDescription}
+
+Staff member's DSRI: {$dsri}/100
+Their weak areas this course covers: {$compText}
+{$peerContext}
+
+In 1-2 sentences, explain specifically why this course would help. Reference their actual scores where relevant. Be direct and practical.
+Respond with plain text only, no JSON.
+{$this->getLanguageInstruction($locale)}
+PROMPT;
+
+            $result = $this->callGeminiRaw($prompt, 384);
+            return $result ?? "This course addresses your weak areas: {$compText}.";
+        });
+    }
+
     // ──────────────────────────────────────────────
     //  New Methods
     // ──────────────────────────────────────────────
@@ -544,13 +584,14 @@ readiness_score is 0-100. recommendation is one of: "ready", "needs_preparation"
 {$this->getLanguageInstruction($locale)}
 PROMPT;
 
-            return $this->callGemini($prompt, [
-                'has_previous' => true,
+            $result = $this->callGemini($prompt, [
                 'readiness_score' => $completedSince->count() > 0 ? 70 : 30,
                 'likely_improvements' => [],
                 'review_first' => [],
                 'recommendation' => $completedSince->count() > 0 ? 'ready' : 'needs_preparation',
             ]);
+            $result['has_previous'] = true;
+            return $result;
         });
     }
 

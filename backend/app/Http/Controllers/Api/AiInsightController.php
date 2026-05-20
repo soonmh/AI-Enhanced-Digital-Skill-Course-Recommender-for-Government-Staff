@@ -134,6 +134,9 @@ class AiInsightController extends Controller
 
         $result = $this->aiService->checkAssessmentReadiness($user, $locale);
 
-        return response()->json($result);
+        return response()->json([
+            'has_previous' => $result['has_previous'] ?? false,
+            'readiness' => $result,
+        ]);
     }
 }

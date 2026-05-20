@@ -82,9 +82,26 @@ export function useRecommendedCourses() {
     courses: data?.courses ?? data,
     hasAssessment: data?.has_assessment ?? false,
     weakSections: data?.weak_sections ?? [],
+    recommendationMethod: data?.recommendation_method ?? "popularity",
+    contentWeight: data?.content_weight ?? 1.0,
+    collaborativeWeight: data?.collaborative_weight ?? 0.0,
+    totalPeers: data?.total_peers ?? 0,
     isLoading,
     isError: error,
   };
+}
+
+export async function trackRecommendationInteraction(
+  courseId: number,
+  interactionType: "impression" | "click" | "enroll" | "complete",
+  metadata?: Record<string, unknown>
+) {
+  await api.post("/api/courses/recommendations/track", {
+    course_id: courseId,
+    interaction_type: interactionType,
+    source: "recommended",
+    metadata,
+  });
 }
 
 export async function createCourse(formData: Record<string, string>) {

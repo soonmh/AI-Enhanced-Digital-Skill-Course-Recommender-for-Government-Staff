@@ -8,14 +8,19 @@ use App\Models\Course;
 use App\Models\CourseRating;
 use App\Models\UserCourse;
 use App\Events\CourseCompleted;
+use App\Models\RecommendationInteraction;
 use App\Services\AiInsightService;
+use App\Services\HybridRecommendationService;
 use App\Services\RealtimePublisher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
-    public function __construct(private AiInsightService $aiService) {}
+    public function __construct(
+        private AiInsightService $aiService,
+        private HybridRecommendationService $hybridService,
+    ) {}
     public function index(Request $request): JsonResponse
     {
         $query = Course::with('creator', 'enrollments');
@@ -294,103 +299,31 @@ class CourseController extends Controller
     public function recommended(Request $request): JsonResponse
     {
         $user = $request->user();
-        $latestResponse = $user->latestAssessmentResponse;
+        $locale = $user->locale ?? 'en';
 
-        $enrolledIds = $user->userCourses()->pluck('course_id')->toArray();
+        $result = $this->hybridService->getRecommendations($user, $locale, 8);
 
-        $baseQuery = Course::whereNotIn('id', $enrolledIds)
-            ->withCount('enrollments')
-            ->withAvg('ratings', 'rating')
-            ->withCount('ratings');
+        return response()->json($result);
+    }
 
-        if (!$latestResponse) {
-            $courses = $baseQuery->orderByDesc('enrollments_count')->limit(6)->get();
-            return response()->json([
-                'courses' => $courses->map(fn($c) => [
-                    'id' => $c->id,
-                    'title' => $c->title,
-                    'title_bm' => $c->title_bm,
-                    'description' => $c->description,
-                    'level' => $c->level,
-                    'working_field' => $c->working_field,
-                    'enrollment_count' => $c->enrollments_count,
-                    'avg_rating' => $c->ratings_avg_rating ? round($c->ratings_avg_rating, 1) : null,
-                    'ratings_count' => $c->ratings_count,
-                    'match_percentage' => null,
-                ]),
-                'has_assessment' => false,
-            ]);
-        }
-
-        $weakSections = [];
-        foreach (['C1','C2','C3','C4','C5','C6','C7','C8','C9','C10'] as $code) {
-            $field = strtolower($code) . '_score';
-            if (($latestResponse->$field ?? 0) < 50) {
-                $weakSections[] = $code;
-            }
-        }
-
-        $courses = $baseQuery->get();
-
-        $weakNames = [];
-        $weakScores = [];
-        foreach ($weakSections as $code) {
-            $comp = \App\Services\DsriCalculationService::COMPETENCIES[$code] ?? null;
-            if ($comp) $weakNames[] = $comp['name_en'];
-            $field = strtolower($code) . '_score';
-            $weakScores[$code] = $latestResponse->$field ?? 0;
-        }
-
-        $result = $courses->map(function ($c) use ($weakSections, $weakNames, $weakScores) {
-            $mappings = $c->competencyMappings()->pluck('competency_code')->toArray();
-            $matchPct = count($weakSections) > 0
-                ? round((count(array_intersect($mappings, $weakSections)) / count($weakSections)) * 100)
-                : (count($mappings) > 0 ? 40 : 0);
-
-            // Severity: sum of (weight / score) for matched weak competencies
-            // Lower score = higher severity = higher priority
-            $severity = 0;
-            foreach (array_intersect($mappings, $weakSections) as $code) {
-                $weight = \App\Services\DsriCalculationService::COMPETENCIES[$code]['weight'] ?? 1;
-                $score = $weakScores[$code] ?? 0;
-                $severity += $weight / max($score, 1);
-            }
-
-            $aiExplanation = '';
-            if ($matchPct > 0 && !empty($weakNames)) {
-                $locale = $user->locale ?? 'en';
-                $aiExplanation = $this->aiService->generateCourseExplanation(
-                    $c->title,
-                    $c->description ?? '',
-                    $weakNames,
-                    $locale
-                );
-            }
-
-            return [
-                'id' => $c->id,
-                'title' => $c->title,
-                'title_bm' => $c->title_bm,
-                'description' => $c->description,
-                'level' => $c->level,
-                'working_field' => $c->working_field,
-                'enrollment_count' => $c->enrollments_count,
-                'avg_rating' => $c->ratings_avg_rating ? round($c->ratings_avg_rating, 1) : null,
-                'ratings_count' => $c->ratings_count,
-                'match_percentage' => $matchPct,
-                'competency_codes' => $mappings,
-                'ai_explanation' => $aiExplanation,
-                'severity' => round($severity, 2),
-            ];
-        })
-        ->sortByDesc('severity')
-        ->values()
-        ->take(8);
-
-        return response()->json([
-            'courses' => $result,
-            'has_assessment' => true,
-            'weak_sections' => $weakSections,
+    public function trackInteraction(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'course_id' => 'required|integer|exists:courses,id',
+            'interaction_type' => 'required|string|in:impression,click,enroll,complete',
+            'source' => 'nullable|string',
+            'metadata' => 'nullable|array',
         ]);
+
+        RecommendationInteraction::create([
+            'user_id' => $request->user()->id,
+            'course_id' => $validated['course_id'],
+            'interaction_type' => $validated['interaction_type'],
+            'source' => $validated['source'] ?? 'recommended',
+            'ab_group' => $validated['metadata']['ab_group'] ?? null,
+            'metadata' => $validated['metadata'] ?? null,
+        ]);
+
+        return response()->json(['message' => 'Tracked'], 201);
     }
 }

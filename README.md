@@ -75,9 +75,11 @@ A full-stack web-based **Digital Skill Course Recommendation System** designed f
 - Admin course assignment to individual users or groups
 
 ### AI-Powered Recommendations
-- Personalized course recommendations based on assessment weak areas
-- AI-generated explanations for why each course matches the user's skill gaps
-- Department-wide skill gap prediction using historical data
+- **Hybrid recommendation engine** combining content-based filtering (cosine similarity) and collaborative filtering (user-user similarity)
+- Continuous scoring — no binary weak/not-weak cutoff; uses deficit vectors and difficulty matching
+- Adaptive blending — shifts from content-only (new users) to 50/50 hybrid (users with peer data)
+- AI-generated explanations referencing specific scores and peer comparison data
+- Per-course competency breakdown showing user's exact scores for each covered skill
 - Powered by Google Gemini 2.0 Flash Lite
 
 ### Analytics & Reporting
@@ -194,9 +196,12 @@ fyp1/
 │   │   │       └── EnsureHasRole.php         # Role guard
 │   │   ├── Models/                   # Eloquent models (12 models)
 │   │   ├── Services/
-│   │   │   ├── DsriCalculationService.php    # DSRI scoring engine
-│   │   │   ├── AiInsightService.php          # Gemini AI integration
-│   │   │   └── RealtimePublisher.php         # Redis event publisher
+│   │   │   ├── DsriCalculationService.php             # DSRI scoring engine
+│   │   │   ├── AiInsightService.php                   # Gemini AI integration
+│   │   │   ├── ContentBasedRecommendationService.php  # Cosine similarity + difficulty matching
+│   │   │   ├── CollaborativeFilteringService.php      # User-user collaborative filtering
+│   │   │   ├── HybridRecommendationService.php        # Adaptive hybrid orchestrator
+│   │   │   └── RealtimePublisher.php                  # Redis event publisher
 │   │   ├── Events/                   # AssessmentSubmitted, CourseCompleted
 │   │   └── Listeners/                # GenerateAiInsights, InvalidateRecommendationCache
 │   ├── database/
@@ -299,6 +304,9 @@ REDIS_PORT=6379
 
 GEMINI_API_KEY=                    # Google Gemini API key
 GEMINI_MODEL=gemini-2.0-flash-lite
+
+RECOMMENDATION_AB_TESTING=false    # Enable A/B testing for recommendation engine
+RECOMMENDATION_CONTROL_RATIO=0.5   # Ratio of users in control group
 ```
 
 **Frontend `frontend/.env.local`:**
@@ -335,6 +343,9 @@ php artisan key:generate
 
 # Update .env with your database credentials, then:
 php artisan migrate --seed
+
+# Build the user similarity matrix for collaborative filtering
+php artisan recommendations:precompute --force
 
 # Start the development server
 php artisan serve
@@ -443,6 +454,8 @@ Assessment ── hasMany ── AssessmentResponse
 | `course_ratings` | User ratings (1–5 stars) with timestamps |
 | `notifications` | System notifications with read status |
 | `ai_recommendations` | AI-generated insights linked to assessment responses |
+| `user_similarity_cache` | Precomputed pairwise user similarity scores for collaborative filtering |
+| `recommendation_interactions` | Tracks impressions, clicks, enrollments for recommendation evaluation |
 
 ---
 
@@ -517,6 +530,7 @@ All protected endpoints require a valid Sanctum session cookie (obtained via `/l
 |--------|----------|------------|-------------|
 | `GET` | `/courses` | auth | List all courses |
 | `GET` | `/courses/recommended` | auth | AI-personalized recommendations |
+| `POST` | `/courses/recommendations/track` | auth | Track recommendation interaction |
 | `GET` | `/courses/{id}` | auth | Course detail |
 | `POST` | `/courses/{id}/enroll` | auth | Enroll in course |
 | `PUT` | `/courses/{id}/progress` | auth | Update progress |
@@ -537,11 +551,24 @@ All protected endpoints require a valid Sanctum session cookie (obtained via `/l
       "level": "beginner",
       "match_percentage": 75,
       "competency_codes": ["C5"],
-      "ai_explanation": "This course directly addresses your weakest area in Digital Safety & Security..."
+      "ai_explanation": "Your Digital Safety score of 30% makes this course a priority...",
+      "content_score": 0.82,
+      "collaborative_score": 0.65,
+      "hybrid_score": 0.76,
+      "score_method": "hybrid",
+      "peer_count": 7,
+      "difficulty_match": 1.0,
+      "competency_breakdown": [
+        { "code": "C5", "name": "Digital Safety & Security", "user_pct": 30 }
+      ]
     }
   ],
   "has_assessment": true,
-  "weak_sections": ["C4", "C5", "C8"]
+  "weak_sections": ["C4", "C5", "C8"],
+  "recommendation_method": "hybrid",
+  "content_weight": 0.5,
+  "collaborative_weight": 0.5,
+  "total_peers": 7
 }
 ```
 
@@ -632,29 +659,51 @@ The calculation is implemented in `DsriCalculationService.php`. Categories scori
 
 ## Course Recommendation System
 
-The recommendation engine matches courses to a user's identified skill gaps:
+The system uses a **hybrid recommendation engine** combining three layers:
+
+### Content-Based Filtering
+- Builds a **deficit vector** for the user: `D[Ci] = 1.0 - (score / max_score)` for each competency
+- Builds a **coverage vector** for each course: `V[Ci] = 1.0` if the course maps to that competency
+- Computes **cosine similarity** between the two vectors
+- Applies a **difficulty factor** based on DSRI level vs course level (e.g. advanced courses penalized for beginners)
+- Produces a continuous 0–1 score — no binary weak/not-weak cutoff
+
+### Collaborative Filtering
+- Computes **cosine similarity** between users' normalized competency score vectors
+- Similarity matrix is **precomputed daily** via `php artisan recommendations:precompute` and stored in `user_similarity_cache`
+- For each candidate course, computes a **weighted average of ratings** from similar users
+- Handles cold start: users without assessments or with fewer than 3 similar peers get no collaborative contribution
+
+### Hybrid Merging
+- Uses **adaptive weights** based on peer availability:
+  - < 3 similar peers → 100% content-based
+  - 3–9 similar peers → linear blend ramping up to 50% collaborative
+  - 10+ similar peers → 50/50 split
+- Final score: `hybrid = w_content × content_score + w_collab × collab_score`
+
+### AI Explanations
+- Gemini generates personalized explanations referencing the user's specific scores and peer data
+- Cached for 12 hours per course + user combination
 
 ```
-Assessment Submitted
-       │
-       ▼
-Calculate DSRI ─── Identify weak sections (score < 50%)
-       │
-       ▼
-Lookup CourseCompetencyMappings for weak sections
-       │
-       ▼
-Calculate match percentage:
-  match% = |intersection(weak ∩ course_mappings)| / |weak| × 100
-       │
-       ▼
-For each matched course, generate AI explanation via Gemini
-       │
-       ▼
-Return ranked course recommendations
+Request → HybridRecommendationService
+              ├── ContentBasedRecommendationService (cosine similarity + difficulty factor)
+              ├── CollaborativeFilteringService (user-user CF from precomputed similarity)
+              ├── adaptive weight blending
+              └── AiInsightService (enhanced explanations)
+         → Cached JSON response (6h TTL)
 ```
 
-**Match Percentage:** A course that covers 3 out of 4 weak categories would have a 75% match score. Courses without competency mappings receive a baseline 40% or 0% score.
+### Artisan Commands
+
+```bash
+php artisan recommendations:precompute        # Build user similarity matrix (scheduled daily at 02:00)
+php artisan recommendations:precompute --force # Force full recomputation
+```
+
+### A/B Testing
+
+Set `RECOMMENDATION_AB_TESTING=true` in `.env` to enable. Users are deterministically assigned to `control` (old binary algorithm) or `hybrid` group. Interaction events are tracked in the `recommendation_interactions` table for measuring CTR, click-to-enroll rate, and completion rate per group.
 
 ---
 
@@ -665,11 +714,14 @@ The system integrates with **Google Gemini 2.0 Flash Lite** for four AI-powered 
 | Feature | Trigger | Output |
 |---------|---------|--------|
 | **Personalized Insights** | Assessment submitted | Narrative analysis of strengths and weaknesses |
-| **Course Explanations** | Recommendation page loaded | Why this course matches your skill gaps |
+| **Course Explanations** | Recommendation page loaded | Personalized explanation referencing scores and peer data |
 | **Department Analysis** | Manager views reports | Department-wide skill gap narrative |
 | **Skill Gap Prediction** | Historical data available | Predicted future skill development needs |
+| **Learning Path** | AI Insights page | Step-by-step course sequence with timelines |
+| **Peer Comparison** | AI Insights page | How user compares to colleagues in same field |
+| **Assessment Readiness** | AI Insights page | Whether user should retake the assessment |
 
-**Implementation:** `AiInsightService.php` sends contextual prompts to the Gemini API. Responses are cached in the `ai_recommendations` table to avoid redundant API calls.
+**Implementation:** `AiInsightService.php` sends contextual prompts to the Gemini API. Responses are cached for 3–12 hours to avoid redundant API calls.
 
 > **Note:** AI features require a valid `GEMINI_API_KEY` in the backend `.env`. Without it, the system functions normally but AI-powered features return fallback content.
 

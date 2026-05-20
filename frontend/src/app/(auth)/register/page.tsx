@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, Lock, Eye, Loader2 } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,8 @@ export default function RegisterPage() {
     experience_years: "",
   });
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -90,30 +92,48 @@ export default function RegisterPage() {
                 <Lock className="w-4 h-4 text-muted-foreground" />
                 {t("auth.passwordLabel")}
               </Label>
-              <Input
-                id="password"
-                type="password"
-                value={form.password}
-                onChange={update("password")}
-                placeholder={t("auth.passwordPlaceholder")}
-                className="pl-4"
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={update("password")}
+                  placeholder={t("auth.passwordPlaceholder")}
+                  className="pl-4 pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password_confirmation" className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <Eye className="w-4 h-4 text-muted-foreground" />
                 {t("auth.confirmPasswordLabel")}
               </Label>
-              <Input
-                id="password_confirmation"
-                type="password"
-                value={form.password_confirmation}
-                onChange={update("password_confirmation")}
-                placeholder={t("auth.confirmPasswordPlaceholder")}
-                className="pl-4"
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password_confirmation"
+                  type={showConfirm ? "text" : "password"}
+                  value={form.password_confirmation}
+                  onChange={update("password_confirmation")}
+                  placeholder={t("auth.confirmPasswordPlaceholder")}
+                  className="pl-4 pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
             {error && (
               <div className="p-3 text-sm text-red-600 bg-red-500/10 rounded-md border border-red-200">

@@ -69,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Courses
     Route::get('/courses', [CourseController::class, 'list']);
     Route::get('/courses/recommended', [CourseController::class, 'recommended']);
+    Route::post('/courses/recommendations/track', [CourseController::class, 'trackInteraction']);
     Route::get('/courses/{id}', [CourseController::class, 'show']);
     Route::post('/courses/{id}/enroll', [CourseController::class, 'enroll']);
     Route::post('/courses/{id}/rate', [CourseController::class, 'rate']);

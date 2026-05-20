@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             DemoUserSeeder::class,
             CourseSeeder::class,
+            CompetencyMappingSeeder::class,
             CourseRatingSeeder::class,
             AssessmentSeeder::class,
         ]);

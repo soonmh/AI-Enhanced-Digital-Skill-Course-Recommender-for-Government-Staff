@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/i18n/context";
-import { useRecommendedCourses } from "@/hooks/useApi";
+import { useRecommendedCourses, trackRecommendationInteraction } from "@/hooks/useApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COMPETENCIES } from "@/lib/constants";
@@ -36,9 +36,19 @@ const GRADIENTS = [
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default function RecommendedCoursesPage() {
   const { t } = useTranslation();
-  const { courses, hasAssessment, weakSections, isLoading } = useRecommendedCourses();
+  const { courses, hasAssessment, weakSections, recommendationMethod, totalPeers, isLoading } = useRecommendedCourses();
   const [sortBy, setSortBy] = useState("match");
   const [competencyFilter, setCompetencyFilter] = useState("");
+
+  // Track impressions when courses load
+  const trackedImpressions = useCallback(() => {
+    if (!courses) return;
+    (courses as any[]).slice(0, 8).forEach((c: any, i: number) => {
+      trackRecommendationInteraction(c.id, "impression", { position: i, hybrid_score: c.hybrid_score, ab_group: c.ab_group }).catch(() => {});
+    });
+  }, [courses]);
+
+  useEffect(() => { trackedImpressions(); }, [trackedImpressions]);
 
   const sorted = useMemo(() => {
     if (!courses) return [];
@@ -55,7 +65,7 @@ export default function RecommendedCoursesPage() {
         case "popular":
           return (b.enrollment_count || 0) - (a.enrollment_count || 0);
         default:
-          return (b.match_percentage || 0) - (a.match_percentage || 0);
+          return (Number(b.hybrid_score ?? b.match_percentage) || 0) - (Number(a.hybrid_score ?? a.match_percentage) || 0);
       }
     });
   }, [courses, sortBy, competencyFilter]);
@@ -159,6 +169,13 @@ export default function RecommendedCoursesPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Sparkles className="w-4 h-4 text-emerald-500" />
               <span>{t("courses.courseRecommended", { count: sorted.length })}</span>
+              {recommendationMethod && recommendationMethod !== "popularity" && (
+                <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-700">
+                  {recommendationMethod === "hybrid"
+                    ? t("courses.recommendationMethodHybrid")
+                    : t("courses.recommendationMethodContent")}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-3">
               {weakSections.length > 0 && (
@@ -220,10 +237,13 @@ export default function RecommendedCoursesPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {sorted.map((course: any, idx: number) => {
               const gradient = GRADIENTS[idx % GRADIENTS.length];
-              const matchPct = course.match_percentage;
+              const matchPct = course.match_percentage != null && !isNaN(course.match_percentage) ? course.match_percentage : null;
+              const handleClick = () => {
+                trackRecommendationInteraction(course.id, "click", { position: idx, hybrid_score: course.hybrid_score }).catch(() => {});
+              };
               return (
                 <Card key={course.id} className="p-0 overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
-                  <Link href={`/courses/${course.id}?from=recommended`}>
+                  <Link href={`/courses/${course.id}?from=recommended`} onClick={handleClick}>
                     <div className={`h-44 bg-gradient-to-br ${gradient} relative overflow-hidden`}>
                       <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -262,7 +282,7 @@ export default function RecommendedCoursesPage() {
                     </div>
                   </Link>
                   <CardContent className="p-5 flex-1 flex flex-col">
-                    <Link href={`/courses/${course.id}?from=recommended`}>
+                    <Link href={`/courses/${course.id}?from=recommended`} onClick={handleClick}>
                       <h3 className="font-semibold text-foreground mb-1.5 line-clamp-2 hover:text-emerald-600 transition-colors group-hover:text-emerald-600">
                         {course.title}
                       </h3>
@@ -272,6 +292,29 @@ export default function RecommendedCoursesPage() {
                       <p className="text-xs text-indigo-600 italic line-clamp-2 mb-3 bg-indigo-50/50 px-2 py-1 rounded">
                         {course.ai_explanation}
                       </p>
+                    )}
+                    {hasAssessment && course.competency_breakdown?.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-1.5">{t("courses.matchedSkills")}</p>
+                        <div className="space-y-1.5">
+                          {course.competency_breakdown.map((comp: any) => {
+                            const isWeak = comp.user_pct < 60;
+                            return (
+                              <div key={comp.code} className="flex items-center gap-2">
+                                <span className={`text-xs font-semibold px-1.5 py-0.5 rounded min-w-[28px] text-center ${isWeak ? "text-red-700 bg-red-500/10" : "text-emerald-700 bg-emerald-500/10"}`}>{comp.code}</span>
+                                <span className="text-xs text-muted-foreground flex-1 truncate">{comp.name}</span>
+                                <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full ${isWeak ? "bg-gradient-to-r from-red-400 to-amber-400" : "bg-emerald-400"}`}
+                                    style={{ width: `${comp.user_pct}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs text-muted-foreground tabular-nums min-w-[32px] text-right">{comp.user_pct}%</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     )}
                     <div className="flex items-center justify-between mt-auto pt-3 border-t border-border">
                       {matchPct != null && hasAssessment ? (
@@ -293,9 +336,9 @@ export default function RecommendedCoursesPage() {
                           {course.working_field || t("courses.general")}
                         </span>
                       )}
-                      <span className="text-sm text-emerald-600 font-medium group-hover:translate-x-0.5 transition-transform">
+                      <Link href={`/courses/${course.id}?from=recommended`} onClick={handleClick} className="text-sm text-emerald-600 font-medium group-hover:translate-x-0.5 transition-transform">
                         {t("courses.viewCourse")}
-                      </span>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>

@@ -480,14 +480,16 @@ export default function AssessmentResultsPage() {
                           </span>
                         </td>
                         {Array.from({ length: 10 }, (_, i) => {
-                          const key = `c${i + 1}_score` as keyof AssessmentRecord;
-                          const pctKey = `c${i + 1}_score_percentage` as keyof AssessmentRecord;
+                          const scoreKey = `c${i + 1}_score` as keyof AssessmentRecord;
+                          const comp = COMPETENCIES[`C${i + 1}` as keyof typeof COMPETENCIES];
+                          const rawScore = Number(r[scoreKey]) || 0;
+                          const pct = comp ? Math.round((rawScore / comp.maxScore) * 1000) / 10 : 0;
                           return (
                             <td key={i + 1} className="p-3 text-center text-sm">
                               <div className="space-y-1">
-                                <div className="font-semibold">{r[key]}</div>
+                                <div className="font-semibold">{rawScore}</div>
                                 <div className="text-xs text-muted-foreground">
-                                  ({Number(r[pctKey]).toFixed(1)}%)
+                                  ({pct}%)
                                 </div>
                               </div>
                             </td>
@@ -507,7 +509,7 @@ export default function AssessmentResultsPage() {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {Math.max(...history.map((r: AssessmentRecord) => r.dsri))}%
+                    {Math.max(...history.map((r: AssessmentRecord) => Number(r.dsri)))}%
                   </div>
                   <div className="text-sm text-muted-foreground">{t("assessment.bestScore")}</div>
                 </div>
@@ -515,7 +517,7 @@ export default function AssessmentResultsPage() {
                   <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                     {(
                       history.reduce(
-                        (acc: number, r: AssessmentRecord) => acc + (r.dsri || 0),
+                        (acc: number, r: AssessmentRecord) => acc + (Number(r.dsri) || 0),
                         0
                       ) / history.length
                     ).toFixed(1)}

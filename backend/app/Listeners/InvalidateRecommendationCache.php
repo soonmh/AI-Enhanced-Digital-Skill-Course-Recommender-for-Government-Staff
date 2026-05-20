@@ -20,6 +20,7 @@ class InvalidateRecommendationCache
             "ai_recommendations:{$userId}",
             "ai_skill_gaps:{$userId}",
             "dashboard:user:{$userId}",
+            "hybrid_recommendations:{$userId}",
         ];
 
         foreach ($keys as $key) {
