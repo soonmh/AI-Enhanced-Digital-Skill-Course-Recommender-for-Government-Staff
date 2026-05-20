@@ -41,10 +41,12 @@ function getDsriTextColor(score: number) {
   return "text-red-600";
 }
 
-function scoreCellColor(val: number | null | undefined) {
+function scoreCellColor(val: number | null | undefined, maxScore: number) {
   if (val == null) return "text-muted-foreground";
-  if (val >= 70) return "text-emerald-600 font-semibold";
-  if (val >= 40) return "text-amber-600 font-medium";
+  const pct = maxScore > 0 ? (val / maxScore) * 100 : 0;
+  if (pct >= 80) return "text-emerald-600 font-semibold";
+  if (pct >= 60) return "text-amber-600 font-medium";
+  if (pct >= 40) return "text-orange-500 font-medium";
   return "text-red-500 font-medium";
 }
 
@@ -405,9 +407,10 @@ export default function DashboardPage() {
                       <th className="py-3 px-3 text-[11px] font-bold text-indigo-600 uppercase tracking-wider text-center bg-indigo-50/50">
                         DSRI
                       </th>
-                      {Object.keys(COMPETENCIES).map((c) => (
+                      {Object.entries(COMPETENCIES).map(([c, cfg]) => (
                         <th key={c} className="py-3 px-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider text-center">
-                          {c}
+                          <div>{c}</div>
+                          <div className="text-[9px] font-normal text-muted-foreground/60">/{cfg.maxScore}</div>
                         </th>
                       ))}
                     </tr>
@@ -435,11 +438,15 @@ export default function DashboardPage() {
                             {r.dsri}%
                           </span>
                         </td>
-                        {[r.c1_score, r.c2_score, r.c3_score, r.c4_score, r.c5_score, r.c6_score, r.c7_score, r.c8_score, r.c9_score, r.c10_score].map((val, i) => (
-                          <td key={i} className={`py-2.5 px-2 text-center text-xs ${scoreCellColor(val)}`}>
-                            {val ?? "—"}
-                          </td>
-                        ))}
+                        {[r.c1_score, r.c2_score, r.c3_score, r.c4_score, r.c5_score, r.c6_score, r.c7_score, r.c8_score, r.c9_score, r.c10_score].map((val, i) => {
+                          const code = `C${i + 1}` as keyof typeof COMPETENCIES;
+                          const maxScore = COMPETENCIES[code]?.maxScore ?? 50;
+                          return (
+                            <td key={i} className={`py-2.5 px-2 text-center text-xs ${scoreCellColor(val, maxScore)}`}>
+                              {val ?? "—"}
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))}
                   </tbody>

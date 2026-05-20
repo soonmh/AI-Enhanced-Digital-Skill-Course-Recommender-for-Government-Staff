@@ -36,15 +36,15 @@ function getDsriLevel(score: number) {
 }
 
 function getScoreColor(percent: number) {
-  if (percent >= 90) return "bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-700/40 text-green-800 dark:text-green-300";
-  if (percent >= 70) return "bg-yellow-100 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-700/40 text-yellow-800 dark:text-yellow-300";
+  if (percent >= 80) return "bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-700/40 text-green-800 dark:text-green-300";
+  if (percent >= 60) return "bg-yellow-100 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-700/40 text-yellow-800 dark:text-yellow-300";
   if (percent >= 40) return "bg-orange-100 dark:bg-orange-900/30 border-orange-200 dark:border-orange-700/40 text-orange-800 dark:text-orange-300";
   return "bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-700/40 text-red-800 dark:text-red-300";
 }
 
 function getScoreIcon(percent: number) {
-  if (percent >= 90) return TrendingUp;
-  if (percent >= 70) return Award;
+  if (percent >= 80) return TrendingUp;
+  if (percent >= 60) return Award;
   if (percent >= 40) return Target;
   return Info;
 }
@@ -374,7 +374,7 @@ export default function AssessmentResultsPage() {
                         </p>
                       </div>
                       <div className="px-4 pb-4">
-                        <div className="text-2xl font-bold mb-1">{section.score}</div>
+                        <div className="text-2xl font-bold mb-1">{section.score}/{section.max_score}</div>
                         <div className="text-sm font-medium">{percent}%</div>
                         <div className="mt-3 w-full bg-card/50 rounded-full h-1.5">
                           <div
@@ -483,11 +483,12 @@ export default function AssessmentResultsPage() {
                           const scoreKey = `c${i + 1}_score` as keyof AssessmentRecord;
                           const comp = COMPETENCIES[`C${i + 1}` as keyof typeof COMPETENCIES];
                           const rawScore = Number(r[scoreKey]) || 0;
-                          const pct = comp ? Math.round((rawScore / comp.maxScore) * 1000) / 10 : 0;
+                          const maxScore = comp?.maxScore ?? 0;
+                          const pct = maxScore > 0 ? Math.round((rawScore / maxScore) * 1000) / 10 : 0;
                           return (
                             <td key={i + 1} className="p-3 text-center text-sm">
                               <div className="space-y-1">
-                                <div className="font-semibold">{rawScore}</div>
+                                <div className="font-semibold">{rawScore}/{maxScore}</div>
                                 <div className="text-xs text-muted-foreground">
                                   ({pct}%)
                                 </div>

@@ -49,6 +49,7 @@ export default function AdminUsersPage() {
   const [assignUser, setAssignUser] = useState<any>(null);
   const [assignSearch, setAssignSearch] = useState("");
   const [removeTarget, setRemoveTarget] = useState<{ courseId: number; title: string } | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedCourses, setSelectedCourses] = useState<Set<number>>(new Set());
   const { courses: allCourses } = useCourses();
   const { assignedCourseIds, mutate: mutateAssigned } = useAssignedCourses(assignUser ? String(assignUser.id) : null);
@@ -94,11 +95,11 @@ export default function AdminUsersPage() {
   };
 
   const handleBulkDelete = async () => {
-    if (!confirm(t("admin.deleteConfirm", { count: selected.size }))) return;
     try {
       for (const id of Array.from(selected)) await deleteUser(String(id));
       toast.success(`Deleted ${selected.size} users`);
       setSelected(new Set());
+      setDeleteConfirmOpen(false);
       mutate();
     } catch {
       toast.error("Failed to delete users");
@@ -274,7 +275,7 @@ export default function AdminUsersPage() {
             {selected.size > 0 && (
               <div className="flex items-center gap-3 px-4 py-2 bg-blue-500/10 border-b text-sm">
                 <span className="font-medium text-blue-700">{t("admin.selectedCount", { count: selected.size })}</span>
-                <button onClick={handleBulkDelete} className="flex items-center gap-1 text-red-600 hover:text-red-800 text-xs font-medium">
+                <button onClick={() => setDeleteConfirmOpen(true)} className="flex items-center gap-1 text-red-600 hover:text-red-800 text-xs font-medium">
                   <Trash2 className="w-3.5 h-3.5" /> {t("common.delete")}
                 </button>
               </div>
@@ -587,6 +588,24 @@ export default function AdminUsersPage() {
               }}
             >
               {t("common.remove")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirmation */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("admin.deleteConfirmTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("admin.deleteConfirm", { count: selected.size })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>{t("common.cancel")}</Button>
+            <Button variant="destructive" onClick={handleBulkDelete}>
+              <Trash2 className="w-4 h-4 mr-1" /> {t("common.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
