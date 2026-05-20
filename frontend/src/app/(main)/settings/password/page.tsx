@@ -58,7 +58,7 @@ export default function PasswordPage() {
         <Card className="mb-8 border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <Settings className="w-6 h-6 text-blue-600" />
+              <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               {t("settings.settingsMenu")}
             </CardTitle>
             <CardDescription>{t("settings.settingsMenuDescription")}</CardDescription>
@@ -82,8 +82,8 @@ export default function PasswordPage() {
               </Link>
               <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/30 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Lock className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 bg-blue-100 dark:bg-blue-500/15 rounded-lg">
+                    <Lock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
                     <h3 className="font-medium text-primary">{t("settings.passwordTab")}</h3>
@@ -118,7 +118,7 @@ export default function PasswordPage() {
         <Card className="mb-8 border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <Shield className="w-6 h-6 text-blue-600" />
+              <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               {t("settings.updatePasswordTitle")}
             </CardTitle>
             <CardDescription>{t("settings.updatePasswordDescription")}</CardDescription>
@@ -171,7 +171,7 @@ export default function PasswordPage() {
                 />
               </div>
               <div className="flex items-center gap-4 pt-4 border-t">
-                <Button type="submit" disabled={saving} className="bg-primary hover:bg-primary/90">
+                <Button type="submit" disabled={saving} className="bg-primary hover:bg-primary/90 dark:bg-violet-500/20 dark:text-violet-300 dark:hover:bg-violet-500/30">
                   {saving ? t("common.saving") : t("settings.updatePassword")}
                 </Button>
               </div>

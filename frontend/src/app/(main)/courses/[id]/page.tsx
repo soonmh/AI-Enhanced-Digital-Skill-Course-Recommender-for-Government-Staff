@@ -301,7 +301,7 @@ export default function CourseDetailPage() {
               <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    isCompleted ? "bg-green-500" : "bg-gradient-to-r from-violet-500 to-indigo-500"
+                    isCompleted ? "bg-green-500 dark:bg-green-400" : "bg-gradient-to-r from-violet-500 to-indigo-500 dark:from-violet-400/50 dark:to-indigo-400/50"
                   }`}
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 />
@@ -353,7 +353,7 @@ export default function CourseDetailPage() {
                   <Link
                     href={course.url}
                     target="_blank"
-                    className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all font-medium text-sm shadow-sm"
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500/20 dark:to-indigo-500/20 dark:text-violet-300 text-white rounded-xl hover:from-violet-700 hover:to-indigo-700 dark:hover:from-violet-500/30 dark:hover:to-indigo-500/30 transition-all font-medium text-sm shadow-sm"
                   >
                     <Play className="w-4 h-4" />
                     {t("courses.openCourse")}
@@ -448,8 +448,8 @@ export default function CourseDetailPage() {
                   )}
                   {course.working_field && (
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center">
-                        <Briefcase className="w-4 h-4 text-blue-600" />
+                      <div className="w-9 h-9 bg-blue-100 dark:bg-blue-400/15 rounded-xl flex items-center justify-center">
+                        <Briefcase className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">{t("courses.infoField")}</p>
@@ -468,8 +468,8 @@ export default function CourseDetailPage() {
                   </div>
                   {course.created_by && (
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center">
-                        <User className="w-4 h-4 text-amber-600" />
+                      <div className="w-9 h-9 bg-amber-100 dark:bg-amber-400/15 rounded-xl flex items-center justify-center">
+                        <User className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">{t("courses.infoCreatedBy")}</p>
@@ -479,8 +479,8 @@ export default function CourseDetailPage() {
                   )}
                   {course.created_at && (
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-rose-100 rounded-xl flex items-center justify-center">
-                        <Calendar className="w-4 h-4 text-rose-600" />
+                      <div className="w-9 h-9 bg-rose-100 dark:bg-rose-400/15 rounded-xl flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-rose-600 dark:text-rose-400" />
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">{t("courses.infoCreated")}</p>

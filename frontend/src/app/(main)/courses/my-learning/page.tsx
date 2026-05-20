@@ -51,22 +51,22 @@ function CourseCard({ course, variant, t }: { course: ApiRecord; variant: "progr
 
   const styles = {
     progress: {
-      border: "border-l-blue-500",
-      badge: "bg-blue-500/10 text-blue-700",
-      bar: "bg-blue-500",
-      icon: <Play className="w-4 h-4 text-blue-500" />,
+      border: "border-l-blue-500 dark:border-l-blue-400",
+      badge: "bg-blue-500/10 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300",
+      bar: "bg-blue-500 dark:bg-blue-400",
+      icon: <Play className="w-4 h-4 text-blue-500 dark:text-blue-400" />,
     },
     completed: {
-      border: "border-l-green-500",
-      badge: "bg-green-500/10 text-green-700",
-      bar: "bg-green-500",
-      icon: <CheckCircle className="w-4 h-4 text-green-500" />,
+      border: "border-l-green-500 dark:border-l-green-400",
+      badge: "bg-green-500/10 text-green-700 dark:bg-green-400/15 dark:text-green-300",
+      bar: "bg-green-500 dark:bg-green-400",
+      icon: <CheckCircle className="w-4 h-4 text-green-500 dark:text-green-400" />,
     },
     archived: {
-      border: "border-l-gray-400",
+      border: "border-l-gray-400 dark:border-l-gray-500",
       badge: "bg-muted text-muted-foreground",
-      bar: "bg-gray-400",
-      icon: <Archive className="w-4 h-4 text-gray-400" />,
+      bar: "bg-gray-400 dark:bg-gray-500",
+      icon: <Archive className="w-4 h-4 text-gray-400 dark:text-gray-500" />,
     },
   };
 
@@ -226,8 +226,8 @@ export default function MyLearningPage() {
             const count = grouped[tab.key].length;
             const Icon = tab.icon;
             const colors = {
-              in_progress: "bg-blue-500/10 border-blue-500/20 text-blue-700",
-              completed: "bg-green-500/10 border-green-500/20 text-green-700",
+              in_progress: "bg-blue-500/10 border-blue-500/20 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300",
+              completed: "bg-green-500/10 border-green-500/20 text-green-700 dark:bg-green-400/15 dark:text-green-300",
               archived: "bg-muted border-border text-muted-foreground",
             };
             return (

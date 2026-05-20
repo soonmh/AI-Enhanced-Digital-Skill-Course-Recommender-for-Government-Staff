@@ -141,7 +141,7 @@ export default function ListCoursePage() {
           {hasCourseMgmt && (
             <Link
               href="/courses/create"
-              className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors font-medium shadow-sm"
+              className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 dark:bg-violet-500/20 dark:text-violet-300 text-white rounded-lg hover:bg-violet-700 dark:hover:bg-violet-500/30 transition-colors font-medium shadow-sm"
             >
               <BookOpen className="w-4 h-4" />
               {t("courses.createCourse")}
@@ -198,14 +198,14 @@ export default function ListCoursePage() {
             <div className="flex border border-border rounded-lg overflow-hidden">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-violet-100 text-violet-700" : "text-muted-foreground hover:bg-accent"}`}
+                className={`p-2.5 transition-colors ${viewMode === "grid" ? "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300" : "text-muted-foreground hover:bg-accent"}`}
                 title={t("courses.gridView")}
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode("table")}
-                className={`p-2.5 transition-colors ${viewMode === "table" ? "bg-violet-100 text-violet-700" : "text-muted-foreground hover:bg-accent"}`}
+                className={`p-2.5 transition-colors ${viewMode === "table" ? "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300" : "text-muted-foreground hover:bg-accent"}`}
                 title={t("courses.tableView")}
               >
                 <List className="w-4 h-4" />
@@ -224,8 +224,8 @@ export default function ListCoursePage() {
                     onClick={() => setLevelFilter(lv)}
                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                       levelFilter === lv
-                        ? "bg-violet-600 text-white shadow-sm"
-                        : "bg-muted text-muted-foreground hover:bg-gray-200"
+                        ? "bg-violet-600 text-white dark:bg-violet-500/20 dark:text-violet-300 shadow-sm"
+                        : "bg-muted text-muted-foreground hover:bg-gray-200 dark:hover:bg-gray-700"
                     }`}
                   >
                     {lv === "All Levels" ? t("common.all") : t(`common.level${lv.charAt(0).toUpperCase() + lv.slice(1)}`)}
@@ -259,7 +259,7 @@ export default function ListCoursePage() {
             {filtered.map((course: any) => (
               <Card key={course.id} className="p-0 overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
                 <Link href={`/courses/${course.id}?from=list`}>
-                  <div className="h-44 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 relative overflow-hidden">
+                  <div className="h-44 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 dark:from-violet-500/30 dark:via-purple-500/30 dark:to-indigo-500/30 relative overflow-hidden">
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <BookOpen className="w-14 h-14 text-white/20" />
@@ -343,7 +343,7 @@ export default function ListCoursePage() {
               </thead>
               <tbody>
                 {filtered.map((course: any) => (
-                  <tr key={course.id} className="border-b border-border hover:bg-violet-50/30 transition-colors group">
+                  <tr key={course.id} className="border-b border-border hover:bg-violet-50/30 dark:hover:bg-violet-500/5 transition-colors group">
                     <td className="p-4">
                       <Link href={`/courses/${course.id}?from=list`} className="font-medium text-foreground hover:text-violet-600 transition-colors">
                         {course.title}
@@ -463,7 +463,7 @@ export default function ListCoursePage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setAssignCourse(null); setSelectedUsers(new Set()); }}>{t("common.cancel")}</Button>
-            <Button onClick={handleAssign} disabled={saving || selectedUsers.size === 0}>
+            <Button onClick={handleAssign} disabled={saving || selectedUsers.size === 0} className="bg-violet-600 hover:bg-violet-700 dark:bg-violet-500/20 dark:text-violet-300 dark:hover:bg-violet-500/30">
               {saving ? t("courses.assigning") : t("courses.assignButton", { count: selectedUsers.size })}
             </Button>
           </DialogFooter>

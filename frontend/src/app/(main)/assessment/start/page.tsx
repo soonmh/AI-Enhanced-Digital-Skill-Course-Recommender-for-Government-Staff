@@ -39,11 +39,11 @@ const RATING_LABEL_KEYS: Record<number, string> = {
 };
 
 const RATING_COLORS: Record<number, string> = {
-  1: "bg-red-500 text-white",
-  2: "bg-orange-400 text-white",
-  3: "bg-yellow-400 text-yellow-900",
-  4: "bg-emerald-400 text-white",
-  5: "bg-green-500 text-white",
+  1: "bg-red-500 text-white dark:bg-red-500/20 dark:text-red-300",
+  2: "bg-orange-400 text-white dark:bg-orange-400/20 dark:text-orange-300",
+  3: "bg-yellow-400 text-yellow-900 dark:bg-yellow-400/20 dark:text-yellow-300",
+  4: "bg-emerald-400 text-white dark:bg-emerald-400/20 dark:text-emerald-300",
+  5: "bg-green-500 text-white dark:bg-green-500/20 dark:text-green-300",
 };
 
 const RATING_HOVER: Record<number, string> = {
@@ -238,7 +238,7 @@ export default function AssessmentStartPage() {
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div
-                    className="bg-gradient-to-r from-violet-500 to-indigo-500 h-2 rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-violet-500 to-indigo-500 dark:from-violet-400/50 dark:to-indigo-400/50 h-2 rounded-full transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -257,7 +257,7 @@ export default function AssessmentStartPage() {
                     onClick={() => setCurrentSection(idx)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       isActive
-                        ? "bg-violet-100 text-violet-700"
+                        ? "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
                         : complete
                           ? "text-green-600 hover:bg-green-500/10"
                           : "text-muted-foreground hover:bg-background hover:text-muted-foreground"
@@ -294,8 +294,8 @@ export default function AssessmentStartPage() {
                 {/* Section Header */}
                 <div className="mb-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                      <SectionIcon className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 dark:from-violet-500/20 dark:to-indigo-500/20 rounded-xl flex items-center justify-center">
+                      <SectionIcon className="w-5 h-5 text-white dark:text-violet-300" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -320,7 +320,7 @@ export default function AssessmentStartPage() {
                         key={q.id}
                         className={`bg-card rounded-2xl p-6 transition-all duration-300 ${
                           answered
-                            ? "ring-2 ring-violet-400/50 shadow-md shadow-violet-100"
+                            ? "ring-2 ring-violet-400/50 shadow-md shadow-violet-100 dark:ring-violet-400/30 dark:shadow-violet-400/5"
                             : "shadow-sm border border-border hover:shadow-md"
                         }`}
                       >
@@ -328,7 +328,7 @@ export default function AssessmentStartPage() {
                         <div className="flex items-start gap-3 mb-5">
                           <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
                             answered
-                              ? "bg-violet-600 text-white"
+                              ? "bg-violet-600 text-white dark:bg-violet-500/20 dark:text-violet-300"
                               : "bg-muted text-muted-foreground"
                           }`}>
                             {qIdx + 1}
@@ -402,7 +402,7 @@ export default function AssessmentStartPage() {
                   {currentSection < totalSections - 1 ? (
                     <button
                       onClick={() => setCurrentSection((i) => i + 1)}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 dark:bg-violet-500/20 dark:text-violet-300 dark:hover:bg-violet-500/30 text-white text-sm font-medium transition-colors"
                     >
                       {t("common.next")}
                       <ChevronRight className="w-4 h-4" />
@@ -411,7 +411,7 @@ export default function AssessmentStartPage() {
                     <button
                       onClick={handleSubmitClick}
                       disabled={submitting}
-                      className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-sm font-semibold transition-all disabled:opacity-50"
+                      className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 dark:from-green-500/20 dark:to-emerald-500/20 dark:hover:from-green-500/30 dark:hover:to-emerald-500/30 dark:text-green-300 text-white text-sm font-semibold transition-all disabled:opacity-50"
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       {t("assessment.submitAssessment")}
@@ -444,7 +444,7 @@ export default function AssessmentStartPage() {
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className={`text-xs font-medium ${isActive ? "text-violet-700" : "text-foreground"}`}>
+                          <span className={`text-xs font-medium ${isActive ? "text-violet-700 dark:text-violet-300" : "text-foreground"}`}>
                             {s.section_code}
                           </span>
                           {complete ? (
@@ -456,7 +456,7 @@ export default function AssessmentStartPage() {
                         <div className="w-full bg-muted rounded-full h-1.5">
                           <div
                             className={`h-1.5 rounded-full transition-all duration-300 ${
-                              complete ? "bg-green-500" : isActive ? "bg-violet-500 dark:bg-violet-500" : "bg-muted-foreground/30"
+                              complete ? "bg-green-500 dark:bg-green-400/50" : isActive ? "bg-violet-500 dark:bg-violet-400/50" : "bg-muted-foreground/30"
                             }`}
                             style={{ width: `${pct}%` }}
                           />

@@ -29,10 +29,10 @@ import {
 } from "lucide-react";
 
 function getDsriLevel(score: number) {
-  if (score >= 90) return { label: "Excellent", color: "bg-green-500 dark:bg-green-600", textColor: "text-green-700 dark:text-green-300" };
-  if (score >= 70) return { label: "Good", color: "bg-yellow-500 dark:bg-yellow-600", textColor: "text-yellow-700 dark:text-yellow-300" };
-  if (score >= 40) return { label: "Average", color: "bg-orange-500 dark:bg-orange-600", textColor: "text-orange-700 dark:text-orange-300" };
-  return { label: "Needs Improvement", color: "bg-red-500 dark:bg-red-600", textColor: "text-red-700 dark:text-red-300" };
+  if (score >= 90) return { label: "Excellent", color: "bg-green-500 dark:bg-green-500/20", textColor: "text-green-700 dark:text-green-300" };
+  if (score >= 70) return { label: "Good", color: "bg-yellow-500 dark:bg-yellow-500/20", textColor: "text-yellow-700 dark:text-yellow-300" };
+  if (score >= 40) return { label: "Average", color: "bg-orange-500 dark:bg-orange-500/20", textColor: "text-orange-700 dark:text-orange-300" };
+  return { label: "Needs Improvement", color: "bg-red-500 dark:bg-red-500/20", textColor: "text-red-700 dark:text-red-300" };
 }
 
 function getScoreColor(percent: number) {
@@ -53,7 +53,7 @@ function getProgressBg(score: number) {
   if (score >= 90) return "bg-green-100 dark:bg-green-900/30";
   if (score >= 70) return "bg-yellow-100 dark:bg-yellow-900/30";
   if (score >= 40) return "bg-orange-100 dark:bg-orange-900/30";
-  return "bg-red-500 dark:bg-red-600";
+  return "bg-red-500 dark:bg-red-500/20";
 }
 
 function formatDate(dateStr: string) {
@@ -239,7 +239,7 @@ export default function AssessmentResultsPage() {
           <Card className="mb-8 border-0 shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
-                <Target className="w-6 h-6 text-blue-600" />
+                <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 {t("assessment.competencyOverview")}
               </CardTitle>
               <CardDescription>{t("assessment.competencyOverviewDescription")}</CardDescription>
@@ -268,7 +268,7 @@ export default function AssessmentResultsPage() {
             {/* Top Performing */}
             <Card className="border-0 shadow-md">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-700">
+                <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
                   <TrendingUp className="w-5 h-5" />
                   {t("assessment.topPerformingAreas")}
                 </CardTitle>
@@ -280,13 +280,13 @@ export default function AssessmentResultsPage() {
                   return (
                     <div
                       key={code}
-                      className="flex items-center gap-4 p-3 bg-green-500/10 rounded-lg border border-green-200"
+                      className="flex items-center gap-4 p-3 bg-green-500/10 rounded-lg border border-green-200 dark:border-green-500/20"
                     >
-                      <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                      <div className="w-8 h-8 bg-green-500 dark:bg-green-500/20 dark:text-green-300 text-white rounded-full flex items-center justify-center font-bold text-sm">
                         {idx + 1}
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-green-800">
+                        <h4 className="font-semibold text-green-800 dark:text-green-300">
                           {comp?.nameEn || section.section_name}
                         </h4>
                         <p className="text-sm text-green-600 dark:text-green-400">
@@ -305,7 +305,7 @@ export default function AssessmentResultsPage() {
             {/* Growth Opportunities */}
             <Card className="border-0 shadow-md">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-orange-700">
+                <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
                   <Target className="w-5 h-5" />
                   {t("assessment.growthOpportunities")}
                 </CardTitle>
@@ -319,7 +319,7 @@ export default function AssessmentResultsPage() {
                       key={code}
                       className="flex items-center gap-4 p-3 bg-orange-50 dark:bg-orange-900/30 rounded-lg border border-orange-200 dark:border-orange-700/40"
                     >
-                      <div className="w-8 h-8 bg-orange-500 dark:bg-orange-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                      <div className="w-8 h-8 bg-orange-500 dark:bg-orange-500/20 dark:text-orange-300 text-white rounded-full flex items-center justify-center font-bold text-sm">
                         {idx + 1}
                       </div>
                       <div className="flex-1">
@@ -346,7 +346,7 @@ export default function AssessmentResultsPage() {
           <Card className="mb-8 border-0 shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
-                <ClipboardList className="w-6 h-6 text-blue-600" />
+                <ClipboardList className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 {t("assessment.detailedAnalysis")}
               </CardTitle>
               <CardDescription>{t("assessment.detailedAnalysisDescription")}</CardDescription>
@@ -396,7 +396,7 @@ export default function AssessmentResultsPage() {
           <Card className="border-0 shadow-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
-                <History className="w-6 h-6 text-purple-600" />
+                <History className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 {t("assessment.assessmentHistory")}
               </CardTitle>
               <CardDescription>{t("assessment.assessmentHistoryDescription")}</CardDescription>
@@ -536,7 +536,7 @@ export default function AssessmentResultsPage() {
           <Card className="border-0 shadow-md mt-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
-                <GitCompare className="w-6 h-6 text-purple-600" />
+                <GitCompare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 {t("assessment.compareAssessments")}
               </CardTitle>
               <CardDescription>{t("assessment.compareDescription")}</CardDescription>
@@ -619,8 +619,8 @@ export default function AssessmentResultsPage() {
                       if (improved.length === 0 && declined.length === 0) return null;
 
                       return (
-                        <div className="mt-6 p-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-xl border border-indigo-100">
-                          <h4 className="font-semibold text-indigo-900 mb-2 flex items-center gap-2">
+                        <div className="mt-6 p-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
+                          <h4 className="font-semibold text-indigo-900 dark:text-indigo-300 mb-2 flex items-center gap-2">
                             <Activity className="w-4 h-4" />
                             {t("assessment.comparisonInsights")}
                           </h4>
@@ -631,12 +631,12 @@ export default function AssessmentResultsPage() {
                               </p>
                             )}
                             {improved.length > 0 && (
-                              <p className="text-green-700">
+                              <p className="text-green-700 dark:text-green-300">
                                 {t("assessment.mostImproved", { items: improved.slice(0, 3).map((c) => `${c.code} (+${c.delta.toFixed(1)}%)`).join(", ") })}
                               </p>
                             )}
                             {declined.length > 0 && (
-                              <p className="text-red-700">
+                              <p className="text-red-700 dark:text-red-300">
                                 {t("assessment.needsAttention", { items: declined.slice(0, 3).map((c) => `${c.code} (${c.delta.toFixed(1)}%)`).join(", ") })}
                               </p>
                             )}
@@ -675,7 +675,7 @@ export default function AssessmentResultsPage() {
                                     delta > 0
                                       ? "text-green-600 dark:text-green-400"
                                       : delta < 0
-                                      ? "text-red-600"
+                                      ? "text-red-600 dark:text-red-400"
                                       : "text-muted-foreground"
                                   }`}
                                 >
@@ -695,7 +695,7 @@ export default function AssessmentResultsPage() {
                                   recordB.dsri - recordA.dsri > 0
                                     ? "text-green-600 dark:text-green-400"
                                     : recordB.dsri - recordA.dsri < 0
-                                    ? "text-red-600"
+                                    ? "text-red-600 dark:text-red-400"
                                     : "text-muted-foreground"
                                 }
                               >

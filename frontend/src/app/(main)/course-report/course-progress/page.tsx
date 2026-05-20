@@ -21,15 +21,15 @@ import {
 } from "lucide-react";
 
 function getProgressColor(pct: number) {
-  if (pct >= 90) return "bg-green-500";
-  if (pct >= 70) return "bg-blue-500";
-  if (pct >= 40) return "bg-yellow-500";
-  return "bg-red-500";
+  if (pct >= 90) return "bg-green-500 dark:bg-green-400/50";
+  if (pct >= 70) return "bg-blue-500 dark:bg-blue-400/50";
+  if (pct >= 40) return "bg-yellow-500 dark:bg-yellow-400/50";
+  return "bg-red-500 dark:bg-red-400/50";
 }
 
 function getStatusBadge(status: string) {
-  if (status === "completed") return "bg-green-100 text-green-800";
-  if (status === "active") return "bg-blue-100 text-blue-800";
+  if (status === "completed") return "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300";
+  if (status === "active") return "bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300";
   return "bg-muted text-foreground";
 }
 
@@ -113,7 +113,7 @@ export default function CourseProgressPage() {
                   <p className="text-sm text-muted-foreground">{t("reports.totalCourses")}</p>
                   <p className="text-3xl font-bold text-foreground">{summary.total_courses}</p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-sm">
+                <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-sm">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function CourseProgressPage() {
                   <p className="text-sm text-muted-foreground">{t("reports.totalEnrollments")}</p>
                   <p className="text-3xl font-bold text-foreground">{summary.total_enrollments}</p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-sm">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 dark:from-blue-500/20 dark:to-cyan-600/20 rounded-xl shadow-sm">
                   <Users className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -139,7 +139,7 @@ export default function CourseProgressPage() {
                   <p className="text-sm text-muted-foreground">{t("reports.avgCompletionRate")}</p>
                   <p className="text-3xl font-bold text-foreground">{summary.avg_completion_rate}%</p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-sm">
+                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-sm">
                   <Trophy className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -152,7 +152,7 @@ export default function CourseProgressPage() {
                   <p className="text-sm text-muted-foreground">{t("reports.avgProgress")}</p>
                   <p className="text-3xl font-bold text-foreground">{summary.avg_progress}%</p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-sm">
+                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl shadow-sm">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -166,7 +166,7 @@ export default function CourseProgressPage() {
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
+                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 {t("reports.popularByEnrollment")}
               </h3>
               {topCourses.enrollment?.length === 0 ? (
@@ -177,14 +177,14 @@ export default function CourseProgressPage() {
                     <div key={c.id} className="p-3 bg-background rounded-lg">
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-6 h-6 flex items-center justify-center text-xs font-bold bg-violet-100 text-violet-700 rounded-full shrink-0">{i + 1}</span>
+                          <span className="w-6 h-6 flex items-center justify-center text-xs font-bold bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300 rounded-full shrink-0">{i + 1}</span>
                           <span className="font-medium text-foreground text-sm truncate">{c.title}</span>
                         </div>
                         <span className="text-sm text-muted-foreground shrink-0 ml-2">{t("reports.enrolledCount", { count: c.enrollment_count })}</span>
                       </div>
                       <div className="pl-9">
                         <div className="w-full bg-muted rounded-full h-1.5">
-                          <div className="h-1.5 rounded-full bg-blue-500" style={{ width: `${Math.min(c.completion_rate || 0, 100)}%` }} />
+                          <div className="h-1.5 rounded-full bg-blue-500 dark:bg-blue-400/50" style={{ width: `${Math.min(c.completion_rate || 0, 100)}%` }} />
                         </div>
                       </div>
                     </div>
@@ -198,7 +198,7 @@ export default function CourseProgressPage() {
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-sky-600" />
+                <Activity className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                 Highest Progress
               </h3>
               {topCourses.progress?.length === 0 ? (
@@ -209,10 +209,10 @@ export default function CourseProgressPage() {
                     <div key={c.id} className="p-3 bg-background rounded-lg">
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-6 h-6 flex items-center justify-center text-xs font-bold bg-sky-100 text-sky-700 rounded-full shrink-0">{i + 1}</span>
+                          <span className="w-6 h-6 flex items-center justify-center text-xs font-bold bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300 rounded-full shrink-0">{i + 1}</span>
                           <span className="font-medium text-foreground text-sm truncate">{c.title}</span>
                         </div>
-                        <span className="text-sm font-medium text-sky-600 shrink-0 ml-2">{Math.round(c.avg_progress)}%</span>
+                        <span className="text-sm font-medium text-sky-600 dark:text-sky-400 shrink-0 ml-2">{Math.round(c.avg_progress)}%</span>
                       </div>
                       <div className="pl-9">
                         <div className="w-full bg-muted rounded-full h-1.5">
@@ -241,14 +241,14 @@ export default function CourseProgressPage() {
                     <div key={c.id} className="p-3 bg-background rounded-lg">
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-3 min-w-0">
-                          <span className="w-6 h-6 flex items-center justify-center text-xs font-bold bg-green-100 text-green-700 rounded-full shrink-0">{i + 1}</span>
+                          <span className="w-6 h-6 flex items-center justify-center text-xs font-bold bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300 rounded-full shrink-0">{i + 1}</span>
                           <span className="font-medium text-foreground text-sm truncate">{c.title}</span>
                         </div>
-                        <span className="text-sm font-medium text-green-600 shrink-0 ml-2">{c.completion_rate}%</span>
+                        <span className="text-sm font-medium text-green-600 dark:text-green-400 shrink-0 ml-2">{c.completion_rate}%</span>
                       </div>
                       <div className="pl-9">
                         <div className="w-full bg-muted rounded-full h-1.5">
-                          <div className="h-1.5 rounded-full bg-green-500" style={{ width: `${Math.min(c.completion_rate || 0, 100)}%` }} />
+                          <div className="h-1.5 rounded-full bg-green-500 dark:bg-green-400/50" style={{ width: `${Math.min(c.completion_rate || 0, 100)}%` }} />
                         </div>
                       </div>
                     </div>
@@ -329,7 +329,7 @@ export default function CourseProgressPage() {
                         <div>
                           <h3 className="font-semibold text-foreground">{c.title}</h3>
                           <div className="flex items-center gap-2 mt-1">
-                            {c.level && <span className="px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full text-xs">{c.level}</span>}
+                            {c.level && <span className="px-2 py-0.5 bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300 rounded-full text-xs">{c.level}</span>}
                           </div>
                         </div>
                         <BarChart3 className="w-5 h-5 text-muted-foreground" />
@@ -340,7 +340,7 @@ export default function CourseProgressPage() {
                           <p className="text-xs text-muted-foreground">{t("common.enrolled")}</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-2xl font-bold text-blue-600">{Math.round(c.avg_progress)}%</p>
+                          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{Math.round(c.avg_progress)}%</p>
                           <p className="text-xs text-muted-foreground">{t("common.progress")}</p>
                         </div>
                         <div className="text-center">

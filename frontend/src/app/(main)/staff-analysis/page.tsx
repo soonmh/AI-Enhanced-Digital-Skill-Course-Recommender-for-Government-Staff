@@ -97,7 +97,7 @@ export default function StaffAnalysisPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-sm shrink-0">
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -110,7 +110,7 @@ export default function StaffAnalysisPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-sm shrink-0">
                   <CircleCheck className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -123,7 +123,7 @@ export default function StaffAnalysisPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-sm shrink-0">
                   <BookOpen className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -136,7 +136,7 @@ export default function StaffAnalysisPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl shadow-sm shrink-0">
                   <Target className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -230,7 +230,7 @@ export default function StaffAnalysisPage() {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-indigo-600" />
+                <BarChart3 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 {t("reports.fieldComparison")}
               </CardTitle>
               <CardDescription>{t("reports.fieldComparisonDescription")}</CardDescription>
@@ -249,7 +249,7 @@ export default function StaffAnalysisPage() {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-amber-600" />
+                <BarChart3 className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 {t("reports.fieldHeatmap")}
               </CardTitle>
               <CardDescription>{t("reports.fieldHeatmapDescription")}</CardDescription>
@@ -324,7 +324,7 @@ export default function StaffAnalysisPage() {
                   exportToCsv("staff-analysis.csv", headers, rows);
                   toast.success("Exported staff analysis");
                 }}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-sm"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300 text-white text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-sm"
               >
                 <Download className="w-4 h-4" />
                 {t("reports.exportCsv")}
@@ -361,7 +361,7 @@ export default function StaffAnalysisPage() {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     <>
                       {paged.map((s: any) => (
-                        <tr key={s.id} className="border-b hover:bg-blue-50/40 hover:shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all">
+                        <tr key={s.id} className="border-b hover:bg-blue-50/40 dark:hover:bg-violet-500/5 hover:shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
                               <div className="relative">
@@ -380,7 +380,7 @@ export default function StaffAnalysisPage() {
                               <div className="flex items-center gap-2">
                                 <div className="w-16 bg-muted rounded-full h-2">
                                   <div
-                                    className={`h-2 rounded-full ${(s.latest_dsri || 0) >= 70 ? "bg-green-500" : (s.latest_dsri || 0) >= 40 ? "bg-yellow-500" : "bg-red-500"}`}
+                                    className={`h-2 rounded-full ${(s.latest_dsri || 0) >= 70 ? "bg-green-500 dark:bg-green-400/50" : (s.latest_dsri || 0) >= 40 ? "bg-yellow-500 dark:bg-yellow-400/50" : "bg-red-500 dark:bg-red-400/50"}`}
                                     style={{ width: `${s.latest_dsri}%` }}
                                   />
                                 </div>
@@ -395,8 +395,8 @@ export default function StaffAnalysisPage() {
                           <td className="p-4 text-muted-foreground">{s.course_count || 0}</td>
                           <td className="p-4">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                              s.status === "completed" ? "bg-green-100 text-green-700" :
-                              s.status === "in_progress" ? "bg-yellow-100 text-yellow-700" :
+                              s.status === "completed" ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300" :
+                              s.status === "in_progress" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300" :
                               "bg-muted text-foreground"
                             }`}>
                               {s.status === "completed" ? t("common.completed") : s.status === "in_progress" ? t("common.inProgress") : t("common.notStarted")}

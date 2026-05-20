@@ -194,17 +194,17 @@ export default function AdminUsersPage() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case "Admin": return "bg-red-100 text-red-700";
-      case "Staff": return "bg-blue-100 text-blue-700";
-      case "Trainer": return "bg-green-100 text-green-700";
-      case "Top Management": return "bg-purple-100 text-purple-700";
+      case "Admin": return "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300";
+      case "Staff": return "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300";
+      case "Trainer": return "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300";
+      case "Top Management": return "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300";
       default: return "bg-muted text-foreground";
     }
   };
 
   const getStatusBadge = (isActive: boolean) => {
     return isActive
-      ? "bg-green-100 text-green-700"
+      ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300"
       : "bg-muted text-muted-foreground";
   };
 
@@ -223,7 +223,7 @@ export default function AdminUsersPage() {
             <h1 className="text-3xl font-bold text-foreground">{t("admin.userManagementTitle")}</h1>
             <p className="text-muted-foreground mt-1">{t("admin.userManagementDescription")}</p>
           </div>
-          <Button onClick={() => { setForm({}); setShowAdd(true); }}>
+          <Button onClick={() => { setForm({}); setShowAdd(true); }} className="bg-violet-600 hover:bg-violet-700 dark:bg-violet-500/20 dark:text-violet-300 dark:hover:bg-violet-500/30">
             <Plus className="w-4 h-4" /> {t("admin.addUser")}
           </Button>
         </div>
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card><CardContent className="p-5"><div className="flex items-center gap-3"><div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm"><Users className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{t("admin.totalUsers")}</p><p className="text-2xl font-bold">{allUsers.length}</p></div></div></CardContent></Card>
+          <Card><CardContent className="p-5"><div className="flex items-center gap-3"><div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-sm"><Users className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{t("admin.totalUsers")}</p><p className="text-2xl font-bold">{allUsers.length}</p></div></div></CardContent></Card>
           {roles.map((role: string) => {
             const count = allUsers.filter((u: any) => u.role === role).length;
             const cfg: Record<string, { icon: any; gradient: string; label: string }> = {
@@ -244,7 +244,7 @@ export default function AdminUsersPage() {
             const c = cfg[role] || { icon: Users, gradient: "from-gray-400 to-gray-500", label: role };
             const Icon = c.icon;
             return (
-              <Card key={role}><CardContent className="p-5"><div className="flex items-center gap-3"><div className={`p-3 bg-gradient-to-br ${c.gradient} rounded-xl shadow-sm`}><Icon className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{c.label}</p><p className="text-2xl font-bold">{count}</p></div></div></CardContent></Card>
+              <Card key={role}><CardContent className="p-5"><div className="flex items-center gap-3"><div className={`p-3 bg-gradient-to-br ${c.gradient} dark:from-white/10 dark:to-white/5 rounded-xl shadow-sm`}><Icon className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{c.label}</p><p className="text-2xl font-bold">{count}</p></div></div></CardContent></Card>
             );
           }).slice(0, 3)}
         </div>
@@ -273,9 +273,9 @@ export default function AdminUsersPage() {
               <span className="text-sm text-muted-foreground">{t("admin.usersCount", { count: filtered.length })}</span>
             </div>
             {selected.size > 0 && (
-              <div className="flex items-center gap-3 px-4 py-2 bg-blue-500/10 border-b text-sm">
-                <span className="font-medium text-blue-700">{t("admin.selectedCount", { count: selected.size })}</span>
-                <button onClick={() => setDeleteConfirmOpen(true)} className="flex items-center gap-1 text-red-600 hover:text-red-800 text-xs font-medium">
+              <div className="flex items-center gap-3 px-4 py-2 bg-blue-500/10 dark:bg-blue-500/15 border-b text-sm">
+                <span className="font-medium text-blue-700 dark:text-blue-300">{t("admin.selectedCount", { count: selected.size })}</span>
+                <button onClick={() => setDeleteConfirmOpen(true)} className="flex items-center gap-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 text-xs font-medium">
                   <Trash2 className="w-3.5 h-3.5" /> {t("common.delete")}
                 </button>
               </div>
@@ -309,7 +309,7 @@ export default function AdminUsersPage() {
                     <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">{t("admin.noUsersFound")}</td></tr>
                   ) : (
                     paged.map((u: any) => (
-                      <tr key={u.id} className={`border-b hover:bg-accent transition-colors ${selected.has(u.id) ? "bg-blue-500/10" : ""}`}>
+                      <tr key={u.id} className={`border-b hover:bg-accent transition-colors ${selected.has(u.id) ? "bg-blue-500/10 dark:bg-blue-500/15" : ""}`}>
                         <td className="p-4">
                           <input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleOne(u.id)} className="rounded" />
                         </td>
@@ -555,7 +555,7 @@ export default function AdminUsersPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setAssignUser(null); setSelectedCourses(new Set()); }}>{t("common.cancel")}</Button>
-            <Button onClick={handleAssign} disabled={saving || selectedCourses.size === 0}>
+            <Button onClick={handleAssign} disabled={saving || selectedCourses.size === 0} className="bg-violet-600 hover:bg-violet-700 dark:bg-violet-500/20 dark:text-violet-300 dark:hover:bg-violet-500/30">
               {saving ? t("courses.assigning") : t("admin.assignButton", { count: selectedCourses.size })}
             </Button>
           </DialogFooter>
