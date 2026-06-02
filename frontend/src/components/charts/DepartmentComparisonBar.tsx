@@ -15,6 +15,7 @@ import {
   ReferenceLine,
 } from "recharts";
 import { COMPETENCIES } from "@/lib/constants";
+import { getMaturityLevel } from "@/lib/maturity";
 import { Trophy, AlertTriangle } from "lucide-react";
 
 interface DepartmentData {
@@ -48,15 +49,11 @@ const PALETTE: Record<string, string> = {
 };
 
 function getDsriColor(v: number) {
-  if (v >= 70) return "#22c55e";
-  if (v >= 40) return "#f59e0b";
-  return "#ef4444";
+  return getMaturityLevel(v).hex;
 }
 
 function getDsriLabel(v: number) {
-  if (v >= 70) return "Strong";
-  if (v >= 40) return "Developing";
-  return "Needs Focus";
+  return getMaturityLevel(v).labelEn;
 }
 
 function RichTooltip({ active, payload, label }: any) {
@@ -230,8 +227,8 @@ export function DepartmentComparisonBar({ departments, competencies }: Departmen
             width={40}
           />
 
-          <ReferenceLine y={40} stroke="#f59e0b" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value: "Avg", position: "left", fontSize: 9, fill: "#f59e0b", fontWeight: 600 }} />
-          <ReferenceLine y={70} stroke="#22c55e" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value: "Strong", position: "left", fontSize: 9, fill: "#22c55e", fontWeight: 600 }} />
+          <ReferenceLine y={51} stroke="#eab308" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value: "Capable", position: "left", fontSize: 9, fill: "#eab308", fontWeight: 600 }} />
+          <ReferenceLine y={71} stroke="#22c55e" strokeDasharray="4 4" strokeOpacity={0.5} label={{ value: "Proficient", position: "left", fontSize: 9, fill: "#22c55e", fontWeight: 600 }} />
 
           <Tooltip content={<RichTooltip />} />
 

@@ -5,6 +5,7 @@ import { useTranslation } from "@/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COMPETENCIES } from "@/lib/constants";
+import { getMaturityColor } from "@/lib/maturity";
 import {
   Lightbulb,
   AlertTriangle,
@@ -331,7 +332,7 @@ function ReadinessSection() {
                 <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" strokeWidth="8" />
                 <circle
                   cx="50" cy="50" r="40" fill="none"
-                  stroke={readiness.readiness_score >= 70 ? '#22c55e' : readiness.readiness_score >= 40 ? '#f59e0b' : '#ef4444'}
+                  stroke={getMaturityColor(readiness.readiness_score)}
                   strokeWidth="8"
                   strokeDasharray={`${readiness.readiness_score * 2.51} 251`}
                   strokeLinecap="round"

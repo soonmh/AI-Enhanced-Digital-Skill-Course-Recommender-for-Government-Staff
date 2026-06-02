@@ -13,6 +13,7 @@ import {
   ComposedChart,
   Legend,
 } from "recharts";
+import { getMaturityLevel } from "@/lib/maturity";
 
 interface DsriTrendLineProps {
   data: Array<{ date: string; dsri: number; forecast?: number }>;
@@ -25,15 +26,11 @@ interface DsriTrendLineProps {
 }
 
 function getDsriColor(val: number) {
-  if (val >= 70) return "#22c55e";
-  if (val >= 40) return "#f59e0b";
-  return "#ef4444";
+  return getMaturityLevel(val).hex;
 }
 
 function getDsriLabel(val: number) {
-  if (val >= 70) return "Good";
-  if (val >= 40) return "Average";
-  return "Needs Work";
+  return getMaturityLevel(val).labelEn;
 }
 
 export function DsriTrendLine({ data, forecast }: DsriTrendLineProps) {

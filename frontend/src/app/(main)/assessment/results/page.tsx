@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAssessmentResults } from "@/hooks/useApi";
+import { useSession } from "next-auth/react";
+import { useAssessmentResults, useAiInsights, useRecommendedCourses } from "@/hooks/useApi";
 import { useTranslation } from "@/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { COMPETENCIES } from "@/lib/constants";
 import { CompetencyRadar } from "@/components/charts/CompetencyRadar";
 import { DsriTrendLine } from "@/components/charts/DsriTrendLine";
 import { ComparisonRadar } from "@/components/charts/ComparisonRadar";
+import { getMaturityLevel } from "@/lib/maturity";
 import type { SectionScore, AssessmentRecord } from "@/types";
 import {
   Info,
@@ -26,13 +28,15 @@ import {
   Clock,
   ClipboardList,
   GitCompare,
+  ExternalLink,
+  Copy,
+  Download,
+  Loader2,
 } from "lucide-react";
 
 function getDsriLevel(score: number) {
-  if (score >= 90) return { label: "Excellent", color: "bg-green-500 dark:bg-green-500/20", textColor: "text-green-700 dark:text-green-300" };
-  if (score >= 70) return { label: "Good", color: "bg-yellow-500 dark:bg-yellow-500/20", textColor: "text-yellow-700 dark:text-yellow-300" };
-  if (score >= 40) return { label: "Average", color: "bg-orange-500 dark:bg-orange-500/20", textColor: "text-orange-700 dark:text-orange-300" };
-  return { label: "Needs Improvement", color: "bg-red-500 dark:bg-red-500/20", textColor: "text-red-700 dark:text-red-300" };
+  const m = getMaturityLevel(score);
+  return { label: m.labelEn, color: m.badgeClass, textColor: m.textClass };
 }
 
 function getScoreColor(percent: number) {
@@ -73,9 +77,67 @@ function formatTime(dateStr: string) {
 
 export default function AssessmentResultsPage() {
   const { t } = useTranslation();
+  const { data: session } = useSession();
   const { data, isLoading } = useAssessmentResults();
+  const { insights } = useAiInsights();
+  const { courses: recommendedCourses } = useRecommendedCourses();
   const [compareA, setCompareA] = useState<string>("");
   const [compareB, setCompareB] = useState<string>("");
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    if (!data?.latest || generatingPDF) return;
+
+    setGeneratingPDF(true);
+    try {
+      const competencyScores: Record<string, number> = {};
+      if (data.latestSectionScores) {
+        Object.entries(data.latestSectionScores).forEach(([code, s]) => {
+          competencyScores[code] = s.score;
+        });
+      }
+
+      const res = await fetch("/api/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userName: session?.user?.name || "User",
+          userEmail: session?.user?.email || "",
+          department: (session?.user as any)?.working_field,
+          dsri: data.latest.dsri,
+          maturityLevel: data.certificate?.maturity_level ?? 1,
+          competencyScores,
+          certificateCode: data.certificate?.verification_code,
+          issuedAt: data.certificate?.issued_at ?? data.latest.submitted_at,
+          aiSummary: insights?.recommendations?.summary,
+          aiFindings: insights?.recommendations?.key_findings,
+          aiAdvice: insights?.recommendations?.advice,
+          aiNextSteps: insights?.recommendations?.focus_areas?.map((a: any) => `${a.code}: ${a.reason}`),
+          courses: recommendedCourses?.slice(0, 5).map((c: any) => ({
+            title: c.title || c.course?.title || c.name || "Course",
+            level: c.level || c.course?.level || "",
+            url: c.url || c.course?.url,
+          })),
+        }),
+      });
+
+      if (!res.ok) throw new Error("PDF generation failed");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `DSRA-Report-${(session?.user?.name || "User").replace(/\s+/g, "-")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF download failed:", err);
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -158,15 +220,33 @@ export default function AssessmentResultsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Print-only report header */}
+      <div className="hidden print-only text-center mb-6 pt-4">
+        <h1 className="text-2xl font-bold">Digital Skills Readiness Assessment Report</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          {session?.user?.name} · {submittedAt ? formatDate(submittedAt) : ""} · DSRI: {dsri}%
+        </p>
+        <hr className="mt-3 border-gray-300" />
+      </div>
       <div className="px-6 py-8 w-full max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">{t("assessment.resultsTitle")}</h1>
-          <p className="text-muted-foreground text-lg">{t("assessment.resultsDescription")}</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-foreground mb-2">{t("assessment.resultsTitle")}</h1>
+            <p className="text-muted-foreground text-lg">{t("assessment.resultsDescription")}</p>
+          </div>
+          <button
+            onClick={handleDownloadPDF}
+            disabled={generatingPDF}
+            className="no-print inline-flex items-center gap-2 rounded-lg border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+          >
+            {generatingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            {generatingPDF ? t("assessment.generating") : t("assessment.downloadReport")}
+          </button>
         </div>
 
         {/* Score Header Card */}
-        <Card className="mb-8 overflow-hidden border-0 shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 dark:from-violet-900 dark:via-indigo-950 dark:to-gray-900 text-white">
+        <Card className="mb-8 overflow-hidden border-0 shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 dark:from-violet-900 dark:via-indigo-950 dark:to-gray-900 text-white print-no-break">
           <CardContent className="p-8">
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
               <div className="flex-1">
@@ -191,9 +271,10 @@ export default function AssessmentResultsPage() {
                   <div className="pb-2">
                     <Badge className={`${level.color} text-white border-white/30 text-lg px-4 py-3 rounded-full`}>
                       {dsri >= 90 && <TrendingUp className="w-4 h-4 mr-2" />}
-                      {dsri >= 70 && dsri < 90 && <Award className="w-4 h-4 mr-2" />}
-                      {dsri >= 40 && dsri < 70 && <Target className="w-4 h-4 mr-2" />}
-                      {dsri < 40 && <Info className="w-4 h-4 mr-2" />}
+                      {dsri >= 71 && dsri < 90 && <Award className="w-4 h-4 mr-2" />}
+                      {dsri >= 51 && dsri < 71 && <Target className="w-4 h-4 mr-2" />}
+                      {dsri >= 31 && dsri < 51 && <Activity className="w-4 h-4 mr-2" />}
+                      {dsri < 31 && <Info className="w-4 h-4 mr-2" />}
                       {level.label}
                     </Badge>
                     {trend && trend.value > 0 && (
@@ -233,6 +314,68 @@ export default function AssessmentResultsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Certificate Card */}
+        {data.certificate && (
+          <Card className="mb-8 border-0 shadow-md overflow-hidden !p-0 !gap-0">
+            <div className="flex">
+              <div className="w-1.5 shrink-0 bg-gradient-to-b from-amber-400 to-amber-600" />
+              <div className="flex-1 px-6 py-5">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-amber-500/10 rounded-xl">
+                        <Award className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground text-base">
+                          {t("certificates.digitalSkillsCertificate")}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {t("certificates.earned")} L{data.certificate.maturity_level} — {data.certificate.maturity_label_en}
+                        </p>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(data.certificate.issued_at).toLocaleDateString()}
+                          </span>
+                          {data.certificate.expires_at && !data.certificate.is_expired && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {t("certificates.validUntil", {
+                                date: new Date(data.certificate.expires_at).toLocaleDateString(undefined, {
+                                  month: "short",
+                                  year: "numeric",
+                                }),
+                              })}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/c/${data.certificate.verification_code}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition-colors"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        {t("certificates.viewCertificate")}
+                      </Link>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(data.certificate!.share_url);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors"
+                      >
+                        <Copy className="w-4 h-4" />
+                        {t("certificates.shareLink")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+        )}
 
         {/* Competency Radar */}
         {sectionEntries.length > 0 && (
@@ -393,7 +536,7 @@ export default function AssessmentResultsPage() {
 
         {/* Assessment History Table */}
         {history.length > 0 && (
-          <Card className="border-0 shadow-md">
+          <Card className="border-0 shadow-md print-break">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <History className="w-6 h-6 text-purple-600 dark:text-purple-400" />
@@ -466,15 +609,7 @@ export default function AssessmentResultsPage() {
                         </td>
                         <td className="p-3 text-center">
                           <span
-                            className={`font-bold text-lg ${
-                              r.dsri >= 90
-                                ? "text-green-600 dark:text-green-400"
-                                : r.dsri >= 70
-                                ? "text-yellow-600 dark:text-yellow-400"
-                                : r.dsri >= 40
-                                ? "text-orange-600 dark:text-orange-400"
-                                : "text-red-600 dark:text-red-400"
-                            }`}
+                            className={`font-bold text-lg ${getMaturityLevel(r.dsri).textClass}`}
                           >
                             {r.dsri}%
                           </span>
@@ -712,6 +847,13 @@ export default function AssessmentResultsPage() {
               })()}
             </CardContent>
           </Card>
+        )}
+
+        {/* Print-only footer */}
+        {data?.certificate && (
+          <div className="hidden print-only text-center text-xs text-gray-400 mt-6 pt-4 border-t border-gray-200">
+            Verify online: {typeof window !== "undefined" ? window.location.origin : ""}/c/{data.certificate.verification_code}
+          </div>
         )}
       </div>
     </div>

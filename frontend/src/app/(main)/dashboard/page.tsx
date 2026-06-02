@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useDashboard } from "@/hooks/useApi";
+import { useDashboard, useBenchmark } from "@/hooks/useApi";
 import { useTranslation } from "@/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,22 +23,21 @@ import {
   CirclePlay,
   Activity,
   ChevronRight,
+  Users,
 } from "lucide-react";
 import { DsriTrendLine } from "@/components/charts/DsriTrendLine";
+import { CompetencyRadar } from "@/components/charts/CompetencyRadar";
 import { AiInsightCard } from "@/components/dashboard/AiInsightCard";
 import { LearningPathProgress } from "@/components/dashboard/LearningPathProgress";
+import { getMaturityLevel } from "@/lib/maturity";
 
 function getDsriLevel(score: number) {
-  if (score >= 90) return { label: "Excellent", color: "bg-green-500 dark:bg-green-500/20 dark:text-green-300", ring: "#22c55e", ringDark: "#4ade80", bg: "bg-green-500/10" };
-  if (score >= 70) return { label: "Good", color: "bg-emerald-500 dark:bg-emerald-500/20 dark:text-emerald-300", ring: "#10b981", ringDark: "#34d399", bg: "bg-emerald-500/10" };
-  if (score >= 40) return { label: "Average", color: "bg-amber-500 dark:bg-amber-500/20 dark:text-amber-300", ring: "#f59e0b", ringDark: "#fbbf24", bg: "bg-amber-500/10" };
-  return { label: "Needs Work", color: "bg-red-500 dark:bg-red-500/20 dark:text-red-300", ring: "#ef4444", ringDark: "#f87171", bg: "bg-red-500/10" };
+  const m = getMaturityLevel(score);
+  return { label: m.labelEn, color: m.badgeClass, ring: m.hex, ringDark: m.hexDark, bg: m.bgClass };
 }
 
 function getDsriTextColor(score: number) {
-  if (score >= 70) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 40) return "text-amber-600 dark:text-amber-400";
-  return "text-red-600 dark:text-red-400";
+  return getMaturityLevel(score).textClass;
 }
 
 function scoreCellColor(val: number | null | undefined, maxScore: number) {
@@ -53,6 +52,7 @@ function scoreCellColor(val: number | null | undefined, maxScore: number) {
 export default function DashboardPage() {
   const { data: session } = useSession();
   const { dashboard, isLoading } = useDashboard();
+  const { benchmark } = useBenchmark();
   const { t } = useTranslation();
 
   if (isLoading) {
@@ -329,6 +329,78 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <LearningPathProgress sectionScores={dashboard.latestSectionScores} />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Benchmark Comparison */}
+        {benchmark?.has_data && (
+          <Card className="shadow-sm hover:shadow-md transition-shadow mb-8">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    {t("dashboard.howYouCompare")}
+                  </CardTitle>
+                  <CardDescription>{t("dashboard.howYouCompareDescription")}</CardDescription>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">
+                    {t("dashboard.topPercent", { pct: benchmark.percentile })}
+                  </div>
+                  <Badge className={
+                    benchmark.percentile >= 60
+                      ? "bg-green-500/10 text-green-700 dark:text-green-400 border-0"
+                      : benchmark.percentile >= 40
+                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-0"
+                      : "bg-red-500/10 text-red-700 dark:text-red-400 border-0"
+                  }>
+                    {benchmark.percentile_label}
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="rounded-xl border border-border p-4 text-center">
+                  <div className="text-xs text-muted-foreground mb-1">{t("dashboard.yourScore")}</div>
+                  <div className="text-2xl font-bold" style={{ color: getDsriLevel(latestScore).ring }}>
+                    {Math.round(latestScore)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">{t("dashboard.yourScoreLabel")}</div>
+                </div>
+                <div className="rounded-xl border border-border p-4 text-center">
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {benchmark.department?.name ?? t("dashboard.departmentAvg")}
+                  </div>
+                  <div className="text-2xl font-bold text-violet-600 dark:text-violet-400">
+                    {Math.round(benchmark.department?.avg_dsri ?? benchmark.platform.avg_dsri)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {benchmark.department
+                      ? t("dashboard.sameDeptPeers", { n: benchmark.department.sample_size ?? 0 })
+                      : t("dashboard.allUsers", { n: benchmark.sample_size ?? 0 })}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border p-4 text-center">
+                  <div className="text-xs text-muted-foreground mb-1">{t("dashboard.platformAvg")}</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {Math.round(benchmark.platform.avg_dsri)}%
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">{t("dashboard.allUsers", { n: benchmark.sample_size ?? 0 })}</div>
+                </div>
+              </div>
+              {dashboard?.latestSectionScores && (
+                <CompetencyRadar
+                  data={Object.entries(dashboard.latestSectionScores).map(([code, s]) => ({
+                    code,
+                    name: s.section_name,
+                    percentage: Math.round((s.score / s.max_score) * 100),
+                  }))}
+                  benchmark={benchmark.department?.competencies ?? benchmark.platform.competencies}
+                />
+              )}
             </CardContent>
           </Card>
         )}

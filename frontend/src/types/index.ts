@@ -85,6 +85,16 @@ export interface AssessmentResultsData {
   };
   latestSectionScores?: Record<string, SectionScore>;
   history?: AssessmentRecord[];
+  certificate?: {
+    id: number;
+    verification_code: string;
+    maturity_level: number;
+    maturity_label_en: string;
+    issued_at: string;
+    expires_at: string | null;
+    is_expired: boolean;
+    share_url: string;
+  };
 }
 
 export interface NotificationItem {
@@ -95,4 +105,40 @@ export interface NotificationItem {
   data: Record<string, any> | null;
   read_at: string | null;
   created_at: string;
+}
+
+export interface CertificateVerification {
+  valid: boolean;
+  certificate: {
+    id: number;
+    type: string;
+    dsri_score: number;
+    maturity_level: number;
+    maturity_code: string;
+    maturity_label_en: string;
+    maturity_label_ms: string;
+    competency_scores: Record<string, number>;
+    user_name: string;
+    user_field?: string;
+    issued_at: string;
+    expires_at: string | null;
+    is_expired: boolean;
+  };
+}
+
+export interface BenchmarkData {
+  has_data: boolean;
+  sample_size: number;
+  platform: {
+    avg_dsri: number;
+    competencies: Record<string, number>;
+  };
+  department: {
+    name: string;
+    avg_dsri: number;
+    sample_size: number;
+    competencies: Record<string, number>;
+  } | null;
+  percentile: number;
+  percentile_label: string;
 }

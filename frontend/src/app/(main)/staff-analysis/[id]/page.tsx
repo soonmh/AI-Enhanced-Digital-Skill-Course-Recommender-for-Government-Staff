@@ -11,6 +11,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { CompetencyRadar } from "@/components/charts/CompetencyRadar";
 import { DsriTrendLine } from "@/components/charts/DsriTrendLine";
 import { COMPETENCIES } from "@/lib/constants";
+import { getMaturityLevel } from "@/lib/maturity";
 import {
   ArrowLeft,
   Calendar,
@@ -47,10 +48,8 @@ function getProgressBarColor(pct: number) {
 }
 
 function getDsriLevel(score: number) {
-  if (score >= 90) return { label: "Excellent", color: "#22c55e", bg: "bg-green-500/10", ring: "#22c55e" };
-  if (score >= 70) return { label: "Good", color: "#84cc16", bg: "bg-lime-50", ring: "#84cc16" };
-  if (score >= 40) return { label: "Average", color: "#f59e0b", bg: "bg-amber-500/10", ring: "#f59e0b" };
-  return { label: "Needs Work", color: "#ef4444", bg: "bg-red-500/10", ring: "#ef4444" };
+  const m = getMaturityLevel(score);
+  return { label: m.labelEn, color: m.hex, bg: m.bgClass, ring: m.hex };
 }
 
 function getStatusBadge(status: string) {

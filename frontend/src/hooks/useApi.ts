@@ -3,11 +3,16 @@
 import useSWR from "swr";
 import { fetcher } from "@/lib/axios";
 import api from "@/lib/axios";
-import type { DashboardData, AssessmentStartData, AssessmentResultsData, User } from "@/types";
+import type { DashboardData, AssessmentStartData, AssessmentResultsData, User, CertificateVerification, BenchmarkData } from "@/types";
 
 export function useDashboard() {
   const { data, error, isLoading, mutate } = useSWR<DashboardData>("/api/dashboard", fetcher);
   return { dashboard: data, isLoading, isError: error, refresh: mutate };
+}
+
+export function useBenchmark() {
+  const { data, error, isLoading } = useSWR<BenchmarkData>("/api/dashboard/benchmark", fetcher);
+  return { benchmark: data, isLoading, isError: error };
 }
 
 export function useAssessmentStart() {
@@ -250,4 +255,12 @@ export async function markNotificationRead(id: string) {
 
 export async function markAllNotificationsRead() {
   await api.put("/api/notifications/read-all");
+}
+
+export function useCertificateVerification(code: string | null) {
+  const { data, error, isLoading } = useSWR<CertificateVerification>(
+    code ? `/api/c/verify/${code}` : null,
+    fetcher
+  );
+  return { verification: data, isLoading, isError: error };
 }

@@ -12,6 +12,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { OnlineIndicator } from "@/components/shared/OnlineIndicator";
 import { DepartmentComparisonBar } from "@/components/charts/DepartmentComparisonBar";
 import { CompetencyHeatmap } from "@/components/charts/CompetencyHeatmap";
+import { getMaturityLevel } from "@/lib/maturity";
 import {
   Users,
   BookOpen,
@@ -380,11 +381,11 @@ export default function StaffAnalysisPage() {
                               <div className="flex items-center gap-2">
                                 <div className="w-16 bg-muted rounded-full h-2">
                                   <div
-                                    className={`h-2 rounded-full ${(s.latest_dsri || 0) >= 70 ? "bg-green-500 dark:bg-green-400/50" : (s.latest_dsri || 0) >= 40 ? "bg-yellow-500 dark:bg-yellow-400/50" : "bg-red-500 dark:bg-red-400/50"}`}
+                                    className={`h-2 rounded-full ${getMaturityLevel(s.latest_dsri || 0).bgClass}`}
                                     style={{ width: `${s.latest_dsri}%` }}
                                   />
                                 </div>
-                                <span className={`text-sm font-bold ${(s.latest_dsri || 0) >= 70 ? "text-green-600 dark:text-green-400" : (s.latest_dsri || 0) >= 40 ? "text-orange-600 dark:text-orange-400" : "text-red-600 dark:text-red-400"}`}>
+                                <span className={`text-sm font-bold ${getMaturityLevel(s.latest_dsri || 0).textClass}`}>
                                   {s.latest_dsri}%
                                 </span>
                               </div>

@@ -13,7 +13,7 @@ import {
 
 interface CompetencyRadarProps {
   data: Array<{ code: string; name: string; percentage: number }>;
-  benchmark?: number;
+  benchmark?: number | Record<string, number>;
 }
 
 function getScoreColor(pct: number) {
@@ -28,8 +28,14 @@ function getScoreLabel(pct: number) {
   return "Needs Focus";
 }
 
-export function CompetencyRadar({ data, benchmark = 50 }: CompetencyRadarProps) {
-  const enrichedData = data.map((d) => ({ ...d, benchmark }));
+export function CompetencyRadar({ data, benchmark }: CompetencyRadarProps) {
+  const benchmarkValue = typeof benchmark === "number" ? benchmark : 50;
+  const benchmarkPerCode = typeof benchmark === "object" ? benchmark : null;
+
+  const enrichedData = data.map((d) => ({
+    ...d,
+    benchmark: benchmarkPerCode ? (benchmarkPerCode[d.code] ?? 50) : benchmarkValue,
+  }));
 
   return (
     <div className="flex flex-col items-center">
@@ -158,7 +164,9 @@ export function CompetencyRadar({ data, benchmark = 50 }: CompetencyRadarProps) 
         })}
         <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-border">
           <span className="inline-block w-4 h-0 border-t-2 border-dashed border-gray-300" />
-          <span className="text-muted-foreground">Benchmark {benchmark}%</span>
+          <span className="text-muted-foreground">
+            {benchmarkPerCode ? "Peer Avg" : `Benchmark ${benchmarkValue}%`}
+          </span>
         </div>
       </div>
     </div>

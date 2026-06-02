@@ -89,6 +89,7 @@ class AssessmentController extends Controller
         return response()->json([
             'message' => 'Assessment submitted successfully',
             'response' => new AssessmentResponseResource($response),
+            'maturity' => $this->dsriService->getMaturityLevel($result['dsri'], $request->user()->locale ?? 'en'),
         ], 201);
     }
 
@@ -109,10 +110,29 @@ class AssessmentController extends Controller
             }
         }
 
+        $certificate = null;
+        if ($latest) {
+            $cert = \App\Models\Certificate::where('assessment_response_id', $latest->id)->first();
+            if ($cert) {
+                $certificate = [
+                    'id' => $cert->id,
+                    'verification_code' => $cert->verification_code,
+                    'maturity_level' => $cert->maturity_level,
+                    'maturity_label_en' => $cert->maturity_label_en,
+                    'issued_at' => $cert->issued_at->toIso8601String(),
+                    'expires_at' => $cert->expires_at?->toIso8601String(),
+                    'is_expired' => $cert->isExpired(),
+                    'share_url' => url('/c/' . $cert->verification_code),
+                ];
+            }
+        }
+
         return response()->json([
             'latest' => $latest,
             'history' => AssessmentResponseResource::collection($history),
             'latestSectionScores' => $latestSectionScores,
+            'maturity' => $latest ? $this->dsriService->getMaturityLevel($latest->dsri, $user->locale ?? 'en') : null,
+            'certificate' => $certificate,
         ]);
     }
 

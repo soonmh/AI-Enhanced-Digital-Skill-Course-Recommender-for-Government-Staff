@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAssessmentResults } from "@/hooks/useApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { COMPETENCIES } from "@/lib/constants";
+import { getMaturityLevel } from "@/lib/maturity";
 import { useTranslation } from "@/i18n/context";
 import {
   Play,
@@ -36,10 +37,8 @@ function Monitor2({ className }: { className?: string }) {
 }
 
 function formatScore(dsri: number) {
-  if (dsri >= 90) return { label: "Excellent", color: "text-green-600 dark:text-green-400", bg: "bg-green-500/10 dark:bg-green-400/15", ring: "ring-green-200 dark:ring-green-400/30" };
-  if (dsri >= 70) return { label: "Good", color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-500/10 dark:bg-yellow-400/15", ring: "ring-yellow-200 dark:ring-yellow-400/30" };
-  if (dsri >= 40) return { label: "Average", color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-400/15", ring: "ring-orange-200 dark:ring-orange-400/30" };
-  return { label: "Needs Work", color: "text-red-600 dark:text-red-400", bg: "bg-red-500/10 dark:bg-red-400/15", ring: "ring-red-200 dark:ring-red-400/30" };
+  const m = getMaturityLevel(dsri);
+  return { label: m.labelEn, color: m.textClass, bg: m.bgClass, ring: m.ringClass };
 }
 
 export default function AssessmentLandingPage() {

@@ -29,6 +29,21 @@
     "all": "Semua",
     "allLevels": "Semua Peringkat"
   },
+  "maturity": {
+    "levelLabel": "Tahap {n}",
+    "novice": "Pemula",
+    "developing": "Berkembang",
+    "capable": "Berkebolehan",
+    "proficient": "Mahir",
+    "expert": "Pakar",
+    "noviceDesc": "Memulakan perjalanan kemahiran digital anda",
+    "developingDesc": "Membina asas kemahiran digital",
+    "capableDesc": "Mengaplikasikan kemahiran digital dengan yakin dalam kebanyakan tugas",
+    "proficientDesc": "Kemahiran digital yang kukuh dan menyeluruh",
+    "expertDesc": "Mahir dan mampu memimpin orang lain",
+    "gapToNext": "{n} mata ke tahap seterusnya",
+    "maxLevel": "Tahap tertinggi dicapai"
+  },
   "nav": {
     "dashboard": "Papan Pemuka",
     "aiInsights": "Panduan AI",
@@ -193,7 +208,16 @@
     "start": "Mula",
     "viewAllRecommended": "Lihat Semua Cadangan",
     "assessmentHistory": "Sejarah Penilaian",
-    "overallCompletion": "Penyiapan Keseluruhan"
+    "overallCompletion": "Penyiapan Keseluruhan",
+    "howYouCompare": "Perbandingan Anda",
+    "howYouCompareDescription": "DSRI anda berbanding rakan di platform",
+    "topPercent": "Top {pct}%",
+    "yourScore": "Skor Anda",
+    "yourScoreLabel": "DSRI",
+    "departmentAvg": "Purata Jabatan",
+    "platformAvg": "Purata Platform",
+    "sameDeptPeers": "{n} rakan di {name}",
+    "allUsers": "{n} pengguna"
   },
   "assessment": {
     "landingTitle": "Penilaian Kesediaan Kemahiran Digital",
@@ -275,6 +299,8 @@
     "sectionDesc10": "Ukur keupayaan penyelesaian masalah anda dengan teknologi",
     "resultsTitle": "Keputusan Penilaian",
     "resultsDescription": "Pecahan kesediaan kemahiran digital anda",
+    "downloadReport": "Muat Turun Laporan",
+    "generating": "Menghasilkan...",
     "noResultsTitle": "Tiada Keputusan Lagi",
     "noResultsDescription": "Ambil penilaian pertama anda untuk melihat keputusan di sini.",
     "takeAssessment": "Ambil Penilaian",
@@ -688,5 +714,21 @@
     "minutesAgo": "{count} min lalu",
     "hoursAgo": "{count} jam lalu",
     "daysAgo": "{count} hari lalu"
+  },
+  "certificates": {
+    "title": "Sijil Saya",
+    "description": "Sijil kesediaan kemahiran digital yang diperoleh. Kongsi di LinkedIn atau dengan majikan anda.",
+    "noCertificates": "Belum ada sijil",
+    "noCertificatesDesc": "Selesaikan penilaian kemahiran digital untuk mendapatkan sijil pertama anda.",
+    "takeAssessment": "Ambil Penilaian",
+    "digitalSkillsCertificate": "Sijil Kesediaan Kemahiran Digital",
+    "expired": "Tamat Tempoh",
+    "validUntil": "Sah sehingga {date}",
+    "view": "Lihat",
+    "copyLink": "Salin Pautan",
+    "copied": "Disalin!",
+    "earned": "Diperoleh:",
+    "viewCertificate": "Lihat Sijil",
+    "shareLink": "Kongsi Pautan"
   }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\AssessmentDraftController;
 use App\Http\Controllers\Api\AiInsightController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\NotificationController;
@@ -18,6 +19,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
+// Public certificate verification
+Route::get('/c/verify/{code}', [CertificateController::class, 'verify']);
+
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
@@ -26,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard/benchmark', [DashboardController::class, 'benchmark']);
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);

@@ -29,6 +29,21 @@
     "all": "All",
     "allLevels": "All Levels"
   },
+  "maturity": {
+    "levelLabel": "Level {n}",
+    "novice": "Novice",
+    "developing": "Developing",
+    "capable": "Capable",
+    "proficient": "Proficient",
+    "expert": "Expert",
+    "noviceDesc": "Beginning your digital skills journey",
+    "developingDesc": "Building foundational digital skills",
+    "capableDesc": "Confidently applying digital skills in most tasks",
+    "proficientDesc": "Strong, well-rounded digital capability",
+    "expertDesc": "Mastery and ability to lead others",
+    "gapToNext": "{n} points to next level",
+    "maxLevel": "Highest level achieved"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "aiInsights": "AI Insights",
@@ -193,7 +208,16 @@
     "start": "Start",
     "viewAllRecommended": "View All Recommended",
     "assessmentHistory": "Assessment History",
-    "overallCompletion": "Overall Completion"
+    "overallCompletion": "Overall Completion",
+    "howYouCompare": "How You Compare",
+    "howYouCompareDescription": "Your DSRI compared to peers across the platform",
+    "topPercent": "Top {pct}%",
+    "yourScore": "Your Score",
+    "yourScoreLabel": "DSRI",
+    "departmentAvg": "Department Avg",
+    "platformAvg": "Platform Avg",
+    "sameDeptPeers": "{n} peers in {name}",
+    "allUsers": "{n} users"
   },
   "assessment": {
     "landingTitle": "Digital Skills Readiness Assessment",
@@ -275,6 +299,8 @@
     "sectionDesc10": "Measure your problem-solving capabilities with technology",
     "resultsTitle": "Assessment Results",
     "resultsDescription": "Your digital skills readiness breakdown",
+    "downloadReport": "Download Report",
+    "generating": "Generating...",
     "noResultsTitle": "No Results Yet",
     "noResultsDescription": "Take your first assessment to see your results here.",
     "takeAssessment": "Take Assessment",
@@ -688,5 +714,21 @@
     "minutesAgo": "{count}m ago",
     "hoursAgo": "{count}h ago",
     "daysAgo": "{count}d ago"
+  },
+  "certificates": {
+    "title": "My Certificates",
+    "description": "Your earned digital skills readiness certificates. Share them on LinkedIn or with your employer.",
+    "noCertificates": "No certificates yet",
+    "noCertificatesDesc": "Complete a digital skills assessment to earn your first certificate.",
+    "takeAssessment": "Take Assessment",
+    "digitalSkillsCertificate": "Digital Skills Readiness Certificate",
+    "expired": "Expired",
+    "validUntil": "Valid until {date}",
+    "view": "View",
+    "copyLink": "Copy Link",
+    "copied": "Copied!",
+    "earned": "Earned:",
+    "viewCertificate": "View Certificate",
+    "shareLink": "Share Link"
   }
 }
