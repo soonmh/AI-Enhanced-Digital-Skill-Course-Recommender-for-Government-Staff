@@ -9,7 +9,7 @@
 [![Socket.io](https://img.shields.io/badge/Socket.io-4-010101?logo=socket.io&logoColor=white)](https://socket.io/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
-A full-stack web-based **Digital Skill Course Recommendation System** designed for Malaysian government staff. The system assesses digital skills readiness through a structured questionnaire, calculates a composite DSRI score, identifies skill gaps, and recommends relevant courses using AI-powered analysis.
+A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform designed for Malaysian government staff. The system assesses digital skills readiness through a structured questionnaire, calculates a composite DSRI score with a 5-level maturity model, identifies skill gaps against job-role competency benchmarks, and recommends relevant courses using a hybrid AI-powered recommendation engine — with certificates, PDF reports, and manager dashboards.
 
 > **FYP-1 Project** — Final Year Project for Bachelor's Degree in Computer Science
 
@@ -33,11 +33,14 @@ A full-stack web-based **Digital Skill Course Recommendation System** designed f
 - [Database Schema](#database-schema)
 - [API Documentation](#api-documentation)
 - [Authentication Flow](#authentication-flow)
-- [DSRI Calculation](#dsri-calculation)
+- [DSRI Calculation & Maturity Model](#dsri-calculation--maturity-model)
 - [Course Recommendation System](#course-recommendation-system)
 - [AI Integration](#ai-integration)
+- [Certificates](#certificates)
+- [Manager View (Direct Reports)](#manager-view-direct-reports)
 - [Roles & Permissions](#roles--permissions)
 - [Localization](#localization)
+- [A/B Testing & Evaluation](#ab-testing--evaluation)
 - [Future Improvements](#future-improvements)
 - [License](#license)
 
@@ -61,11 +64,20 @@ A full-stack web-based **Digital Skill Course Recommendation System** designed f
 - 1–5 confidence rating scale per question, with auto-save drafts every 2 seconds
 - Section-by-section navigation with progress tracking
 - Historical assessment tracking with trend analysis and comparison between attempts
+- Single-competency retest — retake individual sections (C1–C10) without redoing the full assessment
+- Benchmark comparison — percentile ranking against peers with radar overlay between attempts
 
-### DSRI Scoring
+### DSRI Scoring & Maturity Model
 - Weighted composite score (0–100) across 10 competency categories
+- **5-Level Maturity Model**: Novice (0–30), Developing (31–50), Capable (51–70), Proficient (71–89), Expert (90–100)
 - Per-category breakdown with visual radar charts
 - Trend visualization across multiple assessment attempts
+
+### Job Role Competency Map
+- 8 predefined Malaysian government job roles with target competency levels
+- Roles: Administrative Officer, IT Officer, HR Officer, Finance Officer, Trainer/Instructor, Manager/Director, Clerk/Assistant, Executive/Specialist
+- Gap analysis showing Met / Close (within 15%) / Gap status per competency
+- Overall readiness percentage per role
 
 ### Course Management
 - Course CRUD with bilingual titles (English/Bahasa Melayu)
@@ -74,13 +86,33 @@ A full-stack web-based **Digital Skill Course Recommendation System** designed f
 - Course ratings and reviews (1–5 stars)
 - Admin course assignment to individual users or groups
 
-### AI-Powered Recommendations
+### AI-Powered Recommendations & Insights
 - **Hybrid recommendation engine** combining content-based filtering (cosine similarity) and collaborative filtering (user-user similarity)
 - Continuous scoring — no binary weak/not-weak cutoff; uses deficit vectors and difficulty matching
 - Adaptive blending — shifts from content-only (new users) to 50/50 hybrid (users with peer data)
 - AI-generated explanations referencing specific scores and peer comparison data
 - Per-course competency breakdown showing user's exact scores for each covered skill
+- 30/60/90 Day Action Plan with phased milestones and expected DSRI improvement
 - Powered by Google Gemini 3.1 Flash Lite
+
+### Certificates
+- Auto-generated digital certificates upon assessment completion with unique verification codes
+- Public shareable URL for verification (`/c/{code}`)
+- Includes DSRI score, maturity level, and per-competency breakdown
+- 1-year validity with expiry tracking
+- Print-friendly design with radar chart visualization
+
+### PDF Personal Report Export
+- One-click professional PDF report generation
+- Circular DSRI score visualization, competency radar chart, and AI insights
+- Includes recommended courses, action plan, and certificate verification link
+- Server-side rendering via Puppeteer
+
+### Manager View (Direct Reports)
+- Team overview with size, assessment completion rate, course enrollment, and average DSRI
+- Team-level competency radar chart
+- Individual team member detailed reports with DSRI trend, competency breakdown, and course progress
+- CSV export of team data
 
 ### Analytics & Reporting
 - Individual assessment history with trend charts
@@ -99,6 +131,11 @@ A full-stack web-based **Digital Skill Course Recommendation System** designed f
 - Role assignment and permission control
 - Course assignment/unassignment to users
 - Bulk user operations
+
+### A/B Testing & Evaluation Tools
+- Built-in A/B testing framework for recommendation engine (control vs. hybrid)
+- Standalone HTML report generator (`tools/generate-ab-report.php`) with funnel visualization
+- Tracks impressions, clicks, enrollments, and completions per group
 
 ---
 
@@ -183,30 +220,35 @@ fyp1/
 │   │   ├── Http/
 │   │   │   ├── Controllers/Api/      # API controllers
 │   │   │   │   ├── AdminController           # User management, course assignment
-│   │   │   │   ├── AssessmentController      # Assessment flow & scoring
+│   │   │   │   ├── AiInsightController       # AI insights, action plan, peer comparison
+│   │   │   │   ├── AssessmentController      # Assessment flow, scoring, retest, role-gap
 │   │   │   │   ├── AssessmentDraftController # Draft auto-save
 │   │   │   │   ├── AuthController            # Register, login, logout
+│   │   │   │   ├── CertificateController     # Certificate verification
 │   │   │   │   ├── CourseController          # Course CRUD, enrollment, recommendations
-│   │   │   │   ├── DashboardController       # Dashboard aggregation
+│   │   │   │   ├── DashboardController       # Dashboard aggregation, benchmark
 │   │   │   │   ├── NotificationController    # Notification management
-│   │   │   │   ├── ReportController          # Analytics & reporting
+│   │   │   │   ├── ReportController          # Analytics, reporting, my-team
 │   │   │   │   └── SettingsController        # User profile & preferences
 │   │   │   └── Middleware/
 │   │   │       ├── EnsureHasPermission.php   # Permission guard
 │   │   │       └── EnsureHasRole.php         # Role guard
-│   │   ├── Models/                   # Eloquent models (12 models)
+│   │   ├── Models/                   # Eloquent models (14 models)
+│   │   │   ├── Certificate.php               # Auto-generated certificates
+│   │   │   ├── JobRoleProfile.php             # Job role competency targets
+│   │   │   └── ...                            # User, Course, Assessment, etc.
 │   │   ├── Services/
 │   │   │   ├── DsriCalculationService.php             # DSRI scoring engine
-│   │   │   ├── AiInsightService.php                   # Gemini AI integration
+│   │   │   ├── AiInsightService.php                   # Gemini AI integration + action plan
 │   │   │   ├── ContentBasedRecommendationService.php  # Cosine similarity + difficulty matching
 │   │   │   ├── CollaborativeFilteringService.php      # User-user collaborative filtering
 │   │   │   ├── HybridRecommendationService.php        # Adaptive hybrid orchestrator
 │   │   │   └── RealtimePublisher.php                  # Redis event publisher
 │   │   ├── Events/                   # AssessmentSubmitted, CourseCompleted
-│   │   └── Listeners/                # GenerateAiInsights, InvalidateRecommendationCache
+│   │   └── Listeners/                # GenerateAiInsights, InvalidateRecommendationCache, IssueCertificate
 │   ├── database/
-│   │   ├── migrations/               # 19 migrations
-│   │   └── seeders/                  # Demo data seeders
+│   │   ├── migrations/               # 23 migrations
+│   │   └── seeders/                  # Demo data + JobRoleProfile seeder
 │   └── routes/api.php               # All API routes
 │
 ├── frontend/                         # Next.js 14 application
@@ -218,16 +260,23 @@ fyp1/
 │       │   │   ├── forgot-password/
 │       │   │   └── reset-password/
 │       │   ├── (main)/              # Protected app pages
-│       │   │   ├── dashboard/       # Main dashboard with stats & charts
-│       │   │   ├── assessment/      # Assessment landing, taking, results
+│       │   │   ├── dashboard/       # Main dashboard with stats, charts, AI insights
+│       │   │   ├── assessment/      # Assessment landing, taking, results, retest
+│       │   │   │   ├── retest/[code]/  # Single-competency retest
+│       │   │   │   └── results/        # Results + benchmark comparison + PDF export
 │       │   │   ├── courses/         # Course list, detail, my-learning, recommended
 │       │   │   ├── admin/users/     # User management (Admin only)
+│       │   │   ├── my-team/         # Manager direct reports view
+│       │   │   ├── my-team/[id]/    # Individual team member report
+│       │   │   ├── ai-insights/     # AI insights, action plan, peer comparison
 │       │   │   ├── staff-analysis/  # Staff analytics (Management)
 │       │   │   ├── course-report/   # Course progress reports
 │       │   │   ├── settings/        # Profile, password, appearance
 │       │   │   └── recommended/     # AI-recommended courses
 │       │   ├── api/auth/            # NextAuth route handler
-│       │   └── api/[...path]/       # API proxy to Laravel
+│       │   ├── api/report/          # PDF generation endpoint (Puppeteer)
+│       │   ├── api/[...path]/       # API proxy to Laravel
+│       │   └── c/[code]/           # Public certificate verification page
 │       ├── components/
 │       │   ├── charts/              # Recharts visualizations
 │       │   ├── dashboard/           # Dashboard-specific components
@@ -242,12 +291,17 @@ fyp1/
 │       │   ├── auth.ts              # NextAuth configuration
 │       │   ├── axios.ts             # Axios instance with CSRF & interceptors
 │       │   ├── constants.ts         # Competency framework definitions
+│       │   ├── maturity.ts          # 5-level maturity model definitions
+│       │   ├── report-template.ts   # PDF report generation template
 │       │   ├── export.ts            # CSV export utilities
 │       │   └── socket.ts            # Socket.io client setup
 │       └── i18n/                    # Bilingual locale files (en/ms)
 │
 ├── realtime/                         # Socket.io real-time server
 │   └── src/index.js                 # Express + Socket.io + Redis subscriber
+│
+├── tools/
+│   └── generate-ab-report.php       # A/B testing report generator
 │
 ├── docker-compose.yml               # PostgreSQL + Redis containers
 └── .env.example                     # Environment variables template
@@ -428,6 +482,9 @@ User ──┬── hasMany ── AssessmentResponse (DSRI scores per attempt)
        ├── hasMany ── CourseRating (course ratings)
        ├── hasMany ── Notification (user notifications)
        ├── hasMany ── AiRecommendation (AI-generated insights)
+       ├── hasMany ── Certificate (auto-generated certificates)
+       ├── belongsTo ── User (manager)            # Manager relationship
+       ├── hasMany ── User (direct reports)        # Direct reports
        └── belongsToMany ── Role ── belongsToMany ── Permission
 
 Course ──┬── hasMany ── UserCourse (enrollments)
@@ -436,24 +493,29 @@ Course ──┬── hasMany ── UserCourse (enrollments)
          └── belongsTo ── User (creator)
 
 Assessment ── hasMany ── AssessmentResponse
+
+Certificate ── belongsTo ── User, belongsTo ── AssessmentResponse
+JobRoleProfile ── (standalone, seeded reference data)
 ```
 
 ### Key Tables
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Staff accounts with profile info |
+| `users` | Staff accounts with profile info + `manager_id` for direct reports |
 | `roles` | Admin, Staff, Top Management, Trainer |
 | `permissions` | Granular access control entries |
 | `courses` | Training courses with bilingual content |
 | `user_courses` | Enrollment tracking with progress & status |
 | `assessments` | Assessment definitions |
-| `assessment_responses` | Completed assessments with C1–C10 scores and DSRI |
+| `assessment_responses` | Completed assessments with C1–C10 scores, DSRI, and `type` (full/retest) |
 | `assessment_drafts` | Auto-saved in-progress assessments |
 | `course_competency_mappings` | Maps courses to competency categories (C1–C10) |
 | `course_ratings` | User ratings (1–5 stars) with timestamps |
 | `notifications` | System notifications with read status |
 | `ai_recommendations` | AI-generated insights linked to assessment responses |
+| `certificates` | Auto-generated certificates with verification code, DSRI, maturity level, competency scores, and expiry |
+| `job_role_profiles` | 8 predefined job roles with target competency levels (C1–C10) |
 | `user_similarity_cache` | Precomputed pairwise user similarity scores for collaborative filtering |
 | `recommendation_interactions` | Tracks impressions, clicks, enrollments for recommendation evaluation |
 
@@ -487,7 +549,10 @@ All protected endpoints require a valid Sanctum session cookie (obtained via `/l
 | `GET` | `/assessment` | `take-assessment` | Get assessment overview |
 | `GET` | `/assessment/start` | `take-assessment` | Get all questions |
 | `POST` | `/assessment/submit` | `take-assessment` | Submit completed assessment |
+| `POST` | `/assessment/submit-section` | `take-assessment` | Submit single section (retest) |
 | `GET` | `/assessment/results` | `take-assessment` | Get all past results |
+| `GET` | `/assessment/role-profiles` | `take-assessment` | Get available job roles |
+| `POST` | `/assessment/role-gap` | `take-assessment` | Calculate role-specific competency gaps |
 | `GET` | `/assessment/draft` | `take-assessment` | Load saved draft |
 | `POST` | `/assessment/draft` | `take-assessment` | Save draft |
 | `DELETE` | `/assessment/draft` | `take-assessment` | Discard draft |
@@ -580,6 +645,32 @@ All protected endpoints require a valid Sanctum session cookie (obtained via `/l
 | `GET` | `/reports/staff/{id}` | `user-reporting` | Individual staff detail |
 | `GET` | `/reports/department-comparison` | `user-reporting` | Department comparison |
 | `GET` | `/reports/course-progress` | `course-reporting` | Course enrollment & completion |
+| `GET` | `/reports/my-team` | auth | Manager's direct reports overview |
+| `GET` | `/reports/team-member/{id}` | auth | Individual team member report |
+
+### AI Insights
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| `GET` | `/ai/insights` | auth | Personalized strengths/weaknesses narrative |
+| `GET` | `/ai/learning-path` | auth | Step-by-step course sequence with timelines |
+| `GET` | `/ai/peer-comparison` | auth | Compare user to colleagues in same field |
+| `GET` | `/ai/readiness` | auth | Assessment retake readiness check |
+| `GET` | `/ai/action-plan` | auth | 30/60/90 day action plan with milestones |
+| `GET` | `/ai/department-insights` | `user-reporting` | Department-wide skill gap narrative |
+
+### Dashboard
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| `GET` | `/dashboard` | auth | Main dashboard aggregation |
+| `GET` | `/dashboard/benchmark` | auth | Percentile benchmark comparison |
+
+### Certificates
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| `GET` | `/c/verify/{code}` | public | Verify certificate by code |
 
 ### Admin
 
@@ -589,8 +680,12 @@ All protected endpoints require a valid Sanctum session cookie (obtained via `/l
 | `POST` | `/admin/users` | `user-management` | Create user |
 | `PUT` | `/admin/users/{id}` | `user-management` | Update user |
 | `DELETE` | `/admin/users/{id}` | `user-management` | Deactivate user |
+| `GET` | `/admin/users/{id}/assigned-courses` | `user-management` | Get user's assigned courses |
 | `POST` | `/admin/users/{id}/assign-courses` | `user-management` | Assign courses to user |
 | `DELETE` | `/admin/users/{id}/unassign-courses` | `user-management` | Unassign courses from user |
+| `GET` | `/admin/courses/{id}/assigned-users` | `user-management` | Get course's assigned users |
+| `POST` | `/admin/courses/{id}/assign-users` | `user-management` | Assign users to course |
+| `DELETE` | `/admin/courses/{id}/unassign-users` | `user-management` | Unassign users from course |
 
 ---
 
@@ -628,13 +723,27 @@ Browser                     Next.js (3000)              Laravel (8000)
 
 ---
 
-## DSRI Calculation
+## DSRI Calculation & Maturity Model
 
 The **Digital Skills Readiness Index (DSRI)** is a weighted composite score (0–100) calculated from 10 competency categories:
 
 ```
 DSRI = Σ (category_score / category_max_score × category_weight)
 ```
+
+### 5-Level Maturity Model
+
+Each DSRI score maps to a maturity level:
+
+| Level | Name | DSRI Range | Color | Description |
+|-------|------|------------|-------|-------------|
+| L1 | Novice | 0–30 | Red | Foundational skills — needs structured training |
+| L2 | Developing | 31–50 | Orange | Building competence — guided practice recommended |
+| L3 | Capable | 51–70 | Yellow | Functional proficiency — self-directed learning |
+| L4 | Proficient | 71–89 | Green | Advanced skills — mentoring others |
+| L5 | Expert | 90–100 | Emerald | Mastery level — leading digital transformation |
+
+Implemented in `frontend/src/lib/maturity.ts`. Maturity levels are displayed throughout the UI as color-coded badges on dashboards, certificates, and reports.
 
 ### Competency Framework
 
@@ -709,7 +818,7 @@ Set `RECOMMENDATION_AB_TESTING=true` in `.env` to enable. Users are deterministi
 
 ## AI Integration
 
-The system integrates with **Google Gemini 3.1 Flash Lite** for four AI-powered features:
+The system integrates with **Google Gemini 3.1 Flash Lite** for seven AI-powered features:
 
 | Feature | Trigger | Output |
 |---------|---------|--------|
@@ -720,10 +829,80 @@ The system integrates with **Google Gemini 3.1 Flash Lite** for four AI-powered 
 | **Learning Path** | AI Insights page | Step-by-step course sequence with timelines |
 | **Peer Comparison** | AI Insights page | How user compares to colleagues in same field |
 | **Assessment Readiness** | AI Insights page | Whether user should retake the assessment |
+| **30/60/90 Day Action Plan** | AI Insights page | Phased improvement plan with milestones and expected DSRI improvement |
 
 **Implementation:** `AiInsightService.php` sends contextual prompts to the Gemini API. Responses are cached for 3–12 hours to avoid redundant API calls.
 
 > **Note:** AI features require a valid `GEMINI_API_KEY` in the backend `.env`. Without it, the system functions normally but AI-powered features return fallback content.
+
+---
+
+## Certificates
+
+Certificates are automatically generated when a user completes an assessment. Each certificate includes:
+
+- Unique verification code (UUID-based)
+- DSRI score and maturity level (L1–L5)
+- Per-competency breakdown with scores
+- Issue date and 1-year expiry
+- User's full name and department
+
+**Public Verification:** Anyone with the link can verify a certificate at `/c/{code}` — no login required. The verification page displays the certificate with a radar chart and competency progress bars.
+
+**Implementation:**
+- `IssueCertificate` listener fires on `AssessmentSubmitted` event
+- `Certificate` model stores all data; `CertificateController` handles verification
+- Frontend certificate page at `frontend/src/app/c/[code]/page.tsx`
+
+---
+
+## Manager View (Direct Reports)
+
+Users with the `manager_id` field set (linking to another user as their manager) appear as direct reports. Managers can access:
+
+**My Team page** (`/my-team`):
+- Team size, assessment completion rate, average DSRI
+- Team competency radar chart (averaged across members)
+- Member list with latest DSRI, maturity level, and course enrollment status
+
+**Team Member Detail** (`/my-team/{id}`):
+- Individual DSRI score, trend chart, and maturity level
+- Competency breakdown with gap indicators
+- Course progress and enrollment tracking
+- Assessment history
+- CSV export
+
+---
+
+## A/B Testing & Evaluation
+
+The system includes a built-in A/B testing framework for evaluating the recommendation engine.
+
+### Setup
+
+Set `RECOMMENDATION_AB_TESTING=true` in `backend/.env`. Users are deterministically assigned to:
+- **Control group** — legacy binary weak/not-weak algorithm
+- **Hybrid group** — new adaptive hybrid engine
+
+### Interaction Tracking
+
+The `recommendation_interactions` table records:
+- Impressions (course shown)
+- Clicks (course detail viewed)
+- Enrollments (user enrolled)
+- Completions (course completed)
+
+### Report Generator
+
+```bash
+php tools/generate-ab-report.php
+```
+
+Generates a self-contained HTML report (`ab-report.html`) with:
+- Funnel visualization per group (impressions → clicks → enrollments → completions)
+- Click-through rate by recommendation position
+- Top performing courses per group
+- Statistical comparison charts
 
 ---
 
@@ -738,6 +917,11 @@ The system integrates with **Google Gemini 3.1 Flash Lite** for four AI-powered 
 | View Own Results | Yes | Yes | — | Yes |
 | Recommended Courses | Yes | Yes | — | Yes |
 | My Learning | Yes | Yes | — | Yes |
+| AI Insights & Action Plan | Yes | Yes | — | Yes |
+| Certificate View | Yes | Yes | — | Yes |
+| PDF Report Export | Yes | Yes | — | Yes |
+| Single-Competency Retest | Yes | Yes | — | Yes |
+| My Team (Direct Reports) | Yes | — | Yes | — |
 | Manage Courses | Yes | — | — | Yes |
 | Create / Edit Course | Yes | — | — | Yes |
 | User Reporting | Yes | — | Yes | — |
@@ -773,7 +957,6 @@ Courses store both `title`/`title_bm` and `description`/`description_bm` fields.
 - **Mobile-responsive optimization** — Enhanced mobile experience for field staff
 - **Advanced analytics** — ML-based predictive modeling for skill development
 - **Integration with HR systems** — Sync with government HR databases (HRMIS)
-- **Certificate generation** — Auto-generated certificates upon course completion
 - **Gamification** — Badges, leaderboards, and achievement tracking
 - **Offline assessment** — PWA-based offline assessment capability
 - **Multi-tenancy** — Support for multiple government agencies
