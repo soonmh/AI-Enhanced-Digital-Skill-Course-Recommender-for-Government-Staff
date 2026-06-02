@@ -36,6 +36,9 @@ yarn-error.log*
 cookies/
 .claude/
 
+# Generated reports
+ab-report.html
+
 # Documentation & AI config
 CLAUDE.md
 Documentation/
