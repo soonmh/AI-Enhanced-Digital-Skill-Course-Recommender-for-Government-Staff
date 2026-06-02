@@ -289,7 +289,7 @@ export default function RecommendedCoursesPage() {
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{course.description}</p>
                     </Link>
                     {course.ai_explanation && (
-                      <p className="text-xs text-indigo-600 italic line-clamp-2 mb-3 bg-indigo-50/50 px-2 py-1 rounded">
+                      <p className="text-xs text-indigo-600 italic mb-3 bg-indigo-50/50 dark:bg-indigo-500/10 dark:text-indigo-300 px-2 py-1 rounded">
                         {course.ai_explanation}
                       </p>
                     )}

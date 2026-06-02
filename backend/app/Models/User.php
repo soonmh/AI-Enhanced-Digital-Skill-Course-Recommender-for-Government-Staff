@@ -16,6 +16,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password',
         'working_field', 'job_level', 'experience_years', 'locale', 'is_active',
+        'manager_id',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -81,5 +82,15 @@ class User extends Authenticatable
     public function unreadNotifications()
     {
         return $this->hasMany(Notification::class)->whereNull('read_at');
+    }
+
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    public function directReports()
+    {
+        return $this->hasMany(User::class, 'manager_id');
     }
 }

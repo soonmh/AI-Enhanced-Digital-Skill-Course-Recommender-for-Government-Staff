@@ -20,6 +20,7 @@ class UserResource extends JsonResource
             'locale' => $this->locale,
             'roles' => $this->whenLoaded('roles', fn() => $this->roles->pluck('name')),
             'permissions' => $this->when($this->relationLoaded('roles'), fn() => $this->permissions()->values()),
+            'has_direct_reports' => $this->directReports()->exists(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

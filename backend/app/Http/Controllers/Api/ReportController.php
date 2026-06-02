@@ -65,6 +65,20 @@ class ReportController extends Controller
     {
         $user = User::with('roles')->findOrFail($id);
 
+        return $this->buildStaffReport($user);
+    }
+
+    public function teamMemberReport(Request $request, int $id): JsonResponse
+    {
+        $manager = $request->user();
+        $target = User::where('id', $id)->where('manager_id', $manager->id)->firstOrFail();
+
+        return $this->buildStaffReport($target);
+    }
+
+    private function buildStaffReport(User $user): JsonResponse
+    {
+        $id = $user->id;
         $responses = AssessmentResponse::where('user_id', $id)
             ->orderByDesc('submitted_at')
             ->get();
@@ -199,6 +213,81 @@ class ReportController extends Controller
                 'completion' => $topByCompletion,
             ],
             'enhancedUsers' => $enhancedUsers,
+        ]);
+    }
+
+    public function myTeam(Request $request): JsonResponse
+    {
+        $manager = $request->user();
+        $reports = $manager->directReports()
+            ->with('latestAssessmentResponse', 'userCourses')
+            ->get();
+
+        if ($reports->isEmpty()) {
+            return response()->json([
+                'has_team' => false,
+                'stats' => null,
+                'team' => [],
+                'team_competency_avg' => null,
+            ]);
+        }
+
+        $competencies = $this->dsriService->getCompetencies();
+
+        $team = $reports->map(function ($user) {
+            $latest = $user->latestAssessmentResponse;
+            $courseCount = $user->userCourses->count();
+            $completedCourses = $user->userCourses->where('status', 'completed')->count();
+
+            $status = 'not_started';
+            if ($latest) {
+                $status = 'completed';
+            } elseif ($courseCount > 0) {
+                $status = 'in_progress';
+            }
+
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'working_field' => $user->working_field,
+                'job_level' => $user->job_level,
+                'latest_dsri' => $latest?->dsri ? round($latest->dsri) : null,
+                'status' => $status,
+                'course_count' => $courseCount,
+                'completed_courses' => $completedCourses,
+            ];
+        });
+
+        $totalTeam = $team->count();
+        $completedCount = $team->where('status', 'completed')->count();
+        $enrolledCount = $team->filter(fn($s) => ($s['course_count'] ?? 0) > 0)->count();
+        $avgDsri = $team->where('latest_dsri', '!=', null)->avg('latest_dsri');
+
+        // Team average competency scores for radar chart
+        $assessedReports = $reports->filter(fn($u) => $u->latestAssessmentResponse);
+        $teamCompetencyAvg = null;
+        if ($assessedReports->isNotEmpty()) {
+            $teamCompetencyAvg = [];
+            foreach ($competencies as $code => $config) {
+                $field = strtolower($code) . '_score';
+                $values = $assessedReports->pluck("latestAssessmentResponse.{$field}")->filter();
+                $teamCompetencyAvg[$code] = $values->isNotEmpty()
+                    ? round(($values->avg() / $config['max_score']) * 100, 1)
+                    : 0;
+            }
+        }
+
+        return response()->json([
+            'has_team' => true,
+            'stats' => [
+                'team_size' => $totalTeam,
+                'assessment_completion' => $totalTeam > 0 ? round(($completedCount / $totalTeam) * 100) : 0,
+                'course_enrollment' => $enrolledCount,
+                'avg_dsri' => $avgDsri ? round($avgDsri, 1) : 0,
+            ],
+            'team' => $team,
+            'team_competency_avg' => $teamCompetencyAvg,
         ]);
     }
 

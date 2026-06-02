@@ -139,4 +139,15 @@ class AiInsightController extends Controller
             'readiness' => $result,
         ]);
     }
+
+    public function actionPlan(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $locale = $user->locale ?? 'en';
+
+        $result = $this->aiService->generateActionPlan($user, $locale);
+        $result['has_assessment'] = $result['has_assessment'] ?? ($user->latestAssessmentResponse !== null);
+
+        return response()->json($result);
+    }
 }

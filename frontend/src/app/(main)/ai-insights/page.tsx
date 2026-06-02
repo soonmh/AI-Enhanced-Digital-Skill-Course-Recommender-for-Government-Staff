@@ -1,6 +1,6 @@
 "use client";
 
-import { useAiInsights, useLearningPath, usePeerComparison, useAssessmentReadiness } from "@/hooks/useApi";
+import { useAiInsights, useLearningPath, usePeerComparison, useAssessmentReadiness, useActionPlan } from "@/hooks/useApi";
 import { useTranslation } from "@/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +17,7 @@ import {
   TrendingUp,
   ArrowRight,
   BookOpen,
+  Calendar,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -304,6 +305,89 @@ function PeerComparisonSection() {
   );
 }
 
+function ActionPlanSection() {
+  const { data, isLoading } = useActionPlan();
+  const { t } = useTranslation();
+
+  const phaseColors = [
+    { bg: "bg-blue-500/10 border-blue-500/20", badge: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300", dot: "bg-blue-500" },
+    { bg: "bg-indigo-500/10 border-indigo-500/20", badge: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300", dot: "bg-indigo-500" },
+    { bg: "bg-purple-500/10 border-purple-500/20", badge: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300", dot: "bg-purple-500" },
+  ];
+
+  if (!isLoading && !data?.has_assessment) {
+    return (
+      <SectionCard icon={Target} title={t("ai.actionPlanTitle")} description={t("ai.actionPlanDescription")} isLoading={false}>
+        <p className="text-muted-foreground">{t("ai.actionPlanNoAssessment")}</p>
+        <Link href="/assessment" className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800 font-medium mt-3">
+          {t("ai.takeAssessment")} <ArrowRight className="w-4 h-4" />
+        </Link>
+      </SectionCard>
+    );
+  }
+
+  const plan = data?.action_plan || [];
+
+  return (
+    <SectionCard icon={Target} title={t("ai.actionPlanTitle")} description={t("ai.actionPlanDescription")} isLoading={isLoading}>
+      {plan.length === 0 ? (
+        <p className="text-muted-foreground">{t("ai.actionPlanNoData")}</p>
+      ) : (
+        <div className="space-y-4">
+          {/* Phase cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {plan.map((phase: { phase: string; phase_label: string; actions: string[]; milestone: string }, i: number) => {
+              const color = phaseColors[i] || phaseColors[0];
+              return (
+                <div key={i} className={`rounded-xl border p-4 ${color.bg}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`w-8 h-8 rounded-full ${color.dot} text-white flex items-center justify-center text-sm font-bold`}>
+                      {phase.phase}
+                    </span>
+                    <div>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${color.badge}`}>
+                        {t("ai.actionPlanDays", { phase: phase.phase })}
+                      </span>
+                      <h4 className="font-semibold text-foreground text-sm mt-0.5">{phase.phase_label}</h4>
+                    </div>
+                  </div>
+                  <ul className="space-y-1.5 mb-3">
+                    {phase.actions.map((action: string, j: number) => (
+                      <li key={j} className="flex items-start gap-2 text-sm text-foreground">
+                        <CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" />
+                        {action}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="text-xs text-muted-foreground border-t border-border pt-2 mt-2">
+                    <span className="font-semibold">{t("ai.actionPlanMilestone")}:</span> {phase.milestone}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bottom bar */}
+          <div className="flex flex-wrap items-center gap-4 p-3 bg-muted/50 rounded-lg text-sm">
+            {data?.recommended_reassessment_date && (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Calendar className="w-4 h-4" />
+                {t("ai.actionPlanReassessBy")}: <strong className="text-foreground">{new Date(data.recommended_reassessment_date).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</strong>
+              </span>
+            )}
+            {data?.expected_dsri_improvement && (
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <TrendingUp className="w-4 h-4 text-green-500" />
+                {t("ai.actionPlanExpectedImprovement")}: <strong className="text-green-600 dark:text-green-400">{data.expected_dsri_improvement}</strong>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+    </SectionCard>
+  );
+}
+
 function ReadinessSection() {
   const { data, isLoading } = useAssessmentReadiness();
   const { t } = useTranslation();
@@ -413,6 +497,7 @@ export default function AiInsightsPage() {
 
         <div className="space-y-8">
           <PersonalInsightsSection />
+          <ActionPlanSection />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <LearningPathSection />
             <PeerComparisonSection />

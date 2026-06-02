@@ -3,7 +3,7 @@
 import useSWR from "swr";
 import { fetcher } from "@/lib/axios";
 import api from "@/lib/axios";
-import type { DashboardData, AssessmentStartData, AssessmentResultsData, User, CertificateVerification, BenchmarkData } from "@/types";
+import type { DashboardData, AssessmentStartData, AssessmentResultsData, User, CertificateVerification, BenchmarkData, JobRoleProfile, RoleGapData } from "@/types";
 
 export function useDashboard() {
   const { data, error, isLoading, mutate } = useSWR<DashboardData>("/api/dashboard", fetcher);
@@ -20,6 +20,16 @@ export function useAssessmentStart() {
   return { data, isLoading, isError: error };
 }
 
+export function useJobRoleProfiles() {
+  const { data, error, isLoading } = useSWR<JobRoleProfile[]>("/api/assessment/role-profiles", fetcher);
+  return { roles: data ?? [], isLoading, isError: error };
+}
+
+export async function fetchRoleGap(roleProfileId: number): Promise<RoleGapData> {
+  const res = await api.post("/api/assessment/role-gap", { role_profile_id: roleProfileId });
+  return res.data;
+}
+
 export function useAssessmentResults() {
   const { data, error, isLoading } = useSWR<AssessmentResultsData>("/api/assessment/results", fetcher);
   return { data, isLoading, isError: error };
@@ -34,6 +44,14 @@ export async function submitAssessment(responses: { section: string; score: numb
   const result = await api.post("/api/assessment/submit", {
     assessment_id: assessmentId,
     responses,
+  });
+  return result.data;
+}
+
+export async function submitSectionRetest(sectionCode: string, score: number) {
+  const result = await api.post("/api/assessment/submit-section", {
+    section_code: sectionCode,
+    score,
   });
   return result.data;
 }
@@ -143,8 +161,18 @@ export function useStaffAnalysis() {
   return { data, isLoading, isError: error };
 }
 
+export function useMyTeam() {
+  const { data, error, isLoading } = useSWR("/api/reports/my-team", fetcher);
+  return { data, isLoading, isError: error };
+}
+
 export function useStaffReport(id: string) {
   const { data, error, isLoading } = useSWR(id ? `/api/reports/staff/${id}` : null, fetcher);
+  return { data, isLoading, isError: error };
+}
+
+export function useTeamMemberReport(id: string) {
+  const { data, error, isLoading } = useSWR(id ? `/api/reports/team-member/${id}` : null, fetcher);
   return { data, isLoading, isError: error };
 }
 
@@ -229,6 +257,11 @@ export function usePeerComparison() {
 
 export function useAssessmentReadiness() {
   const { data, error, isLoading } = useSWR("/api/ai/readiness", fetcher);
+  return { data, isLoading, isError: error };
+}
+
+export function useActionPlan() {
+  const { data, error, isLoading } = useSWR("/api/ai/action-plan", fetcher);
   return { data, isLoading, isError: error };
 }
 

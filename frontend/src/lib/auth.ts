@@ -60,6 +60,7 @@ export const authOptions: NextAuthOptions = {
             working_field: user.working_field,
             job_level: user.job_level,
             experience_years: user.experience_years,
+            has_direct_reports: user.has_direct_reports,
             accessToken: token,
           };
         }
@@ -76,6 +77,7 @@ export const authOptions: NextAuthOptions = {
         token.working_field = user.working_field;
         token.job_level = user.job_level;
         token.experience_years = user.experience_years;
+        token.has_direct_reports = user.has_direct_reports;
         token.accessToken = user.accessToken;
       }
       return token;
@@ -88,6 +90,7 @@ export const authOptions: NextAuthOptions = {
         session.user.working_field = token.working_field as string;
         session.user.job_level = token.job_level as string;
         session.user.experience_years = token.experience_years as string;
+        session.user.has_direct_reports = token.has_direct_reports as boolean;
         session.accessToken = token.accessToken as string;
       }
       return session;
@@ -109,6 +112,7 @@ declare module "next-auth" {
     working_field?: string;
     job_level?: string;
     experience_years?: string;
+    has_direct_reports?: boolean;
     accessToken?: string;
   }
   interface Session {
@@ -123,6 +127,7 @@ declare module "next-auth" {
       working_field?: string;
       job_level?: string;
       experience_years?: string;
+      has_direct_reports?: boolean;
     };
     accessToken?: string;
   }
@@ -136,6 +141,7 @@ declare module "next-auth/jwt" {
     working_field?: string;
     job_level?: string;
     experience_years?: string;
+    has_direct_reports?: boolean;
     accessToken?: string;
   }
 }

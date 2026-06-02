@@ -45,5 +45,24 @@ class DemoUserSeeder extends Seeder
                 $user->roles()->attach($role->id, ['model_type' => User::class]);
             }
         }
+
+        // Set up manager-report relationships
+        $hierarchy = [
+            'mgmt01@test.com' => ['raj@test.com', 'farah@test.com', 'weiming@test.com'],
+            'raj@test.com' => ['staff01@test.com', 'meiling@test.com'],
+            'farah@test.com' => ['ahmad@test.com', 'siti@test.com'],
+        ];
+
+        foreach ($hierarchy as $managerEmail => $reportEmails) {
+            $manager = User::where('email', $managerEmail)->first();
+            if ($manager) {
+                foreach ($reportEmails as $email) {
+                    $report = User::where('email', $email)->first();
+                    if ($report && !$report->manager_id) {
+                        $report->update(['manager_id' => $manager->id]);
+                    }
+                }
+            }
+        }
     }
 }

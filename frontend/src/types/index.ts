@@ -142,3 +142,30 @@ export interface BenchmarkData {
   percentile: number;
   percentile_label: string;
 }
+
+export interface JobRoleProfile {
+  id: number;
+  role_name: string;
+  role_name_ms: string;
+  department: string | null;
+  targets: Record<string, number>;
+}
+
+export interface RoleGapData {
+  has_data: boolean;
+  role: {
+    id: number;
+    name: string;
+    name_ms: string;
+  };
+  gaps: Record<string, {
+    code: string;
+    name: string;
+    name_ms: string;
+    actual_pct: number;
+    target_pct: number;
+    gap: number;
+    status: "met" | "close" | "gap";
+  }>;
+  overall_readiness: number;
+}

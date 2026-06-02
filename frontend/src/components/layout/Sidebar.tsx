@@ -31,6 +31,7 @@ interface NavItem {
   icon: React.ElementType;
   permission?: string | null;
   roles?: string[];
+  requireDirectReports?: boolean;
   children?: NavItem[];
 }
 
@@ -108,6 +109,13 @@ const getNavItems = (t: (key: string, params?: Record<string, string | number>) 
     permission: "user-reporting",
   },
   {
+    key: "my-team",
+    label: t("nav.myTeam"),
+    href: "/my-team",
+    icon: Users,
+    requireDirectReports: true,
+  },
+  {
     key: "course-report",
     label: t("nav.courseReport"),
     href: "/course-report/course-progress",
@@ -130,6 +138,7 @@ export function Sidebar() {
   const { t } = useTranslation();
   const permissions = session?.user?.permissions || [];
   const roles = session?.user?.roles || [];
+  const hasDirectReports = session?.user?.has_direct_reports === true;
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     assessments: pathname.startsWith("/assessment"),
     courses: pathname.startsWith("/courses"),
@@ -144,6 +153,7 @@ export function Sidebar() {
   const filterItems = (items: NavItem[]) =>
     items
       .filter((item) => {
+        if (item.requireDirectReports && !hasDirectReports) return false;
         if (item.children) {
           const filtered = item.children.filter(
             (child) => hasPermission(child.permission) && hasRole(child.roles)

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useAssessmentResults, useAiInsights, useRecommendedCourses } from "@/hooks/useApi";
+import { useAssessmentResults, useAiInsights, useRecommendedCourses, useJobRoleProfiles, fetchRoleGap } from "@/hooks/useApi";
 import { useTranslation } from "@/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,7 @@ import {
   Copy,
   Download,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 
 function getDsriLevel(score: number) {
@@ -84,6 +85,9 @@ export default function AssessmentResultsPage() {
   const [compareA, setCompareA] = useState<string>("");
   const [compareB, setCompareB] = useState<string>("");
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
+  const [roleGap, setRoleGap] = useState<any>(null);
+  const { roles } = useJobRoleProfiles();
 
   const handleDownloadPDF = async () => {
     if (!data?.latest || generatingPDF) return;
@@ -525,6 +529,13 @@ export default function AssessmentResultsPage() {
                             style={{ width: `${percent}%` }}
                           />
                         </div>
+                        <Link
+                          href={`/assessment/retest/${code}`}
+                          className="no-print mt-3 inline-flex items-center gap-1 text-xs font-medium opacity-60 hover:opacity-100 transition-opacity"
+                        >
+                          <RefreshCw className="w-3 h-3" />
+                          {t("assessment.retestSection", { code })}
+                        </Link>
                       </div>
                     </div>
                   );
@@ -533,6 +544,145 @@ export default function AssessmentResultsPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Job Role Competency Map */}
+        <Card className="mb-8 border-0 shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Target className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+              {t("assessment.roleGapTitle")}
+            </CardTitle>
+            <CardDescription>{t("assessment.roleGapDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <select
+              className="w-full max-w-md rounded-md border border-border bg-card px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 mb-6"
+              value={selectedRoleId ?? ""}
+              onChange={async (e) => {
+                const id = e.target.value ? Number(e.target.value) : null;
+                setSelectedRoleId(id);
+                setRoleGap(null);
+                if (id) {
+                  try {
+                    const data = await fetchRoleGap(id);
+                    setRoleGap(data);
+                  } catch {
+                    setRoleGap(null);
+                  }
+                }
+              }}
+            >
+              <option value="">{t("assessment.selectRole")}</option>
+              {roles.map((r) => (
+                <option key={r.id} value={r.id}>{r.role_name}</option>
+              ))}
+            </select>
+
+            {!roleGap ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Target className="w-10 h-10 mx-auto mb-3 opacity-40" />
+                <p>{t("assessment.noRoleData")}</p>
+              </div>
+            ) : !roleGap.has_data ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>{t("assessment.noResultsDescription")}</p>
+              </div>
+            ) : (
+              <>
+                {/* Overall Readiness */}
+                <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 border border-indigo-100 dark:border-indigo-500/20">
+                  <div className="text-center sm:text-left">
+                    <div className="text-sm text-muted-foreground">{t("assessment.overallReadiness")}</div>
+                    <div className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
+                      {roleGap.overall_readiness}%
+                    </div>
+                  </div>
+                  <div className="flex-1 w-full sm:w-auto">
+                    <div className="w-full bg-muted rounded-full h-3">
+                      <div
+                        className="h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
+                        style={{ width: `${roleGap.overall_readiness}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                    {roleGap.role.name}
+                  </div>
+                </div>
+
+                {/* Legend */}
+                <div className="flex flex-wrap gap-4 mb-4 text-xs">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm bg-green-500" />
+                    {t("assessment.statusMet")} — {t("assessment.metDescription")}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm bg-yellow-500" />
+                    {t("assessment.statusClose")} — {t("assessment.closeDescription")}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-sm bg-red-500" />
+                    {t("assessment.statusGap")} — {t("assessment.gapDescription")}
+                  </span>
+                </div>
+
+                {/* Per-competency gap bars */}
+                <div className="space-y-3">
+                  {Object.values(roleGap.gaps).map((g: any) => {
+                    const comp = COMPETENCIES[g.code as keyof typeof COMPETENCIES];
+                    const statusColor =
+                      g.status === "met" ? "text-green-600 dark:text-green-400" :
+                      g.status === "close" ? "text-yellow-600 dark:text-yellow-400" :
+                      "text-red-600 dark:text-red-400";
+                    const barColor =
+                      g.status === "met" ? "bg-green-500" :
+                      g.status === "close" ? "bg-yellow-500" :
+                      "bg-red-500";
+                    const statusBg =
+                      g.status === "met" ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700/40" :
+                      g.status === "close" ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700/40" :
+                      "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700/40";
+
+                    return (
+                      <div key={g.code} className="p-3 rounded-lg border border-border">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm">{g.code}</span>
+                            <span className="text-sm text-muted-foreground">{comp?.nameEn || g.name}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm">
+                            <span className="text-muted-foreground">{t("assessment.yourScore")}: <strong>{g.actual_pct}%</strong></span>
+                            <span className="text-muted-foreground">{t("assessment.targetLabel")}: <strong>{g.target_pct}%</strong></span>
+                            <Badge className={statusBg}>
+                              {g.status === "met" ? t("assessment.statusMet") : g.status === "close" ? t("assessment.statusClose") : t("assessment.statusGap")}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="relative w-full h-5 bg-muted rounded-full overflow-hidden">
+                          {/* Target marker */}
+                          <div
+                            className="absolute top-0 bottom-0 w-0.5 bg-foreground/40 z-10"
+                            style={{ left: `${g.target_pct}%` }}
+                          />
+                          {/* Actual bar */}
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                            style={{ width: `${g.actual_pct}%` }}
+                          />
+                        </div>
+                        {g.gap > 0 && (
+                          <div className={`text-xs mt-1 ${statusColor}`}>
+                            {t("assessment.gapLabel")}: +{g.gap}% {t("assessment.statusGap").toLowerCase()}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Assessment History Table */}
         {history.length > 0 && (

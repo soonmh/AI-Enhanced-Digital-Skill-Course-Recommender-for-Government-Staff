@@ -32,19 +32,23 @@ const WORKING_FIELDS = [
 
 const JOB_LEVELS = [
   "Intern",
+  "Clerk",
   "Entry Level",
   "Mid Level",
   "Senior Level",
-  "Manager",
-  "Director",
+  "Senior Executive",
   "Executive",
+  "Manager",
+  "Assistant Director",
+  "Deputy Director",
+  "Director",
 ];
 
 const EXPERIENCE_RANGES = [
   "0-1 years",
   "2-5 years",
-  "6-10 years",
-  "More than 10 years",
+  "5-10 years",
+  "10+ years",
 ];
 
 export default function ProfilePage() {

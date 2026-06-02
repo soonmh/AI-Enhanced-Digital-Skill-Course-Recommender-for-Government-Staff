@@ -32,6 +32,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/dashboard/benchmark', [DashboardController::class, 'benchmark']);
 
+    // Manager — my team
+    Route::get('/reports/my-team', [ReportController::class, 'myTeam']);
+    Route::get('/reports/team-member/{id}', [ReportController::class, 'teamMemberReport']);
+
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
@@ -49,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ai/learning-path', [AiInsightController::class, 'learningPath']);
     Route::get('/ai/peer-comparison', [AiInsightController::class, 'peerComparison']);
     Route::get('/ai/readiness', [AiInsightController::class, 'readinessCheck']);
+    Route::get('/ai/action-plan', [AiInsightController::class, 'actionPlan']);
     Route::middleware('permission:user-reporting')->group(function () {
         Route::get('/ai/department-insights', [AiInsightController::class, 'departmentInsights']);
     });
@@ -63,7 +68,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/assessment', [AssessmentController::class, 'landing']);
         Route::get('/assessment/start', [AssessmentController::class, 'start']);
         Route::post('/assessment/submit', [AssessmentController::class, 'submit']);
+        Route::post('/assessment/submit-section', [AssessmentController::class, 'submitSection']);
         Route::get('/assessment/results', [AssessmentController::class, 'results']);
+        Route::get('/assessment/role-profiles', [AssessmentController::class, 'roleProfiles']);
+        Route::post('/assessment/role-gap', [AssessmentController::class, 'roleGap']);
 
         // Assessment drafts
         Route::get('/assessment/draft', [AssessmentDraftController::class, 'show']);
