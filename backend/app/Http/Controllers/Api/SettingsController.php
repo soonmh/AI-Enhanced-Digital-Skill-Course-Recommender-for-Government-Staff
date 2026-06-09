@@ -50,4 +50,20 @@ class SettingsController extends Controller
             'message' => 'Language updated',
         ]);
     }
+
+    public function deactivate(Request $request): JsonResponse
+    {
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        if (!Hash::check($request->password, $request->user()->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 422);
+        }
+
+        $request->user()->update(['is_active' => false]);
+        $request->user()->tokens()->delete();
+
+        return response()->json(['message' => 'Account deactivated']);
+    }
 }

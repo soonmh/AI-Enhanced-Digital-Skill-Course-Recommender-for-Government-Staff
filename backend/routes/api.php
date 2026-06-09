@@ -62,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/profile', [SettingsController::class, 'updateProfile']);
     Route::put('/user/password', [SettingsController::class, 'updatePassword']);
     Route::put('/user/language', [SettingsController::class, 'updateLanguage']);
+    Route::post('/user/deactivate', [SettingsController::class, 'deactivate']);
 
     // Assessment
     Route::middleware('permission:take-assessment')->group(function () {

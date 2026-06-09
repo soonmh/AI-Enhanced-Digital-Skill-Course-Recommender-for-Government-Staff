@@ -108,6 +108,26 @@ export default function RecommendedCoursesPage() {
           </div>
         </div>
 
+        {/* No Assessment - Prompt to take assessment */}
+        {!hasAssessment && (
+          <Card className="border-0 shadow-md bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/30 dark:to-indigo-900/30">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Target className="w-8 h-8 text-violet-600 dark:text-violet-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">{t("courses.noAssessmentTitle") || "Complete Your Assessment First"}</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">{t("courses.noAssessmentDescription") || "Take the Digital Skills Readiness Assessment to get personalised course recommendations based on your skill gaps."}</p>
+              <Link
+                href="/assessment/start"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg hover:from-violet-700 hover:to-indigo-700 transition-all font-medium shadow-md"
+              >
+                <BookOpen className="w-5 h-5" />
+                {t("assessment.startAssessment")}
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Skill Gaps Banner */}
         {hasAssessment && weakSections.length > 0 && (
           <Card className="border-0 shadow-md mb-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30">
@@ -137,34 +157,8 @@ export default function RecommendedCoursesPage() {
           </Card>
         )}
 
-        {/* No Assessment Banner */}
-        {!hasAssessment && (
-          <Card className="border-0 shadow-md mb-6 bg-gradient-to-r from-blue-500/10 to-indigo-500/10">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{t("courses.getPersonalizedRecommendations")}</h3>
-                    <p className="text-sm text-muted-foreground">{t("courses.getPersonalizedDescription")}</p>
-                  </div>
-                </div>
-                <Link
-                  href="/assessment"
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
-                >
-                  <Target className="w-4 h-4" />
-                  {t("courses.takeAssessment")}
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Toolbar */}
-        {sorted.length > 0 && (
+        {/* Toolbar & Course Grid - only when assessment completed */}
+        {hasAssessment && sorted.length > 0 && (
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Sparkles className="w-4 h-4 text-emerald-500" />
@@ -218,22 +212,17 @@ export default function RecommendedCoursesPage() {
         )}
 
         {/* Course Grid */}
-        {(!sorted || sorted.length === 0) ? (
+        {hasAssessment && sorted.length === 0 && (
           <div className="text-center py-20">
             <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Sparkles className="w-8 h-8 text-gray-300" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">{t("courses.noRecommendationsTitle")}</h3>
             <p className="text-muted-foreground mb-6">{t("courses.noRecommendationsDescription")}</p>
-            <Link
-              href="/assessment"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors font-medium"
-            >
-              <Target className="w-4 h-4" />
-              {t("courses.takeAssessment")}
-            </Link>
           </div>
-        ) : (
+        )}
+
+        {hasAssessment && sorted.length > 0 && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {sorted.map((course: any, idx: number) => {
               const gradient = GRADIENTS[idx % GRADIENTS.length];
@@ -244,11 +233,15 @@ export default function RecommendedCoursesPage() {
               return (
                 <Card key={course.id} className="p-0 overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
                   <Link href={`/courses/${course.id}?from=recommended`} onClick={handleClick}>
-                    <div className={`h-44 bg-gradient-to-br ${gradient} relative overflow-hidden`}>
+                    <div className="h-44 relative overflow-hidden">
+                      {course.image ? (
+                        <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+                          <BookOpen className="w-14 h-14 text-white/20" />
+                        </div>
+                      )}
                       <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <BookOpen className="w-14 h-14 text-white/20" />
-                      </div>
                       {/* Badges */}
                       <div className="absolute top-3 left-3 flex items-center gap-2">
                         <span className="flex items-center gap-1 px-2.5 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">

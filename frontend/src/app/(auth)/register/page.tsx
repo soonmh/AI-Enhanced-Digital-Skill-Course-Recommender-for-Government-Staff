@@ -39,7 +39,13 @@ export default function RegisterPage() {
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } };
       const message = axiosErr.response?.data?.message || "Registration failed";
-      setError(message);
+      const errors = axiosErr.response?.data?.errors;
+      if (errors) {
+        const allErrors = Object.values(errors).flat().join(" ");
+        setError(allErrors);
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }

@@ -11,6 +11,7 @@ use App\Events\CourseCompleted;
 use App\Models\RecommendationInteraction;
 use App\Services\AiInsightService;
 use App\Services\HybridRecommendationService;
+use App\Services\DsriCalculationService;
 use App\Services\RealtimePublisher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -150,6 +151,30 @@ class CourseController extends Controller
                 'progress' => $uc->progress,
             ]);
 
+        // Competency mappings with user scores
+        $competencyMappings = $course->competencyMappings()->pluck('competency_code')->toArray();
+        $competencyBreakdown = [];
+        if (!empty($competencyMappings)) {
+            $dsriService = app(DsriCalculationService::class);
+            $competencies = $dsriService->getCompetencies();
+            $userResponse = $request->user()->latestAssessmentResponse;
+            foreach ($competencyMappings as $code) {
+                $config = $competencies[$code] ?? null;
+                if (!$config) continue;
+                $field = strtolower($code) . '_score';
+                $userScore = $userResponse?->$field ?? 0;
+                $competencyBreakdown[] = [
+                    'code' => $code,
+                    'name_en' => $config['name_en'],
+                    'name_ms' => $config['name_ms'],
+                    'weight' => $config['weight'],
+                    'max_score' => $config['max_score'],
+                    'user_score' => $userScore,
+                    'user_pct' => round(($userScore / $config['max_score']) * 100, 1),
+                ];
+            }
+        }
+
         return response()->json([
             'id' => $course->id,
             'title' => $course->title,
@@ -172,6 +197,7 @@ class CourseController extends Controller
             'recent_reviews' => $recentReviews,
             'rating_distribution' => $distribution,
             'peer_enrollments' => $peerEnrollments,
+            'competency_breakdown' => $competencyBreakdown,
         ]);
     }
 

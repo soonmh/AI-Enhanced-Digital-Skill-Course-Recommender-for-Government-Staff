@@ -27,6 +27,32 @@ type SortDir = "asc" | "desc";
 
 const ROLES = ["Admin", "Staff", "Top Management", "Trainer"];
 
+const WORKING_FIELDS = [
+  "Information Technology",
+  "Education",
+  "Healthcare",
+  "Finance",
+  "Manufacturing",
+  "Retail",
+  "Others",
+];
+
+const JOB_LEVELS = [
+  "Intern",
+  "Junior",
+  "Mid Level",
+  "Senior",
+  "Manager",
+  "Director",
+];
+
+const EXPERIENCE_RANGES = [
+  "0-1 years",
+  "2-5 years",
+  "5-10 years",
+  "10+ years",
+];
+
 export default function AdminUsersPage() {
   const { t } = useTranslation();
   const { users, isLoading, mutate } = useUsers();
@@ -161,6 +187,7 @@ export default function AdminUsersPage() {
       job_level: u.job_level || "",
       role: u.role || "Staff",
       is_active: u.is_active ? "1" : "0",
+      manager_id: u.manager_id || "",
     });
     setEditUser(u);
   };
@@ -430,13 +457,19 @@ export default function AdminUsersPage() {
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="add-field">{t("admin.workingFieldFormLabel")}</Label>
-                <Input id="add-field" value={form.working_field || ""} onChange={(e) => setForm({ ...form, working_field: e.target.value })} placeholder={t("admin.workingFieldFormPlaceholder")} />
+                <select id="add-field" value={form.working_field || ""} onChange={(e) => setForm({ ...form, working_field: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
+                  <option value="">{t("settings.selectWorkingField")}</option>
+                  {WORKING_FIELDS.map((f) => <option key={f} value={f}>{f}</option>)}
+                </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
                 <Label htmlFor="add-level">{t("admin.jobLevelFormLabel")}</Label>
-                <Input id="add-level" value={form.job_level || ""} onChange={(e) => setForm({ ...form, job_level: e.target.value })} placeholder={t("admin.jobLevelFormPlaceholder")} />
+                <select id="add-level" value={form.job_level || ""} onChange={(e) => setForm({ ...form, job_level: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
+                  <option value="">{t("settings.selectJobLevel")}</option>
+                  {JOB_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
               </div>
             </div>
           </div>
@@ -483,11 +516,26 @@ export default function AdminUsersPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
                 <Label htmlFor="edit-field">{t("admin.workingFieldFormLabel")}</Label>
-                <Input id="edit-field" value={form.working_field || ""} onChange={(e) => setForm({ ...form, working_field: e.target.value })} />
+                <select id="edit-field" value={form.working_field || ""} onChange={(e) => setForm({ ...form, working_field: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
+                  <option value="">{t("settings.selectWorkingField")}</option>
+                  {WORKING_FIELDS.map((f) => <option key={f} value={f}>{f}</option>)}
+                </select>
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="edit-level">{t("admin.jobLevelFormLabel")}</Label>
-                <Input id="edit-level" value={form.job_level || ""} onChange={(e) => setForm({ ...form, job_level: e.target.value })} />
+                <select id="edit-level" value={form.job_level || ""} onChange={(e) => setForm({ ...form, job_level: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
+                  <option value="">{t("settings.selectJobLevel")}</option>
+                  {JOB_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="edit-manager">{t("admin.managerLabel") || "Manager"}</Label>
+                <select id="edit-manager" value={form.manager_id || ""} onChange={(e) => setForm({ ...form, manager_id: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
+                  <option value="">— {t("admin.noManager") || "No Manager"} —</option>
+                  {(users || []).filter((u: any) => u.id !== editUser?.id).map((u: any) => (
+                    <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -502,7 +550,7 @@ export default function AdminUsersPage() {
 
       {/* Assign Course Modal */}
       <Dialog open={!!assignUser} onOpenChange={(open) => { if (!open) { setAssignUser(null); setSelectedCourses(new Set()); } }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>{t("admin.assignCoursesTitle")}</DialogTitle>
             <DialogDescription>{t("admin.assignCoursesDescription", { name: assignUser?.name })}</DialogDescription>
@@ -555,7 +603,7 @@ export default function AdminUsersPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setAssignUser(null); setSelectedCourses(new Set()); }}>{t("common.cancel")}</Button>
-            <Button onClick={handleAssign} disabled={saving || selectedCourses.size === 0} className="bg-violet-600 hover:bg-violet-700 dark:bg-violet-500/20 dark:text-violet-300 dark:hover:bg-violet-500/30">
+            <Button onClick={handleAssign} disabled={saving || selectedCourses.size === 0} className="bg-violet-600 hover:bg-violet-700 dark:bg-violet-500/20 dark:text-violet-300 dark:hover:bg-violet-500/30 shrink-0">
               {saving ? t("courses.assigning") : t("admin.assignButton", { count: selectedCourses.size })}
             </Button>
           </DialogFooter>

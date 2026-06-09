@@ -5,7 +5,7 @@ import { useTranslation } from "@/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COMPETENCIES } from "@/lib/constants";
-import { getMaturityColor } from "@/lib/maturity";
+import { getMaturityLevel } from "@/lib/maturity";
 import {
   Lightbulb,
   AlertTriangle,
@@ -103,14 +103,14 @@ function PersonalInsightsSection() {
               {recommendations.focus_areas.map((area: { code: string; reason: string; priority_level?: string }, i: number) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 bg-indigo-500/10 rounded-lg px-3 py-2 text-sm border border-indigo-100"
+                  className="flex items-center gap-2 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-lg px-3 py-2 text-sm border border-indigo-100 dark:border-indigo-500/20"
                 >
-                  <span className="font-medium text-indigo-700">{area.code}</span>
+                  <span className="font-medium text-indigo-700 dark:text-indigo-300">{area.code}</span>
                   {area.priority_level && (
                     <span className={`text-xs px-1.5 py-0.5 rounded ${
-                      area.priority_level === 'high' ? 'bg-red-100 text-red-700' :
-                      area.priority_level === 'medium' ? 'bg-amber-100 text-amber-700' :
-                      'bg-green-100 text-green-700'
+                      area.priority_level === 'high' ? 'bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-300' :
+                      area.priority_level === 'medium' ? 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300' :
+                      'bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300'
                     }`}>
                       {area.priority_level}
                     </span>
@@ -123,7 +123,7 @@ function PersonalInsightsSection() {
         )}
 
         {recommendations?.advice && (
-          <div className="flex items-start gap-2 bg-green-500/10 rounded-lg p-3 border border-green-100">
+          <div className="flex items-start gap-2 bg-green-500/10 dark:bg-green-500/15 rounded-lg p-3 border border-green-100 dark:border-green-500/20">
             <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
             <p className="text-sm text-foreground">{recommendations.advice}</p>
           </div>
@@ -135,7 +135,7 @@ function PersonalInsightsSection() {
             <ol className="space-y-1.5">
               {recommendations.next_steps.map((step: string, i: number) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold shrink-0">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold shrink-0">
                     {i + 1}
                   </span>
                   {step}
@@ -176,10 +176,10 @@ function LearningPathSection() {
         <p className="text-muted-foreground">{t("ai.noLearningPath")}</p>
       ) : (
         <div className="space-y-4">
-          <div className="relative border-l-2 border-indigo-200 ml-3">
+          <div className="relative border-l-2 border-indigo-200 dark:border-indigo-500/30 ml-3">
             {path.map((step: { step: number; course_title: string; reason: string; estimated_weeks: number; milestone: string }, i: number) => (
               <div key={i} className="relative pl-8 pb-6 last:pb-0">
-                <div className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">
+                <div className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500/25 dark:text-indigo-300 text-white flex items-center justify-center text-sm font-bold">
                   {step.step}
                 </div>
                 <div className="bg-background rounded-lg p-4 border border-border">
@@ -203,13 +203,13 @@ function LearningPathSection() {
             ))}
           </div>
           {data?.total_timeline_weeks > 0 && (
-            <div className="flex items-center gap-2 text-sm text-indigo-600 font-medium pt-2">
+            <div className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 font-medium pt-2">
               <Clock className="w-4 h-4" />
               {t("ai.estimatedTotal", { weeks: data.total_timeline_weeks })}
             </div>
           )}
           {data?.expected_improvement && (
-            <p className="text-sm text-muted-foreground bg-indigo-500/10 rounded-lg p-3 border border-indigo-100">
+            <p className="text-sm text-muted-foreground bg-indigo-500/10 dark:bg-indigo-500/15 rounded-lg p-3 border border-indigo-100 dark:border-indigo-500/20">
               <TrendingUp className="w-4 h-4 inline mr-1 text-indigo-500" />
               {data.expected_improvement}
             </p>
@@ -244,15 +244,15 @@ function PeerComparisonSection() {
           )}
 
           {comparison.percentile_rank > 0 && (
-            <div className="flex items-center gap-3 bg-indigo-500/10 rounded-lg p-3 border border-indigo-100">
-              <div className="text-2xl font-bold text-indigo-700">{comparison.percentile_rank}th</div>
+            <div className="flex items-center gap-3 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-lg p-3 border border-indigo-100 dark:border-indigo-500/20">
+              <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">{comparison.percentile_rank}th</div>
               <div className="text-sm text-muted-foreground">{t("ai.percentileRank")}</div>
             </div>
           )}
 
           {comparison.above_average?.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-green-700 uppercase tracking-wide mb-2">{t("ai.aboveAverage")}</h4>
+              <h4 className="text-sm font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide mb-2">{t("ai.aboveAverage")}</h4>
               <div className="space-y-2">
                 {comparison.above_average.map((item: { competency: string; name: string; user_pct: number; dept_avg_pct: number }, i: number) => (
                   <div key={i} className="flex items-center gap-3">
@@ -262,10 +262,10 @@ function PeerComparisonSection() {
                         <span className="text-xs text-muted-foreground">{item.name}</span>
                       </div>
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-green-400 rounded-full" style={{ width: `${item.user_pct}%` }} />
+                        <div className="h-full bg-green-400 dark:bg-green-500/60 rounded-full" style={{ width: `${item.user_pct}%` }} />
                       </div>
                     </div>
-                    <span className="text-xs font-medium text-green-700 w-12 text-right">{item.user_pct}%</span>
+                    <span className="text-xs font-medium text-green-700 dark:text-green-400 w-12 text-right">{item.user_pct}%</span>
                   </div>
                 ))}
               </div>
@@ -274,7 +274,7 @@ function PeerComparisonSection() {
 
           {comparison.below_average?.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-amber-700 uppercase tracking-wide mb-2">{t("ai.belowAverage")}</h4>
+              <h4 className="text-sm font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-2">{t("ai.belowAverage")}</h4>
               <div className="space-y-2">
                 {comparison.below_average.map((item: { competency: string; name: string; user_pct: number; dept_avg_pct: number }, i: number) => (
                   <div key={i} className="flex items-center gap-3">
@@ -284,10 +284,10 @@ function PeerComparisonSection() {
                         <span className="text-xs text-muted-foreground">{item.name}</span>
                       </div>
                       <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-400 rounded-full" style={{ width: `${item.user_pct}%` }} />
+                        <div className="h-full bg-amber-400 dark:bg-amber-500/60 rounded-full" style={{ width: `${item.user_pct}%` }} />
                       </div>
                     </div>
-                    <span className="text-xs font-medium text-amber-700 w-12 text-right">{item.user_pct}%</span>
+                    <span className="text-xs font-medium text-amber-700 dark:text-amber-400 w-12 text-right">{item.user_pct}%</span>
                   </div>
                 ))}
               </div>
@@ -413,10 +413,11 @@ function ReadinessSection() {
           <div className="flex items-center gap-4">
             <div className="relative w-24 h-24">
               <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" className="dark:stroke-[#374151]" strokeWidth="8" />
                 <circle
                   cx="50" cy="50" r="40" fill="none"
-                  stroke={getMaturityColor(readiness.readiness_score)}
+                  stroke="currentColor"
+                  className={getMaturityLevel(readiness.readiness_score).textClass}
                   strokeWidth="8"
                   strokeDasharray={`${readiness.readiness_score * 2.51} 251`}
                   strokeLinecap="round"
@@ -428,8 +429,8 @@ function ReadinessSection() {
             </div>
             <div>
               <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                rec === 'ready' ? 'bg-green-100 text-green-700' :
-                rec === 'needs_preparation' ? 'bg-amber-100 text-amber-700' :
+                rec === 'ready' ? 'bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-300' :
+                rec === 'needs_preparation' ? 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300' :
                 'bg-muted text-foreground'
               }`}>
                 {rec === 'ready' ? t("ai.readinessReady") : rec === 'needs_preparation' ? t("ai.readinessPrepare") : t("ai.readinessWait")}
@@ -444,7 +445,7 @@ function ReadinessSection() {
                 {readiness.likely_improvements.map((item: { competency: string; name: string; estimated_gain: string }, i: number) => (
                   <div key={i} className="flex items-center justify-between text-sm">
                     <span className="text-foreground">{item.competency} — {item.name}</span>
-                    <span className="text-green-600 font-medium">{item.estimated_gain}</span>
+                    <span className="text-green-600 dark:text-green-400 font-medium">{item.estimated_gain}</span>
                   </div>
                 ))}
               </div>
@@ -458,7 +459,7 @@ function ReadinessSection() {
                 {readiness.review_first.map((code: string) => {
                   const comp = Object.values(COMPETENCIES).find((c) => c.code === code);
                   return (
-                    <span key={code} className="px-2 py-1 bg-amber-500/10 text-amber-700 rounded text-xs font-medium border border-amber-100">
+                    <span key={code} className="px-2 py-1 bg-amber-500/10 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 rounded text-xs font-medium border border-amber-100 dark:border-amber-500/20">
                       {code} {comp?.nameEn || ''}
                     </span>
                   );
@@ -469,7 +470,7 @@ function ReadinessSection() {
 
           <Link
             href="/assessment/start"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 text-white text-sm font-medium rounded-lg transition-colors"
           >
             {t("ai.takeAssessment")} <ArrowRight className="w-4 h-4" />
           </Link>

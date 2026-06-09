@@ -39,6 +39,7 @@ class AdminController extends Controller
             'roles' => $user->roles->pluck('name'),
             'role' => $user->roles->first()?->name,
             'is_active' => $user->is_active,
+            'manager_id' => $user->manager_id,
             'created_at' => $user->created_at,
         ]);
 
@@ -84,6 +85,8 @@ class AdminController extends Controller
             'email' => 'sometimes|email|max:255|unique:users,email,' . $id,
             'working_field' => 'nullable|string|max:255',
             'job_level' => 'nullable|string|max:255',
+            'experience_years' => 'nullable|string|max:255',
+            'manager_id' => 'nullable|integer|exists:users,id',
             'is_active' => 'boolean',
             'role' => 'sometimes|string|in:Admin,Staff,Top Management,Trainer',
         ]);

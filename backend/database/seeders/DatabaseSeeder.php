@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             CompetencyMappingSeeder::class,
             CourseRatingSeeder::class,
             AssessmentSeeder::class,
+            JobRoleProfileSeeder::class,
         ]);
     }
 }

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useTranslation } from "@/i18n/context";
-import { useCourse, enrollCourse, rateCourse } from "@/hooks/useApi";
+import { useCourse, enrollCourse, rateCourse, updateCourseProgress } from "@/hooks/useApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PermissionGate } from "@/components/shared/PermissionGate";
@@ -25,6 +25,7 @@ import {
   CheckCircle2,
   Loader2,
   Archive,
+  Target,
 } from "lucide-react";
 
 function StarRating({ value, onChange, readonly, size = "md" }: {
@@ -77,6 +78,8 @@ export default function CourseDetailPage() {
   const { course, isLoading, mutate } = useCourse(params.id as string);
   const [submitting, setSubmitting] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
+  const [sliderValue, setSliderValue] = useState<number | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const from = searchParams.get("from");
 
@@ -161,11 +164,15 @@ export default function CourseDetailPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Banner */}
-      <div className="relative h-64 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 overflow-hidden">
+      <div className="relative h-64 overflow-hidden">
+        {course.image ? (
+          <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 flex items-center justify-center">
+            <BookOpen className="w-24 h-24 text-white/10" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <BookOpen className="w-24 h-24 text-white/10" />
-        </div>
         <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/20 to-transparent" />
       </div>
 
@@ -305,6 +312,39 @@ export default function CourseDetailPage() {
                   }`}
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 />
+              </div>
+              {/* Progress Slider */}
+              <div className="mt-4 flex items-center gap-3">
+                <span className="text-xs text-muted-foreground shrink-0">0%</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={sliderValue ?? Math.round(progress)}
+                  disabled={submitting}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setSliderValue(val);
+                    if (debounceRef.current) clearTimeout(debounceRef.current);
+                    debounceRef.current = setTimeout(async () => {
+                      try {
+                        await updateCourseProgress(params.id as string, val);
+                        const wasNotCompleted = (course?.progress ?? 0) < 100;
+                        mutate({ ...course, progress: val }, false);
+                        setSliderValue(null);
+                        if (val >= 100 && wasNotCompleted) {
+                          toast.success(t("courses.completedLabel"));
+                        }
+                      } catch {
+                        setSliderValue(null);
+                        toast.error(t("courses.failedToSubmitRating"));
+                      }
+                    }, 500);
+                  }}
+                  className="flex-1 h-2 accent-violet-600 cursor-pointer disabled:opacity-50"
+                />
+                <span className="text-xs text-muted-foreground shrink-0">100%</span>
               </div>
               {course.url && (
                 <div className="mt-3 flex justify-end">
@@ -491,6 +531,46 @@ export default function CourseDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Competency Mapping */}
+            {course.competency_breakdown && course.competency_breakdown.length > 0 && (
+              <Card className="p-0 border-0 shadow-md">
+                <CardContent className="p-5">
+                  <h3 className="font-semibold mb-4 text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <Target className="w-4 h-4" />
+                    {t("courses.competencyMapping") || "Competency Mapping"}
+                  </h3>
+                  <div className="space-y-3">
+                    {course.competency_breakdown.map((comp: { code: string; name_en: string; name_ms?: string; user_pct: number; max_score: number; user_score: number }, idx: number) => (
+                      <div key={idx}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 dark:bg-violet-400/15 px-2 py-0.5 rounded-md">{comp.code}</span>
+                            <span className="text-xs text-foreground font-medium">{comp.name_en}</span>
+                          </div>
+                          <span className={`text-xs font-semibold ${comp.user_pct >= 70 ? "text-green-600 dark:text-green-400" : comp.user_pct >= 40 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
+                            {comp.user_pct}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              comp.user_pct >= 70 ? "bg-green-500" : comp.user_pct >= 40 ? "bg-amber-500" : "bg-red-500"
+                            }`}
+                            style={{ width: `${Math.min(comp.user_pct, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {!course.enrolled && (
+                    <p className="text-xs text-muted-foreground mt-3 italic">
+                      {t("courses.enrollToSeeFullDetails") || "Enroll to start improving these competencies"}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
 
             {/* Peer Enrollments */}

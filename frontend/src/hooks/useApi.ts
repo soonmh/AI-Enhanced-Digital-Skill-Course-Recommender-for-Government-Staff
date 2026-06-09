@@ -151,6 +151,11 @@ export async function rateCourse(id: string, rating: number) {
   return result.data;
 }
 
+export async function updateCourseProgress(id: string, progress: number) {
+  const result = await api.put(`/api/courses/${id}/progress`, { progress });
+  return result.data;
+}
+
 export function useUsers() {
   const { data, error, isLoading, mutate } = useSWR("/api/admin/users", fetcher);
   return { users: data, isLoading, isError: error, mutate };

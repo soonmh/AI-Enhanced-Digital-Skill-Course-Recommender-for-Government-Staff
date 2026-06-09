@@ -796,7 +796,7 @@ PROMPT;
     {
         try {
             $apiKey = config('services.gemini.key');
-            $model = config('services.gemini.model', 'gemini-2.0-flash-lite');
+            $model = config('services.gemini.model', 'gemini-3.1-flash-lite');
 
             if (empty($apiKey)) {
                 Log::warning('Gemini API key not configured');
@@ -838,7 +838,7 @@ PROMPT;
     {
         try {
             $apiKey = config('services.gemini.key');
-            $model = config('services.gemini.model', 'gemini-2.0-flash-lite');
+            $model = config('services.gemini.model', 'gemini-3.1-flash-lite');
 
             if (empty($apiKey)) {
                 return null;

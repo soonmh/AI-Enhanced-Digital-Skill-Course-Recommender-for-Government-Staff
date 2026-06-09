@@ -18,29 +18,26 @@ import {
   Briefcase,
   TrendingUp,
   Clock,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 
 const WORKING_FIELDS = [
-  "Information Technology",
-  "Education",
-  "Healthcare",
-  "Finance",
-  "Manufacturing",
-  "Retail",
-  "Others",
+  { value: "Information Technology", key: "IT" },
+  { value: "Education", key: "Education" },
+  { value: "Healthcare", key: "Healthcare" },
+  { value: "Finance", key: "Finance" },
+  { value: "Manufacturing", key: "Manufacturing" },
+  { value: "Retail", key: "Retail" },
+  { value: "Others", key: "Others" },
 ];
 
 const JOB_LEVELS = [
   "Intern",
-  "Clerk",
-  "Entry Level",
+  "Junior",
   "Mid Level",
-  "Senior Level",
-  "Senior Executive",
-  "Executive",
+  "Senior",
   "Manager",
-  "Assistant Director",
-  "Deputy Director",
   "Director",
 ];
 
@@ -62,6 +59,9 @@ export default function ProfilePage() {
     experience_years: user?.experience_years || "",
   });
   const [saving, setSaving] = useState(false);
+  const [showDeactivate, setShowDeactivate] = useState(false);
+  const [deactivatePassword, setDeactivatePassword] = useState("");
+  const [deactivating, setDeactivating] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -212,7 +212,7 @@ export default function ProfilePage() {
                 >
                   <option value="">{t("settings.selectWorkingField")}</option>
                   {WORKING_FIELDS.map((f) => (
-                    <option key={f} value={f}>{t(`settings.workingField${f.replace(/[^a-zA-Z]/g, "")}`)}</option>
+                    <option key={f.value} value={f.value}>{t(`settings.workingField${f.key}`)}</option>
                   ))}
                 </select>
               </div>
@@ -256,6 +256,66 @@ export default function ProfilePage() {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Deactivate Account */}
+        <Card className="border-0 shadow-lg border-t-4 border-t-red-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl text-red-600 dark:text-red-400">
+              <AlertTriangle className="w-6 h-6" />
+              {t("settings.deactivateAccount") || "Deactivate Account"}
+            </CardTitle>
+            <CardDescription>{t("settings.deactivateDescription") || "Permanently deactivate your account. This action cannot be undone."}</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            {!showDeactivate ? (
+              <Button variant="destructive" onClick={() => setShowDeactivate(true)} className="gap-2">
+                <Trash2 className="w-4 h-4" />
+                {t("settings.deactivateButton") || "Deactivate My Account"}
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                  <p className="text-sm text-red-700 dark:text-red-300 font-medium mb-1">{t("settings.deactivateWarning") || "Warning: This will permanently disable your account."}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{t("settings.deactivateWarningDetail") || "Enter your password to confirm deactivation."}</p>
+                </div>
+                <div className="grid gap-2 max-w-sm">
+                  <Label htmlFor="deactivate-password">{t("settings.confirmPassword") || "Confirm Password"}</Label>
+                  <Input
+                    id="deactivate-password"
+                    type="password"
+                    value={deactivatePassword}
+                    onChange={(e) => setDeactivatePassword(e.target.value)}
+                    placeholder={t("settings.enterPassword") || "Enter your password"}
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="destructive"
+                    disabled={deactivating || !deactivatePassword}
+                    onClick={async () => {
+                      setDeactivating(true);
+                      try {
+                        const { default: api } = await import("@/lib/axios");
+                        await api.post("/api/user/deactivate", { password: deactivatePassword });
+                        window.location.href = "/";
+                      } catch (err: unknown) {
+                        const axiosErr = err as { response?: { data?: { message?: string } } };
+                        toast.error(axiosErr.response?.data?.message || t("settings.deactivateFailed") || "Deactivation failed");
+                      } finally {
+                        setDeactivating(false);
+                      }
+                    }}
+                  >
+                    {deactivating ? t("common.saving") : (t("settings.confirmDeactivate") || "Confirm Deactivation")}
+                  </Button>
+                  <Button variant="outline" onClick={() => { setShowDeactivate(false); setDeactivatePassword(""); }}>
+                    {t("common.cancel") || "Cancel"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

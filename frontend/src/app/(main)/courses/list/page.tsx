@@ -259,11 +259,15 @@ export default function ListCoursePage() {
             {filtered.map((course: any) => (
               <Card key={course.id} className="p-0 overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 group h-full flex flex-col">
                 <Link href={`/courses/${course.id}?from=list`}>
-                  <div className="h-44 bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 dark:from-violet-500/30 dark:via-purple-500/30 dark:to-indigo-500/30 relative overflow-hidden">
+                  <div className="h-44 relative overflow-hidden">
+                    {course.image ? (
+                      <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600 dark:from-violet-500/30 dark:via-purple-500/30 dark:to-indigo-500/30 flex items-center justify-center">
+                        <BookOpen className="w-14 h-14 text-white/20" />
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <BookOpen className="w-14 h-14 text-white/20" />
-                    </div>
                     <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="px-2.5 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
