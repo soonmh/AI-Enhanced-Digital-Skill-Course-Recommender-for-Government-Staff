@@ -30,6 +30,7 @@ interface NavItem {
   href?: string;
   icon: React.ElementType;
   permission?: string | null;
+  notPermission?: string | null;
   roles?: string[];
   requireDirectReports?: boolean;
   children?: NavItem[];
@@ -84,6 +85,14 @@ const getNavItems = (t: (key: string, params?: Record<string, string | number>) 
         href: "/courses/my-learning",
         icon: GraduationCap,
         permission: "take-assessment",
+      },
+      {
+        key: "browse-courses",
+        label: t("nav.browseCourses"),
+        href: "/courses/list",
+        icon: BookOpen,
+        permission: "take-assessment",
+        notPermission: "course-management",
       },
       {
         key: "manage-courses",
@@ -150,24 +159,27 @@ export function Sidebar() {
   const hasPermission = (itemPermission?: string | null) =>
     !itemPermission || permissions.includes(itemPermission);
 
+  const lacksPermission = (notPermission?: string | null) =>
+    !notPermission || !permissions.includes(notPermission);
+
   const filterItems = (items: NavItem[]) =>
     items
       .filter((item) => {
         if (item.requireDirectReports && !hasDirectReports) return false;
         if (item.children) {
           const filtered = item.children.filter(
-            (child) => hasPermission(child.permission) && hasRole(child.roles)
+            (child) => hasPermission(child.permission) && lacksPermission(child.notPermission) && hasRole(child.roles)
           );
           return filtered.length > 0;
         }
-        return hasPermission(item.permission) && hasRole(item.roles);
+        return hasPermission(item.permission) && lacksPermission(item.notPermission) && hasRole(item.roles);
       })
       .map((item) => {
         if (item.children) {
           return {
             ...item,
             children: item.children.filter(
-              (child) => hasPermission(child.permission) && hasRole(child.roles)
+              (child) => hasPermission(child.permission) && lacksPermission(child.notPermission) && hasRole(child.roles)
             ),
           };
         }

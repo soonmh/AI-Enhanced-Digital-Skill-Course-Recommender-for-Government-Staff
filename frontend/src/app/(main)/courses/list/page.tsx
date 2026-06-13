@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useTranslation } from "@/i18n/context";
-import { useCourses, useUsers, assignCourseToUsers, unassignUsersFromCourse, useAssignedUsers } from "@/hooks/useApi";
+import { useCourses, useUsers, assignCourseToUsers, unassignUsersFromCourse, useAssignedUsers, deleteCourse } from "@/hooks/useApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ const SORT_VALUES = ["newest", "rating", "popular", "title"] as const;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default function ListCoursePage() {
   const { t } = useTranslation();
-  const { courses, isLoading } = useCourses();
+  const { courses, isLoading, mutate: mutateCourses } = useCourses();
   const { data: session } = useSession();
   const isAdmin = session?.user?.permissions?.includes("user-management");
   const hasCourseMgmt = session?.user?.permissions?.includes("course-management");
@@ -58,6 +58,8 @@ export default function ListCoursePage() {
   const { users: allUsers } = useUsers();
   const { assignedUserIds, mutate: mutateAssigned } = useAssignedUsers(assignCourse ? String(assignCourse.id) : null);
   const [removeUserTarget, setRemoveUserTarget] = useState<{ userId: number; name: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const filtered = useMemo(() => {
     let result = (courses || []).filter(
@@ -98,6 +100,21 @@ export default function ListCoursePage() {
       toast.error(t("courses.failedToAssign"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteCourse(String(deleteTarget.id));
+      toast.success(t("courses.deletedSuccess", { title: deleteTarget.title }));
+      mutateCourses();
+      setDeleteTarget(null);
+    } catch {
+      toast.error(t("courses.failedToDelete"));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -327,6 +344,18 @@ export default function ListCoursePage() {
                           <UserPlus className="w-4 h-4" />
                         </button>
                       )}
+                      {hasCourseMgmt && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTarget(course);
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400 hover:text-red-600 transition-colors"
+                          title={t("courses.delete")}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -342,7 +371,8 @@ export default function ListCoursePage() {
                   <th className="text-left p-4 font-semibold text-muted-foreground">{t("courses.tableLevel")}</th>
                   <th className="text-left p-4 font-semibold text-muted-foreground">{t("courses.tableRating")}</th>
                   <th className="text-left p-4 font-semibold text-muted-foreground">{t("courses.tableEnrolled")}</th>
-                  {isAdmin && <th className="text-left p-4 font-semibold text-muted-foreground w-28">{t("courses.tableActions")}</th>}
+                  {isAdmin && <th className="text-left p-4 font-semibold text-muted-foreground w-32">{t("courses.tableActions")}</th>}
+                  {!isAdmin && hasCourseMgmt && <th className="text-left p-4 font-semibold text-muted-foreground w-24">{t("courses.tableActions")}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -388,15 +418,34 @@ export default function ListCoursePage() {
                     </td>
                     {isAdmin && (
                       <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setAssignCourse(course);
+                              setSelectedUsers(new Set());
+                              setAssignSearch("");
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-500/10 dark:bg-violet-400/15 hover:bg-violet-500/20 transition-colors"
+                          >
+                            <UserPlus className="w-3.5 h-3.5" /> {t("courses.assign")}
+                          </button>
+                          <button
+                            onClick={() => setDeleteTarget(course)}
+                            className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-500 hover:text-red-600 transition-colors"
+                            title={t("courses.delete")}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                    {!isAdmin && hasCourseMgmt && (
+                      <td className="p-4">
                         <button
-                          onClick={() => {
-                            setAssignCourse(course);
-                            setSelectedUsers(new Set());
-                            setAssignSearch("");
-                          }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-500/10 dark:bg-violet-400/15 hover:bg-violet-500/20 transition-colors"
+                          onClick={() => setDeleteTarget(course)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-red-600 dark:text-red-400 bg-red-500/10 dark:bg-red-400/15 hover:bg-red-500/20 transition-colors"
                         >
-                          <UserPlus className="w-3.5 h-3.5" /> {t("courses.assign")}
+                          <Trash2 className="w-3.5 h-3.5" /> {t("courses.delete")}
                         </button>
                       </td>
                     )}
@@ -501,6 +550,25 @@ export default function ListCoursePage() {
               }}
             >
               {t("common.remove")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t("courses.deleteTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("courses.deleteDescription", { title: deleteTarget?.title || "" })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+              {t("common.cancel")}
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? t("common.deleting") : t("courses.delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
