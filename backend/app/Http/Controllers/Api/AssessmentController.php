@@ -9,6 +9,7 @@ use App\Models\Assessment;
 use App\Models\AssessmentResponse;
 use App\Models\JobRoleProfile;
 use App\Events\AssessmentSubmitted;
+use App\Services\AssessmentReportService;
 use App\Services\DsriCalculationService;
 use App\Services\RealtimePublisher;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,10 @@ use Illuminate\Http\Request;
 
 class AssessmentController extends Controller
 {
-    public function __construct(private DsriCalculationService $dsriService) {}
+    public function __construct(
+        private DsriCalculationService $dsriService,
+        private AssessmentReportService $reportService,
+    ) {}
 
     public function landing(Request $request): JsonResponse
     {
@@ -97,61 +101,19 @@ class AssessmentController extends Controller
     public function results(Request $request): JsonResponse
     {
         $user = $request->user();
-        $latest = $user->assessmentResponses()->where('assessment_type', 'full')->orderByDesc('submitted_at')->first();
+        $locale = $user->locale ?? 'en';
+        $latest = $user->assessmentResponses()
+            ->where('assessment_type', 'full')
+            ->orderByDesc('submitted_at')
+            ->first();
         $history = $user->assessmentResponses()->orderByDesc('submitted_at')->get();
-
-        $latestSectionScores = null;
-        if ($latest) {
-            // Merge section retests newer than the latest full assessment
-            $sectionRetests = $user->assessmentResponses()
-                ->where('assessment_type', 'section')
-                ->where('submitted_at', '>', $latest->submitted_at)
-                ->get();
-
-            $mergedScores = [];
-            foreach ($this->dsriService->getCompetencies() as $code => $config) {
-                $field = strtolower($code) . '_score';
-                $mergedScores[$code] = $latest->$field;
-            }
-
-            foreach ($sectionRetests as $retest) {
-                if ($retest->section_code) {
-                    $field = strtolower($retest->section_code) . '_score';
-                    $mergedScores[$retest->section_code] = $retest->$field;
-                }
-            }
-
-            $latestSectionScores = [];
-            foreach ($this->dsriService->getCompetencies() as $code => $config) {
-                $latestSectionScores[$code] = $this->dsriService->getSectionDetails(
-                    $mergedScores[$code], $code, $user->locale ?? 'en'
-                );
-            }
-        }
-
-        $certificate = null;
-        if ($latest) {
-            $cert = \App\Models\Certificate::where('assessment_response_id', $latest->id)->first();
-            if ($cert) {
-                $certificate = [
-                    'id' => $cert->id,
-                    'verification_code' => $cert->verification_code,
-                    'maturity_level' => $cert->maturity_level,
-                    'maturity_label_en' => $cert->maturity_label_en,
-                    'issued_at' => $cert->issued_at->toIso8601String(),
-                    'expires_at' => $cert->expires_at?->toIso8601String(),
-                    'is_expired' => $cert->isExpired(),
-                    'share_url' => url('/c/' . $cert->verification_code),
-                ];
-            }
-        }
 
         return response()->json([
             'latest' => $latest,
             'history' => AssessmentResponseResource::collection($history),
-            'latestSectionScores' => $latestSectionScores,
-            'maturity' => $latest ? $this->dsriService->getMaturityLevel($latest->dsri, $user->locale ?? 'en') : null,
-            'certificate' => $certificate,
+            'latestSectionScores' => $this->reportService->mergedSectionScores($user, $locale),
+            'maturity' => $latest ? $this->dsriService->getMaturityLevel($latest->dsri, $locale) : null,
+            'certificate' => $this->reportService->certificatePayload($latest),
         ]);
     }
 
@@ -304,47 +266,11 @@ class AssessmentController extends Controller
     public function roleGap(Request $request): JsonResponse
     {
         $request->validate(['role_profile_id' => 'required|exists:job_role_profiles,id']);
-        $user = $request->user();
-        $latest = $user->latestAssessmentResponse;
-
-        if (!$latest) {
-            return response()->json(['has_data' => false]);
-        }
-
         $profile = JobRoleProfile::findOrFail($request->role_profile_id);
-        $targets = $profile->getTargets();
+        $locale = $request->user()->locale ?? 'en';
 
-        $gaps = [];
-        $competencies = $this->dsriService->getCompetencies();
-
-        foreach ($competencies as $code => $config) {
-            $field = strtolower($code) . '_score';
-            $actual = $latest->$field;
-            $maxScore = $config['max_score'];
-            $actualPct = $maxScore > 0 ? round(($actual / $maxScore) * 100, 1) : 0;
-            $targetPct = $targets[$code] ?? 0;
-            $gap = round($targetPct - $actualPct, 1);
-
-            $gaps[$code] = [
-                'code' => $code,
-                'name' => $config['name_en'],
-                'name_ms' => $config['name_ms'],
-                'actual_pct' => $actualPct,
-                'target_pct' => $targetPct,
-                'gap' => $gap,
-                'status' => $gap <= 0 ? 'met' : ($gap <= 15 ? 'close' : 'gap'),
-            ];
-        }
-
-        return response()->json([
-            'has_data' => true,
-            'role' => [
-                'id' => $profile->id,
-                'name' => $profile->role_name,
-                'name_ms' => $profile->role_name_ms,
-            ],
-            'gaps' => $gaps,
-            'overall_readiness' => round(array_sum(array_map(fn ($g) => max(0, 100 - $g['gap']), $gaps)) / max(1, count($gaps)), 1),
-        ]);
+        return response()->json(
+            $this->reportService->roleGap($request->user(), $profile, $locale)
+        );
     }
 }

@@ -41,6 +41,7 @@ const onlineKey = "online_users";
 
 io.on("connection", async (socket) => {
   const userId = String(socket.data.user.id);
+  console.log(`[socket] User ${userId} connected (socket ${socket.id})`);
 
   // Join personal room for targeted notifications
   socket.join(`user:${userId}`);
@@ -50,6 +51,7 @@ io.on("connection", async (socket) => {
   io.emit("online_status", { userId: Number(userId), online: true });
 
   socket.on("disconnect", async () => {
+    console.log(`[socket] User ${userId} disconnected (socket ${socket.id})`);
     // Check if user has other active sockets (multi-tab support)
     const userSockets = await io.in(`user:${userId}`).fetchSockets();
     const stillConnected = userSockets.some((s) => s.id !== socket.id);
@@ -62,18 +64,22 @@ io.on("connection", async (socket) => {
 
 // Subscribe to Laravel events via Redis Pub/Sub
 subscriber.subscribe("notifications", "dashboard_updates");
+console.log("[redis] Subscribed to channels: notifications, dashboard_updates");
 
 subscriber.on("message", (channel, message) => {
   const data = JSON.parse(message);
+  console.log(`[redis] Received on "${channel}":`, JSON.stringify(data).slice(0, 200));
 
   if (channel === "notifications") {
     // data = { recipient_id, notification }
     io.to(`user:${data.recipient_id}`).emit("notification.new", data.notification);
+    console.log(`[socket] Emitted notification.new to user:${data.recipient_id}`);
   }
 
   if (channel === "dashboard_updates") {
     // data = { event, payload }
     io.emit("dashboard.update", data);
+    console.log(`[socket] Broadcasted dashboard.update (${data.event})`);
   }
 });
 

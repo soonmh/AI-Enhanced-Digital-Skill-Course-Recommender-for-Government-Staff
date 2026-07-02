@@ -13,14 +13,14 @@ use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SettingsController;
 use Illuminate\Support\Facades\Route;
 
-// Public auth routes
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
-Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+// Public auth routes (rate-limited to prevent brute force)
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:3,1');
 
-// Public certificate verification
-Route::get('/c/verify/{code}', [CertificateController::class, 'verify']);
+// Public certificate verification (rate-limited)
+Route::get('/c/verify/{code}', [CertificateController::class, 'verify'])->middleware('throttle:30,1');
 
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {

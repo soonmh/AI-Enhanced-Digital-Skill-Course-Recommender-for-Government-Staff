@@ -4,7 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\AiInsightService;
+use App\Services\AiInsights\ActionPlanService;
+use App\Services\AiInsights\DepartmentInsightService;
+use App\Services\AiInsights\LearningPathService;
+use App\Services\AiInsights\PeerComparisonService;
+use App\Services\AiInsights\PersonalInsightService;
+use App\Services\AiInsights\ReadinessCheckService;
+use App\Services\AiInsights\SkillPredictionService;
 use App\Services\DsriCalculationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +18,13 @@ use Illuminate\Http\Request;
 class AiInsightController extends Controller
 {
     public function __construct(
-        private AiInsightService $aiService,
+        private PersonalInsightService $personalInsights,
+        private DepartmentInsightService $departmentInsights,
+        private LearningPathService $learningPath,
+        private PeerComparisonService $peerComparison,
+        private ReadinessCheckService $readinessCheck,
+        private ActionPlanService $actionPlan,
+        private SkillPredictionService $skillPrediction,
         private DsriCalculationService $dsriService
     ) {}
 
@@ -30,8 +42,8 @@ class AiInsightController extends Controller
             ]);
         }
 
-        $recommendations = $this->aiService->generateRecommendations($latest, $locale);
-        $skillGaps = $this->aiService->predictSkillGaps($user, $locale);
+        $recommendations = $this->personalInsights->generate($latest, $locale);
+        $skillGaps = $this->skillPrediction->predict($user, $locale);
 
         return response()->json([
             'has_assessment' => true,
@@ -64,7 +76,7 @@ class AiInsightController extends Controller
             ]);
         }
 
-        $insights = $this->aiService->analyzeStaffPerformance($responses, $locale);
+        $insights = $this->departmentInsights->analyze($responses, $locale);
 
         $competencies = $this->dsriService->getCompetencies();
         $departmentAverages = [];
@@ -94,7 +106,7 @@ class AiInsightController extends Controller
         $user = $request->user();
         $locale = $user->locale ?? 'en';
 
-        $result = $this->aiService->generateLearningPath($user, $locale);
+        $result = $this->learningPath->generate($user, $locale);
         $result['has_assessment'] = $result['has_assessment'] ?? ($user->latestAssessmentResponse !== null);
 
         return response()->json($result);
@@ -117,7 +129,7 @@ class AiInsightController extends Controller
             ->with('latestAssessmentResponse')
             ->get();
 
-        $comparison = $this->aiService->generatePeerComparison($user, $peers, $locale);
+        $comparison = $this->peerComparison->compare($user, $peers, $locale);
         $assessedCount = $peers->pluck('latestAssessmentResponse')->filter()->count();
 
         return response()->json([
@@ -132,7 +144,7 @@ class AiInsightController extends Controller
         $user = $request->user();
         $locale = $user->locale ?? 'en';
 
-        $result = $this->aiService->checkAssessmentReadiness($user, $locale);
+        $result = $this->readinessCheck->check($user, $locale);
 
         return response()->json([
             'has_previous' => $result['has_previous'] ?? false,
@@ -145,7 +157,7 @@ class AiInsightController extends Controller
         $user = $request->user();
         $locale = $user->locale ?? 'en';
 
-        $result = $this->aiService->generateActionPlan($user, $locale);
+        $result = $this->actionPlan->generate($user, $locale);
         $result['has_assessment'] = $result['has_assessment'] ?? ($user->latestAssessmentResponse !== null);
 
         return response()->json($result);

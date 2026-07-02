@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        $middleware->append(\App\Http\Middleware\AssignRequestId::class);
         $middleware->alias([
             'permission' => \App\Http\Middleware\EnsureHasPermission::class,
             'role' => \App\Http\Middleware\EnsureHasRole::class,

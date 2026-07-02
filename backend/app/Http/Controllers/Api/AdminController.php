@@ -4,15 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\UserCourse;
-use App\Services\RealtimePublisher;
+use App\Services\CourseAssignmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
+    public function __construct(private CourseAssignmentService $assignments) {}
+
     public function users(Request $request): JsonResponse
     {
         $query = User::with('roles');
@@ -67,7 +70,7 @@ class AdminController extends Controller
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
-        $role = \App\Models\Role::where('name', $validated['role'])->first();
+        $role = Role::where('name', $validated['role'])->first();
         $user->roles()->attach($role);
 
         return response()->json([
@@ -92,7 +95,7 @@ class AdminController extends Controller
         ]);
 
         if (isset($validated['role'])) {
-            $role = \App\Models\Role::where('name', $validated['role'])->first();
+            $role = Role::where('name', $validated['role'])->first();
             $user->roles()->sync([$role->id]);
             unset($validated['role']);
         }
@@ -123,135 +126,36 @@ class AdminController extends Controller
 
     public function assignCourses(Request $request, int $id): JsonResponse
     {
-        $user = User::findOrFail($id);
-
-        $validated = $request->validate([
+        $request->validate([
             'course_ids' => 'required|array',
             'course_ids.*' => 'integer|exists:courses,id',
         ]);
 
-        // Reactivate removed records
-        $reactivated = UserCourse::where('user_id', $user->id)
-            ->whereIn('course_id', $validated['course_ids'])
-            ->where('status', 'removed')
-            ->update([
-                'status' => 'active',
-                'progress' => 0,
-                'started_at' => now(),
-                'completed_at' => null,
-            ]);
+        User::findOrFail($id); // ensure user exists
 
-        $existing = UserCourse::where('user_id', $user->id)
-            ->whereIn('course_id', $validated['course_ids'])
-            ->where('status', '!=', 'removed')
-            ->pluck('course_id')
-            ->toArray();
-
-        $newIds = array_diff($validated['course_ids'], $existing);
-
-        foreach ($newIds as $courseId) {
-            UserCourse::create([
-                'user_id' => $user->id,
-                'course_id' => $courseId,
-                'started_at' => now(),
-                'progress' => 0,
-                'status' => 'active',
-            ]);
-        }
-
-        // Send real-time notifications (non-blocking)
-        if (count($newIds) > 0) {
-            try {
-                $publisher = new RealtimePublisher();
-                foreach ($newIds as $courseId) {
-                    $course = Course::find($courseId);
-                    if ($course) {
-                        $publisher->publishNotification($user->id, [
-                            'type' => 'course_assigned',
-                            'title' => 'New Course Assigned',
-                            'body' => "You have been assigned: {$course->title}",
-                            'data' => ['course_id' => $courseId],
-                        ]);
-                    }
-                }
-            } catch (\Throwable $e) {
-                log()->warning('Failed to send assignment notification: ' . $e->getMessage());
-            }
-        }
-
-        return response()->json([
-            'message' => (count($newIds) + $reactivated) . ' course(s) assigned',
-            'assigned' => count($newIds) + $reactivated,
-            'skipped' => count($existing) - $reactivated,
-        ]);
+        return response()->json(
+            $this->assignments->assignCoursesToUser($id, $request->course_ids)
+        );
     }
 
     public function assignUsers(Request $request, int $id): JsonResponse
     {
-        $course = Course::findOrFail($id);
-
-        $validated = $request->validate([
+        $request->validate([
             'user_ids' => 'required|array',
             'user_ids.*' => 'integer|exists:users,id',
         ]);
 
-        // Reactivate removed records
-        $reactivated = UserCourse::where('course_id', $course->id)
-            ->whereIn('user_id', $validated['user_ids'])
-            ->where('status', 'removed')
-            ->update([
-                'status' => 'active',
-                'progress' => 0,
-                'started_at' => now(),
-                'completed_at' => null,
-            ]);
+        Course::findOrFail($id); // ensure course exists
 
-        $existing = UserCourse::where('course_id', $course->id)
-            ->whereIn('user_id', $validated['user_ids'])
-            ->where('status', '!=', 'removed')
-            ->pluck('user_id')
-            ->toArray();
-
-        $newIds = array_diff($validated['user_ids'], $existing);
-
-        foreach ($newIds as $userId) {
-            UserCourse::create([
-                'user_id' => $userId,
-                'course_id' => $course->id,
-                'started_at' => now(),
-                'progress' => 0,
-                'status' => 'active',
-            ]);
-        }
-
-        // Send real-time notifications (non-blocking)
-        if (count($newIds) > 0) {
-            try {
-                $publisher = new RealtimePublisher();
-                foreach ($newIds as $userId) {
-                    $publisher->publishNotification((int) $userId, [
-                        'type' => 'course_assigned',
-                        'title' => 'New Course Assigned',
-                        'body' => "You have been assigned: {$course->title}",
-                        'data' => ['course_id' => $course->id],
-                    ]);
-                }
-            } catch (\Throwable $e) {
-                log()->warning('Failed to send assignment notification: ' . $e->getMessage());
-            }
-        }
-
-        return response()->json([
-            'message' => (count($newIds) + $reactivated) . ' user(s) assigned',
-            'assigned' => count($newIds) + $reactivated,
-            'skipped' => count($existing) - $reactivated,
-        ]);
+        return response()->json(
+            $this->assignments->assignUsersToCourse($id, $request->user_ids)
+        );
     }
 
     public function assignedCourses(int $id): JsonResponse
     {
-        $user = User::findOrFail($id);
-        $courseIds = UserCourse::where('user_id', $user->id)
+        User::findOrFail($id);
+        $courseIds = UserCourse::where('user_id', $id)
             ->where('status', '!=', 'removed')
             ->pluck('course_id')
             ->toArray();
@@ -261,8 +165,8 @@ class AdminController extends Controller
 
     public function assignedUsers(int $id): JsonResponse
     {
-        $course = Course::findOrFail($id);
-        $userIds = UserCourse::where('course_id', $course->id)
+        Course::findOrFail($id);
+        $userIds = UserCourse::where('course_id', $id)
             ->where('status', '!=', 'removed')
             ->pluck('user_id')
             ->toArray();
@@ -272,31 +176,12 @@ class AdminController extends Controller
 
     public function unassignUsers(Request $request, int $id): JsonResponse
     {
-        $course = Course::findOrFail($id);
-
-        $validated = $request->validate([
+        $request->validate([
             'user_ids' => 'required|array',
             'user_ids.*' => 'integer|exists:users,id',
         ]);
 
-        $count = UserCourse::where('course_id', $course->id)
-            ->whereIn('user_id', $validated['user_ids'])
-            ->where('status', '!=', 'removed')
-            ->update(['status' => 'removed']);
-
-        try {
-            $publisher = new RealtimePublisher();
-            foreach ($validated['user_ids'] as $userId) {
-                $publisher->publishNotification((int) $userId, [
-                    'type' => 'course_removed',
-                    'title' => 'Course Removed',
-                    'body' => "An admin removed: {$course->title}",
-                    'data' => ['course_id' => $course->id],
-                ]);
-            }
-        } catch (\Throwable $e) {
-            log()->warning('Failed to send removal notification: ' . $e->getMessage());
-        }
+        $count = $this->assignments->unassignUsersFromCourse($id, $request->user_ids);
 
         return response()->json([
             'message' => "{$count} user(s) removed",
@@ -306,34 +191,12 @@ class AdminController extends Controller
 
     public function unassignCourses(Request $request, int $id): JsonResponse
     {
-        $user = User::findOrFail($id);
-
-        $validated = $request->validate([
+        $request->validate([
             'course_ids' => 'required|array',
             'course_ids.*' => 'integer|exists:courses,id',
         ]);
 
-        $count = UserCourse::where('user_id', $user->id)
-            ->whereIn('course_id', $validated['course_ids'])
-            ->where('status', '!=', 'removed')
-            ->update(['status' => 'removed']);
-
-        try {
-            $publisher = new RealtimePublisher();
-            foreach ($validated['course_ids'] as $courseId) {
-                $course = Course::find($courseId);
-                if ($course) {
-                    $publisher->publishNotification($user->id, [
-                        'type' => 'course_removed',
-                        'title' => 'Course Removed',
-                        'body' => "An admin removed: {$course->title}",
-                        'data' => ['course_id' => $courseId],
-                    ]);
-                }
-            }
-        } catch (\Throwable $e) {
-            log()->warning('Failed to send removal notification: ' . $e->getMessage());
-        }
+        $count = $this->assignments->unassignCoursesFromUser($id, $request->course_ids);
 
         return response()->json([
             'message' => "{$count} course(s) removed",

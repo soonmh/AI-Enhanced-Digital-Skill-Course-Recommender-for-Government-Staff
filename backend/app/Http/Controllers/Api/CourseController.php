@@ -9,9 +9,8 @@ use App\Models\CourseRating;
 use App\Models\UserCourse;
 use App\Events\CourseCompleted;
 use App\Models\RecommendationInteraction;
-use App\Services\AiInsightService;
+use App\Services\CourseProfileService;
 use App\Services\HybridRecommendationService;
-use App\Services\DsriCalculationService;
 use App\Services\RealtimePublisher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,8 +18,8 @@ use Illuminate\Http\Request;
 class CourseController extends Controller
 {
     public function __construct(
-        private AiInsightService $aiService,
         private HybridRecommendationService $hybridService,
+        private CourseProfileService $profileService,
     ) {}
     public function index(Request $request): JsonResponse
     {
@@ -107,98 +106,9 @@ class CourseController extends Controller
             ->withCount('ratings')
             ->findOrFail($id);
 
-        $enrolled = false;
-        $progress = null;
-        $userRating = null;
-        $enrollmentStatus = null;
-        if ($request->user()) {
-            $uc = UserCourse::where('user_id', $request->user()->id)
-                ->where('course_id', $id)->first();
-            $enrolled = $uc !== null;
-            $progress = $uc?->progress;
-            $enrollmentStatus = $uc?->status;
-            $userRating = CourseRating::where('user_id', $request->user()->id)
-                ->where('course_id', $id)->value('rating');
-        }
-
-        $recentReviews = CourseRating::where('course_id', $id)
-            ->with('user:id,name')
-            ->latest()
-            ->limit(5)
-            ->get()
-            ->map(fn($r) => [
-                'user_name' => $r->user?->name ?? 'Anonymous',
-                'rating' => $r->rating,
-                'created_at' => $r->created_at,
-            ]);
-
-        // Rating distribution
-        $distribution = [];
-        for ($i = 5; $i >= 1; $i--) {
-            $distribution[$i] = CourseRating::where('course_id', $id)->where('rating', $i)->count();
-        }
-
-        // Peer enrollment data
-        $peerEnrollments = UserCourse::where('course_id', $id)
-            ->where('user_id', '!=', $request->user()->id)
-            ->with('user:id,name,working_field')
-            ->latest()
-            ->limit(5)
-            ->get()
-            ->map(fn($uc) => [
-                'name' => $uc->user?->name ?? 'Anonymous',
-                'field' => $uc->user?->working_field,
-                'progress' => $uc->progress,
-            ]);
-
-        // Competency mappings with user scores
-        $competencyMappings = $course->competencyMappings()->pluck('competency_code')->toArray();
-        $competencyBreakdown = [];
-        if (!empty($competencyMappings)) {
-            $dsriService = app(DsriCalculationService::class);
-            $competencies = $dsriService->getCompetencies();
-            $userResponse = $request->user()->latestAssessmentResponse;
-            foreach ($competencyMappings as $code) {
-                $config = $competencies[$code] ?? null;
-                if (!$config) continue;
-                $field = strtolower($code) . '_score';
-                $userScore = $userResponse?->$field ?? 0;
-                $competencyBreakdown[] = [
-                    'code' => $code,
-                    'name_en' => $config['name_en'],
-                    'name_ms' => $config['name_ms'],
-                    'weight' => $config['weight'],
-                    'max_score' => $config['max_score'],
-                    'user_score' => $userScore,
-                    'user_pct' => round(($userScore / $config['max_score']) * 100, 1),
-                ];
-            }
-        }
-
-        return response()->json([
-            'id' => $course->id,
-            'title' => $course->title,
-            'title_bm' => $course->title_bm,
-            'description' => $course->description,
-            'description_bm' => $course->description_bm,
-            'level' => $course->level,
-            'image' => $course->image,
-            'url' => $course->url,
-            'remark' => $course->remark,
-            'enrollment_count' => $course->enrollments_count,
-            'avg_rating' => $course->ratings_avg_rating ? round($course->ratings_avg_rating, 1) : null,
-            'ratings_count' => $course->ratings_count,
-            'user_rating' => $userRating,
-            'enrolled' => $enrolled,
-            'enrollment_status' => $enrollmentStatus,
-            'progress' => $progress,
-            'created_by' => $course->creator?->name,
-            'created_at' => $course->created_at,
-            'recent_reviews' => $recentReviews,
-            'rating_distribution' => $distribution,
-            'peer_enrollments' => $peerEnrollments,
-            'competency_breakdown' => $competencyBreakdown,
-        ]);
+        return response()->json(
+            $this->profileService->buildProfile($course, $request->user())
+        );
     }
 
     public function store(StoreCourseRequest $request): JsonResponse

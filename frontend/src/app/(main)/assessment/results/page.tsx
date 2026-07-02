@@ -594,14 +594,14 @@ export default function AssessmentResultsPage() {
                   <div className="text-center sm:text-left">
                     <div className="text-sm text-muted-foreground">{t("assessment.overallReadiness")}</div>
                     <div className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
-                      {roleGap.overall_readiness}%
+                      {Math.min(100, roleGap.overall_readiness)}%
                     </div>
                   </div>
                   <div className="flex-1 w-full sm:w-auto">
                     <div className="w-full bg-muted rounded-full h-3">
                       <div
                         className="h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
-                        style={{ width: `${roleGap.overall_readiness}%` }}
+                        style={{ width: `${Math.min(100, roleGap.overall_readiness)}%` }}
                       />
                     </div>
                   </div>

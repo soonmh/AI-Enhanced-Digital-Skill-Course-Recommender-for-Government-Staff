@@ -228,7 +228,7 @@ export default function RecommendedCoursesPage() {
               const gradient = GRADIENTS[idx % GRADIENTS.length];
               const matchPct = course.match_percentage != null && !isNaN(course.match_percentage) ? course.match_percentage : null;
               const handleClick = () => {
-                trackRecommendationInteraction(course.id, "click", { position: idx, hybrid_score: course.hybrid_score }).catch(() => {});
+                trackRecommendationInteraction(course.id, "click", { position: idx, hybrid_score: course.hybrid_score, ab_group: course.ab_group }).catch(() => {});
               };
               return (
                 <Card key={course.id} className="p-0 overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 group h-full flex flex-col">

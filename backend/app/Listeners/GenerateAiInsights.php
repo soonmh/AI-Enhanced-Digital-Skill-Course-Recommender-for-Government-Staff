@@ -3,37 +3,18 @@
 namespace App\Listeners;
 
 use App\Events\AssessmentSubmitted;
-use App\Models\AiRecommendation;
-use App\Services\AiInsightService;
-use Illuminate\Support\Facades\Log;
+use App\Jobs\PrewarmAiInsights;
 
 class GenerateAiInsights
 {
-    public function __construct(private AiInsightService $aiService) {}
-
     public function handle(AssessmentSubmitted $event): void
     {
-        try {
-            $response = $event->response;
-            $locale = $response->user->locale ?? 'en';
-            $recommendations = $this->aiService->generateRecommendations($response, $locale);
-            $skillGaps = $this->aiService->predictSkillGaps($response->user, $locale);
+        $locale = $event->response->user->locale ?? 'en';
 
-            AiRecommendation::updateOrCreate(
-                [
-                    'user_id' => $response->user_id,
-                    'assessment_response_id' => $response->id,
-                ],
-                [
-                    'type' => 'personal',
-                    'insights_json' => [
-                        'recommendations' => $recommendations,
-                        'skill_gaps' => $skillGaps,
-                    ],
-                ]
-            );
-        } catch (\Exception $e) {
-            Log::error('Failed to generate AI insights', ['message' => $e->getMessage()]);
-        }
+        // Dispatch to the queue so the request returns immediately.
+        // The job prewarms every personal insight cache (learning path,
+        // peer comparison, readiness, action plan) so the user's first
+        // visit to /ai-insights returns instantly.
+        PrewarmAiInsights::dispatch($event->response, $locale);
     }
 }

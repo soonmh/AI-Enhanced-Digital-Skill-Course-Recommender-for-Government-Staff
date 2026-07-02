@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Course;
 use App\Models\User;
+use App\Services\AiInsights\CourseExplanationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -16,7 +17,7 @@ class HybridRecommendationService
     public function __construct(
         private ContentBasedRecommendationService $contentService,
         private CollaborativeFilteringService $collaborativeService,
-        private AiInsightService $aiService,
+        private CourseExplanationService $courseExplanation,
         private DsriCalculationService $dsriService,
     ) {}
 
@@ -117,7 +118,7 @@ class HybridRecommendationService
                     'ratings_count' => $course->ratings()->count(),
                     'match_percentage' => is_nan($hybridScore) ? 0 : (int) round($hybridScore * 100),
                     'competency_codes' => $competencyCodes,
-                    'ai_explanation' => $this->aiService->generateEnhancedCourseExplanation(
+                    'ai_explanation' => $this->courseExplanation->generateEnhanced(
                         $course->title,
                         $course->description ?? '',
                         $explanationData,
@@ -398,7 +399,7 @@ class HybridRecommendationService
 
             $aiExplanation = '';
             if ($matchPct > 0 && !empty($weakNames)) {
-                $aiExplanation = $this->aiService->generateCourseExplanation(
+                $aiExplanation = $this->courseExplanation->generate(
                     $c->title,
                     $c->description ?? '',
                     $weakNames,

@@ -5,7 +5,10 @@ namespace Tests\Unit;
 use App\Models\Assessment;
 use App\Models\AssessmentResponse;
 use App\Models\User;
-use App\Services\AiInsightService;
+use App\Services\AiInsights\CourseExplanationService;
+use App\Services\AiInsights\DepartmentInsightService;
+use App\Services\AiInsights\PersonalInsightService;
+use App\Services\AiInsights\SkillPredictionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,12 +16,18 @@ class AiInsightServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private AiInsightService $service;
+    private PersonalInsightService $personalInsights;
+    private DepartmentInsightService $departmentInsights;
+    private SkillPredictionService $skillPrediction;
+    private CourseExplanationService $courseExplanation;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = app(AiInsightService::class);
+        $this->personalInsights = app(PersonalInsightService::class);
+        $this->departmentInsights = app(DepartmentInsightService::class);
+        $this->skillPrediction = app(SkillPredictionService::class);
+        $this->courseExplanation = app(CourseExplanationService::class);
     }
 
     private function makeTestResponse(User $user, array $overrides = []): AssessmentResponse
@@ -39,54 +48,54 @@ class AiInsightServiceTest extends TestCase
         ], $overrides));
     }
 
-    public function test_generate_recommendations_returns_fallback_without_api_key(): void
+    public function test_personal_insights_returns_fallback_without_api_key(): void
     {
         config(['services.gemini.key' => null]);
 
         $user = User::factory()->create();
         $response = $this->makeTestResponse($user);
 
-        $result = $this->service->generateRecommendations($response);
+        $result = $this->personalInsights->generate($response);
 
         $this->assertArrayHasKey('summary', $result);
         $this->assertArrayHasKey('key_findings', $result);
     }
 
-    public function test_generate_recommendations_caches_results(): void
+    public function test_personal_insights_caches_results(): void
     {
         config(['services.gemini.key' => null]);
 
         $user = User::factory()->create();
         $response = $this->makeTestResponse($user);
 
-        $result1 = $this->service->generateRecommendations($response);
-        $result2 = $this->service->generateRecommendations($response);
+        $result1 = $this->personalInsights->generate($response);
+        $result2 = $this->personalInsights->generate($response);
 
         $this->assertEquals($result1, $result2);
     }
 
-    public function test_analyze_staff_performance_handles_empty_data(): void
+    public function test_department_insights_handles_empty_data(): void
     {
-        $result = $this->service->analyzeStaffPerformance(collect());
+        $result = $this->departmentInsights->analyze(collect());
 
         $this->assertEquals('No staff data available for analysis.', $result['summary']);
     }
 
-    public function test_predict_skill_gaps_with_insufficient_history(): void
+    public function test_skill_prediction_with_insufficient_history(): void
     {
         $user = User::factory()->create();
         $this->makeTestResponse($user);
 
-        $result = $this->service->predictSkillGaps($user);
+        $result = $this->skillPrediction->predict($user);
 
         $this->assertStringContainsString('Insufficient', $result['prediction']);
     }
 
-    public function test_generate_course_explanation_returns_fallback_without_key(): void
+    public function test_course_explanation_returns_fallback_without_key(): void
     {
         config(['services.gemini.key' => null]);
 
-        $result = $this->service->generateCourseExplanation(
+        $result = $this->courseExplanation->generate(
             'Digital Literacy 101',
             'Learn digital basics',
             ['Digital Literacy', 'Digital Skills']
@@ -96,9 +105,9 @@ class AiInsightServiceTest extends TestCase
         $this->assertNotEmpty($result);
     }
 
-    public function test_generate_course_explanation_returns_empty_without_weak_areas(): void
+    public function test_course_explanation_returns_empty_without_weak_areas(): void
     {
-        $result = $this->service->generateCourseExplanation('Course', 'Desc', []);
+        $result = $this->courseExplanation->generate('Course', 'Desc', []);
 
         $this->assertEquals('', $result);
     }

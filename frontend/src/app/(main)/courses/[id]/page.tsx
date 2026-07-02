@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useTranslation } from "@/i18n/context";
-import { useCourse, enrollCourse, rateCourse, updateCourseProgress } from "@/hooks/useApi";
+import { useCourse, enrollCourse, rateCourse, updateCourseProgress, trackRecommendationInteraction } from "@/hooks/useApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PermissionGate } from "@/components/shared/PermissionGate";
@@ -140,6 +140,10 @@ export default function CourseDetailPage() {
       await enrollCourse(params.id as string);
       toast.success(t("courses.enrolledSuccessfully"));
       mutate({ ...course, enrolled: true, progress: 0, enrollment_count: (course.enrollment_count || 0) + 1 }, false);
+      // Track conversion if user enrolled from a recommendation
+      if (from === "recommended") {
+        trackRecommendationInteraction(params.id as string, "enroll", { source: "recommended" }).catch(() => {});
+      }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : t("courses.failedToEnroll");
       toast.error(msg);
@@ -335,6 +339,9 @@ export default function CourseDetailPage() {
                         setSliderValue(null);
                         if (val >= 100 && wasNotCompleted) {
                           toast.success(t("courses.completedLabel"));
+                          if (from === "recommended") {
+                            trackRecommendationInteraction(params.id as string, "complete", { source: "recommended" }).catch(() => {});
+                          }
                         }
                       } catch {
                         setSliderValue(null);

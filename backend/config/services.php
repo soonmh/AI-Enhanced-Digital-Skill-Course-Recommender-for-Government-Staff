@@ -40,4 +40,16 @@ return [
         'model' => env('GEMINI_MODEL', 'gemini-3.1-flash-lite'),
     ],
 
+    'recommendations' => [
+        // Master switch for A/B testing between the legacy (control) and hybrid
+        // recommendation algorithms. Disabled by default to keep the hybrid
+        // algorithm as the canonical experience; flip to true to run an
+        // experiment comparing engagement between the two.
+        'ab_testing' => env('RECOMMENDATION_AB_TESTING', false),
+
+        // Fraction of users assigned to the control group (0.0 - 1.0).
+        // Only takes effect when ab_testing is true.
+        'control_ratio' => env('RECOMMENDATION_CONTROL_RATIO', 0.5),
+    ],
+
 ];
