@@ -187,7 +187,7 @@ export default function AdminUsersPage() {
       job_level: u.job_level || "",
       role: u.role || "Staff",
       is_active: u.is_active ? "1" : "0",
-      manager_id: u.manager_id || "",
+      hod_id: u.hod_id || "",
     });
     setEditUser(u);
   };
@@ -529,9 +529,9 @@ export default function AdminUsersPage() {
                 </select>
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="edit-manager">{t("admin.managerLabel") || "Manager"}</Label>
-                <select id="edit-manager" value={form.manager_id || ""} onChange={(e) => setForm({ ...form, manager_id: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
-                  <option value="">— {t("admin.noManager") || "No Manager"} —</option>
+                <Label htmlFor="edit-hod">{t("admin.hodLabel") || "HOD"}</Label>
+                <select id="edit-hod" value={form.hod_id || ""} onChange={(e) => setForm({ ...form, hod_id: e.target.value })} className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm">
+                  <option value="">— {t("admin.noHod") || "No HOD"} —</option>
                   {(users || []).filter((u: any) => u.id !== editUser?.id).map((u: any) => (
                     <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
                   ))}

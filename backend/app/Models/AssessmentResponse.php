@@ -11,12 +11,14 @@ class AssessmentResponse extends Model
         'c1_score', 'c2_score', 'c3_score', 'c4_score', 'c5_score',
         'c6_score', 'c7_score', 'c8_score', 'c9_score', 'c10_score',
         'dsri',
+        'endorsement_status', 'endorsed_by', 'endorsed_at', 'endorsement_note',
     ];
 
     protected function casts(): array
     {
         return [
             'submitted_at' => 'datetime',
+            'endorsed_at' => 'datetime',
         ];
     }
 
@@ -28,5 +30,10 @@ class AssessmentResponse extends Model
     public function assessment()
     {
         return $this->belongsTo(Assessment::class);
+    }
+
+    public function endorser()
+    {
+        return $this->belongsTo(User::class, 'endorsed_by');
     }
 }

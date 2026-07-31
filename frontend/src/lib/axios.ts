@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { signOut } from 'next-auth/react';
 
 const api = axios.create({
   baseURL: '',
@@ -11,12 +12,17 @@ const api = axios.create({
   },
 });
 
+let signingOut = false;
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-        window.location.href = '/login';
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !signingOut) {
+        signingOut = true;
+        // Clear the stale NextAuth session (so the app reflects logged-out
+        // state instead of a dead session) and land on the login page.
+        signOut({ callbackUrl: '/login' });
       }
     }
     return Promise.reject(error);

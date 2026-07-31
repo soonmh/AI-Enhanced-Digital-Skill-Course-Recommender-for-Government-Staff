@@ -82,6 +82,9 @@ export interface AssessmentResultsData {
   latest: {
     dsri: number;
     submitted_at?: string;
+    endorsement_status?: "pending" | "endorsed" | "rejected";
+    endorsed_at?: string | null;
+    endorsement_note?: string | null;
   };
   latestSectionScores?: Record<string, SectionScore>;
   history?: AssessmentRecord[];
@@ -95,6 +98,36 @@ export interface AssessmentResultsData {
     is_expired: boolean;
     share_url: string;
   };
+}
+
+export interface PendingEndorsement {
+  id: number;
+  user_id: number;
+  name: string;
+  email: string;
+  dsri: number;
+  submitted_at: string;
+}
+
+export interface PendingCourseCompletion {
+  id: number;
+  user_id: number;
+  name: string;
+  email: string;
+  course_title: string;
+  proof_url: string | null;
+  submitted_at: string;
+}
+
+export interface EndorsementHistoryItem {
+  type: "assessment" | "course";
+  id: number;
+  name: string;
+  decision: "endorsed" | "rejected";
+  decided_at: string;
+  note: string | null;
+  detail: string | number;
+  proof_url?: string | null;
 }
 
 export interface NotificationItem {

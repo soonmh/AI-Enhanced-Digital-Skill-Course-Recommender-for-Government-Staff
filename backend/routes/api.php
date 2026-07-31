@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\EndorsementController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SettingsController;
@@ -32,9 +33,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/dashboard/benchmark', [DashboardController::class, 'benchmark']);
 
-    // Manager — my team
+    // HOD — my team
     Route::get('/reports/my-team', [ReportController::class, 'myTeam']);
     Route::get('/reports/team-member/{id}', [ReportController::class, 'teamMemberReport']);
+
+    // HOD — assessment endorsement
+    Route::get('/endorsements/pending', [EndorsementController::class, 'pending']);
+    Route::post('/endorsements/{id}/endorse', [EndorsementController::class, 'endorse']);
+    Route::post('/endorsements/{id}/reject', [EndorsementController::class, 'reject']);
+
+    // HOD — course completion endorsement
+    Route::get('/endorsements/course-completions/pending', [EndorsementController::class, 'pendingCourseCompletions']);
+    Route::post('/endorsements/course-completions/{id}/endorse', [EndorsementController::class, 'endorseCourse']);
+    Route::post('/endorsements/course-completions/{id}/reject', [EndorsementController::class, 'rejectCourse']);
+
+    // HOD — endorsement history (assessments + course completions)
+    Route::get('/endorsements/history', [EndorsementController::class, 'history']);
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
@@ -88,6 +102,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/courses/{id}/enroll', [CourseController::class, 'enroll']);
     Route::post('/courses/{id}/rate', [CourseController::class, 'rate']);
     Route::put('/courses/{id}/progress', [CourseController::class, 'updateProgress']);
+    Route::post('/courses/{id}/submit-completion', [CourseController::class, 'submitCompletion']);
 
     // Course management (CRUD)
     Route::middleware('permission:course-management')->group(function () {

@@ -76,6 +76,7 @@ class AssessmentController extends Controller
             'c9_score' => $result['scores']['C9'],
             'c10_score' => $result['scores']['C10'],
             'dsri' => $result['dsri'],
+            'endorsement_status' => 'pending',
         ]);
 
         AssessmentSubmitted::dispatch($response);
@@ -147,6 +148,9 @@ class AssessmentController extends Controller
             'c9_score' => 0, 'c10_score' => 0,
             strtolower($sectionCode) . '_score' => $score,
             'dsri' => $latestFull->dsri,
+            // Section retests don't go through HOD endorsement
+            'endorsement_status' => 'endorsed',
+            'endorsed_at' => now(),
         ]);
 
         return response()->json([

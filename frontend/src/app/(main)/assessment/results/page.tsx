@@ -33,6 +33,8 @@ import {
   Download,
   Loader2,
   RefreshCw,
+  CircleCheck,
+  XCircle,
 } from "lucide-react";
 
 function getDsriLevel(score: number) {
@@ -266,6 +268,22 @@ export default function AssessmentResultsPage() {
                         {submittedAt ? formatDate(submittedAt) : "N/A"} at {submittedAt ? formatTime(submittedAt) : ""}
                       </span>
                     </div>
+                    {data.latest.endorsement_status && (
+                      <Badge
+                        className={`mt-2 text-white border-white/30 ${
+                          data.latest.endorsement_status === "endorsed"
+                            ? "bg-emerald-500/90"
+                            : data.latest.endorsement_status === "rejected"
+                            ? "bg-red-500/90"
+                            : "bg-amber-500/90"
+                        }`}
+                      >
+                        {data.latest.endorsement_status === "endorsed" && <CircleCheck className="w-3.5 h-3.5 mr-1.5" />}
+                        {data.latest.endorsement_status === "rejected" && <XCircle className="w-3.5 h-3.5 mr-1.5" />}
+                        {data.latest.endorsement_status === "pending" && <Clock className="w-3.5 h-3.5 mr-1.5" />}
+                        {t(`assessment.endorsement${data.latest.endorsement_status.charAt(0).toUpperCase()}${data.latest.endorsement_status.slice(1)}`)}
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-end gap-6">
@@ -318,6 +336,25 @@ export default function AssessmentResultsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Rejected Endorsement Notice */}
+        {data.latest.endorsement_status === "rejected" && (
+          <Card className="mb-8 border-0 shadow-md overflow-hidden !p-0 !gap-0">
+            <div className="flex">
+              <div className="w-1.5 shrink-0 bg-gradient-to-b from-red-400 to-red-600" />
+              <div className="flex-1 px-6 py-5">
+                <div className="flex items-center gap-2 text-red-700 dark:text-red-400 font-semibold mb-1">
+                  <XCircle className="w-5 h-5" />
+                  {t("assessment.endorsementRejectedTitle")}
+                </div>
+                {data.latest.endorsement_note && (
+                  <p className="text-sm text-muted-foreground mb-2">{data.latest.endorsement_note}</p>
+                )}
+                <p className="text-sm text-muted-foreground">{t("assessment.endorsementRejectedRetake")}</p>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Certificate Card */}
         {data.certificate && (

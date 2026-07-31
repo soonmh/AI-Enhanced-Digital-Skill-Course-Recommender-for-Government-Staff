@@ -7,7 +7,6 @@ use App\Http\Requests\StoreCourseRequest;
 use App\Models\Course;
 use App\Models\CourseRating;
 use App\Models\UserCourse;
-use App\Events\CourseCompleted;
 use App\Models\RecommendationInteraction;
 use App\Services\CourseProfileService;
 use App\Services\HybridRecommendationService;
@@ -173,36 +172,50 @@ class CourseController extends Controller
         $uc = UserCourse::where('user_id', $request->user()->id)
             ->where('course_id', $id)->firstOrFail();
 
+        // Self-reported progress only. Reaching 100% no longer auto-completes —
+        // completion requires uploading proof and HOD endorsement (submitCompletion).
         $uc->progress = $request->progress;
-        if ($request->progress >= 100) {
-            $uc->completed_at = now();
-            $uc->status = 'completed';
-        }
         $uc->save();
 
-        if ($uc->status === 'completed') {
-            CourseCompleted::dispatch($uc);
+        return response()->json(['message' => 'Progress updated', 'progress' => $uc->progress]);
+    }
 
+    public function submitCompletion(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
+        $user = $request->user();
+        $uc = UserCourse::where('user_id', $user->id)
+            ->where('course_id', $id)->firstOrFail();
+
+        $path = $request->file('proof')->store('completion-proofs', 'public');
+
+        $uc->update([
+            'progress' => 100,
+            'status' => 'pending_endorsement',
+            'completion_proof_path' => $path,
+            'completion_endorsement_status' => 'pending',
+            'completion_endorsed_by' => null,
+            'completion_endorsed_at' => null,
+            'completion_endorsement_note' => null,
+        ]);
+
+        if ($user->hod_id) {
             try {
-                $course = $uc->course;
-                $publisher = new RealtimePublisher();
-                $publisher->publishNotification($uc->user_id, [
-                    'type' => 'course_completed',
-                    'title' => 'Course Completed!',
-                    'body' => "You completed: {$course->title}",
-                    'data' => ['course_id' => $course->id],
-                ]);
-                $publisher->publishDashboardUpdate('course.completed', [
-                    'user_id' => $uc->user_id,
-                    'course_id' => $course->id,
-                    'course_title' => $course->title,
+                (new RealtimePublisher())->publishNotification($user->hod_id, [
+                    'type' => 'course_endorsement_pending',
+                    'title' => 'Course completion awaiting your endorsement',
+                    'body' => "{$user->name} submitted completion for: {$uc->course->title}",
+                    'data' => ['user_course_id' => $uc->id, 'user_id' => $user->id],
                 ]);
             } catch (\Throwable $e) {
-                log()->warning('Failed to send course completion notification: ' . $e->getMessage());
+                log()->warning('Failed to notify HOD of course completion: ' . $e->getMessage());
             }
         }
 
-        return response()->json(['message' => 'Progress updated', 'progress' => $uc->progress]);
+        return response()->json(['message' => 'Completion submitted for endorsement']);
     }
 
     public function rate(Request $request, int $id): JsonResponse

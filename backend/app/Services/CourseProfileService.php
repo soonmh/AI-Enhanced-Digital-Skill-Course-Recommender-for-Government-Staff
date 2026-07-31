@@ -7,6 +7,7 @@ use App\Models\CourseRating;
 use App\Models\User;
 use App\Models\UserCourse;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class CourseProfileService
 {
@@ -36,7 +37,7 @@ class CourseProfileService
             'recent_reviews' => $this->recentReviews($course->id),
             'rating_distribution' => $this->ratingDistribution($course->id),
             'peer_enrollments' => $this->peerEnrollments($course->id, $viewer?->id),
-            'competency_breakdown' => $this->competencyBreakdown($course, $viewer?->latestAssessmentResponse),
+            'competency_breakdown' => $this->competencyBreakdown($course, $viewer?->latestEndorsedAssessmentResponse),
         ];
     }
 
@@ -51,6 +52,9 @@ class CourseProfileService
                 'enrolled' => false,
                 'enrollment_status' => null,
                 'progress' => null,
+                'completion_endorsement_status' => null,
+                'completion_endorsement_note' => null,
+                'completion_proof_url' => null,
             ];
         }
 
@@ -67,6 +71,11 @@ class CourseProfileService
             'enrolled' => $enrollment !== null,
             'enrollment_status' => $enrollment?->status,
             'progress' => $enrollment?->progress,
+            'completion_endorsement_status' => $enrollment?->completion_endorsement_status,
+            'completion_endorsement_note' => $enrollment?->completion_endorsement_note,
+            'completion_proof_url' => $enrollment?->completion_proof_path
+                ? Storage::disk('public')->url($enrollment->completion_proof_path)
+                : null,
         ];
     }
 

@@ -46,20 +46,20 @@ class DemoUserSeeder extends Seeder
             }
         }
 
-        // Set up manager-report relationships
+        // Set up HOD-report relationships
         $hierarchy = [
             'mgmt01@test.com' => ['raj@test.com', 'farah@test.com', 'weiming@test.com'],
             'raj@test.com' => ['staff01@test.com', 'meiling@test.com'],
             'farah@test.com' => ['ahmad@test.com', 'siti@test.com'],
         ];
 
-        foreach ($hierarchy as $managerEmail => $reportEmails) {
-            $manager = User::where('email', $managerEmail)->first();
-            if ($manager) {
+        foreach ($hierarchy as $hodEmail => $reportEmails) {
+            $hod = User::where('email', $hodEmail)->first();
+            if ($hod) {
                 foreach ($reportEmails as $email) {
                     $report = User::where('email', $email)->first();
-                    if ($report && !$report->manager_id) {
-                        $report->update(['manager_id' => $manager->id]);
+                    if ($report && !$report->hod_id) {
+                        $report->update(['hod_id' => $hod->id]);
                     }
                 }
             }

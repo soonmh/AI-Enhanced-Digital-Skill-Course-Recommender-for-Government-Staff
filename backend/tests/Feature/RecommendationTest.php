@@ -63,6 +63,7 @@ class RecommendationTest extends TestCase
             'c10_score' => 40,
             'dsri' => 30,
             'submitted_at' => now(),
+            'endorsement_status' => 'endorsed',
         ]);
 
         $response = $this->actingAs($this->staffUser)

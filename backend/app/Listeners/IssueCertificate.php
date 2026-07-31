@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\AssessmentSubmitted;
+use App\Events\AssessmentEndorsed;
 use App\Models\Certificate;
 use App\Services\DsriCalculationService;
 use Illuminate\Support\Str;
@@ -11,7 +11,7 @@ class IssueCertificate
 {
     public function __construct(private DsriCalculationService $dsriService) {}
 
-    public function handle(AssessmentSubmitted $event): void
+    public function handle(AssessmentEndorsed $event): void
     {
         $response = $event->response;
         $user = $response->user;

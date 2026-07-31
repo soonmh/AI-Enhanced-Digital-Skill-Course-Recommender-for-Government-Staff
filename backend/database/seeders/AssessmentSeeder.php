@@ -35,6 +35,8 @@ class AssessmentSeeder extends Seeder
                     'c4_score' => $r['c4'], 'c5_score' => $r['c5'], 'c6_score' => $r['c6'],
                     'c7_score' => $r['c7'], 'c8_score' => $r['c8'], 'c9_score' => $r['c9'],
                     'c10_score' => $r['c10'], 'dsri' => $r['dsri'],
+                    'endorsement_status' => 'endorsed',
+                    'endorsed_at' => $dates[$i],
                 ]);
             }
         }
@@ -48,6 +50,8 @@ class AssessmentSeeder extends Seeder
                 'c1_score' => 75, 'c2_score' => 60, 'c3_score' => 40, 'c4_score' => 50,
                 'c5_score' => 50, 'c6_score' => 50, 'c7_score' => 44, 'c8_score' => 16,
                 'c9_score' => 20, 'c10_score' => 50, 'dsri' => 91.00,
+                'endorsement_status' => 'endorsed',
+                'endorsed_at' => '2025-08-13 13:12:35',
             ]);
         }
 
@@ -89,6 +93,8 @@ class AssessmentSeeder extends Seeder
                     'c4_score' => $r['c4'], 'c5_score' => $r['c5'], 'c6_score' => $r['c6'],
                     'c7_score' => $r['c7'], 'c8_score' => $r['c8'], 'c9_score' => $r['c9'],
                     'c10_score' => $r['c10'], 'dsri' => $r['dsri'],
+                    'endorsement_status' => 'endorsed',
+                    'endorsed_at' => $r['date'],
                 ]);
             }
         }

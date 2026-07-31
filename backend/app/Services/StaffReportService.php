@@ -16,7 +16,7 @@ class StaffReportService
      */
     public function staffAnalysis(): array
     {
-        $users = User::with('roles', 'latestAssessmentResponse', 'userCourses.course')
+        $users = User::with('roles', 'latestEndorsedAssessmentResponse', 'userCourses.course')
             ->whereHas('roles', fn($q) => $q->where('name', 'Staff'))
             ->get();
 
@@ -44,6 +44,7 @@ class StaffReportService
     public function individualReport(User $user): array
     {
         $responses = AssessmentResponse::where('user_id', $user->id)
+            ->where('endorsement_status', 'endorsed')
             ->orderByDesc('submitted_at')
             ->get();
 
@@ -75,14 +76,14 @@ class StaffReportService
     {
         $competencies = $this->dsriService->getCompetencies();
 
-        $groups = User::with('latestAssessmentResponse')
+        $groups = User::with('latestEndorsedAssessmentResponse')
             ->whereNotNull('working_field')
             ->where('working_field', '!=', '')
             ->get()
             ->groupBy('working_field');
 
         $departments = $groups->map(function ($group, $field) use ($competencies) {
-            $responses = $group->pluck('latestAssessmentResponse')->filter();
+            $responses = $group->pluck('latestEndorsedAssessmentResponse')->filter();
 
             $competencyAverages = [];
             foreach ($competencies as $code => $config) {
@@ -116,7 +117,7 @@ class StaffReportService
      */
     public function userSummaryRow(User $user): array
     {
-        $latest = $user->latestAssessmentResponse;
+        $latest = $user->latestEndorsedAssessmentResponse;
         $courseCount = $user->userCourses->count();
         $completedCourses = $user->userCourses->where('status', 'completed')->count();
 

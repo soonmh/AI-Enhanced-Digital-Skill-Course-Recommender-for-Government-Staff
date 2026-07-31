@@ -33,7 +33,7 @@ class HybridRecommendationService
             return $this->getLegacyRecommendations($user, $locale, $limit);
         }
 
-        $response = $user->latestAssessmentResponse;
+        $response = $user->latestEndorsedAssessmentResponse;
 
         // No assessment: fall back to popularity
         if (!$response) {
@@ -243,7 +243,7 @@ class HybridRecommendationService
         array $matchedComps,
         Collection $similarUsers
     ): array {
-        $response = $user->latestAssessmentResponse;
+        $response = $user->latestEndorsedAssessmentResponse;
 
         return [
             'user_role' => $user->roles->first()?->name ?? 'Staff',
@@ -316,7 +316,7 @@ class HybridRecommendationService
      */
     private function getLegacyRecommendations(User $user, string $locale, int $limit): array
     {
-        $latestResponse = $user->latestAssessmentResponse;
+        $latestResponse = $user->latestEndorsedAssessmentResponse;
         $enrolledIds = $user->userCourses()->pluck('course_id')->toArray();
 
         $baseQuery = Course::whereNotIn('id', $enrolledIds)

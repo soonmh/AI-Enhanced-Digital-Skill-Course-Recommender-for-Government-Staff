@@ -25,6 +25,9 @@ class AssessmentResponseResource extends JsonResource
             'c9_score' => $this->c9_score,
             'c10_score' => $this->c10_score,
             'dsri' => $this->dsri,
+            'endorsement_status' => $this->endorsement_status,
+            'endorsed_at' => $this->endorsed_at,
+            'endorsement_note' => $this->endorsement_note,
         ];
     }
 }

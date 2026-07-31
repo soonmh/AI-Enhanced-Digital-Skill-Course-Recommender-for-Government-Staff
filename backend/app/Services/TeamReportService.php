@@ -13,12 +13,12 @@ class TeamReportService
     ) {}
 
     /**
-     * Direct reports of a manager, with assessment status and team competency averages.
+     * Direct reports of an HOD, with assessment status and team competency averages.
      */
-    public function myTeam(User $manager): array
+    public function myTeam(User $hod): array
     {
-        $reports = $manager->directReports()
-            ->with('latestAssessmentResponse', 'userCourses')
+        $reports = $hod->directReports()
+            ->with('latestEndorsedAssessmentResponse', 'userCourses')
             ->get();
 
         if ($reports->isEmpty()) {
@@ -55,7 +55,7 @@ class TeamReportService
      */
     private function teamCompetencyAverages(Collection $reports): ?array
     {
-        $assessed = $reports->filter(fn($u) => $u->latestAssessmentResponse);
+        $assessed = $reports->filter(fn($u) => $u->latestEndorsedAssessmentResponse);
         if ($assessed->isEmpty()) {
             return null;
         }
@@ -63,7 +63,7 @@ class TeamReportService
         $averages = [];
         foreach ($this->dsriService->getCompetencies() as $code => $config) {
             $field = strtolower($code) . '_score';
-            $values = $assessed->pluck("latestAssessmentResponse.{$field}")->filter();
+            $values = $assessed->pluck("latestEndorsedAssessmentResponse.{$field}")->filter();
             $averages[$code] = $values->isNotEmpty()
                 ? round(($values->avg() / $config['max_score']) * 100, 1)
                 : 0;

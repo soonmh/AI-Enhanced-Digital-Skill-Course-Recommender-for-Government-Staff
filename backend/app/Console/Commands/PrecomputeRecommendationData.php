@@ -16,8 +16,8 @@ class PrecomputeRecommendationData extends Command
 
     public function handle(CollaborativeFilteringService $cfService): int
     {
-        $users = User::whereHas('latestAssessmentResponse')
-            ->with('latestAssessmentResponse')
+        $users = User::whereHas('latestEndorsedAssessmentResponse')
+            ->with('latestEndorsedAssessmentResponse')
             ->get();
 
         if ($users->isEmpty()) {
@@ -37,14 +37,14 @@ class PrecomputeRecommendationData extends Command
         $computed = 0;
 
         foreach ($users as $i => $userA) {
-            $responseA = $userA->latestAssessmentResponse;
+            $responseA = $userA->latestEndorsedAssessmentResponse;
             if (!$responseA) {
                 $bar->advance();
                 continue;
             }
 
             foreach ($users->slice($i + 1) as $userB) {
-                $responseB = $userB->latestAssessmentResponse;
+                $responseB = $userB->latestEndorsedAssessmentResponse;
                 if (!$responseB) {
                     continue;
                 }

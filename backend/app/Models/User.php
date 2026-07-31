@@ -16,7 +16,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password',
         'working_field', 'job_level', 'experience_years', 'locale', 'is_active',
-        'manager_id',
+        'hod_id',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -64,6 +64,17 @@ class User extends Authenticatable
         return $this->hasOne(AssessmentResponse::class)->latestOfMany();
     }
 
+    public function latestEndorsedAssessmentResponse()
+    {
+        return $this->hasOne(AssessmentResponse::class)->ofMany(
+            ['id' => 'max'],
+            function ($query) {
+                $query->where('assessment_type', 'full')
+                    ->where('endorsement_status', 'endorsed');
+            }
+        );
+    }
+
     public function userCourses()
     {
         return $this->hasMany(UserCourse::class);
@@ -84,13 +95,13 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class)->whereNull('read_at');
     }
 
-    public function manager()
+    public function hod()
     {
-        return $this->belongsTo(User::class, 'manager_id');
+        return $this->belongsTo(User::class, 'hod_id');
     }
 
     public function directReports()
     {
-        return $this->hasMany(User::class, 'manager_id');
+        return $this->hasMany(User::class, 'hod_id');
     }
 }

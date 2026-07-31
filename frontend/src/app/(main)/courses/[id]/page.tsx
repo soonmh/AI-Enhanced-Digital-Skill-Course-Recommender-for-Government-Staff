@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useTranslation } from "@/i18n/context";
-import { useCourse, enrollCourse, rateCourse, updateCourseProgress, trackRecommendationInteraction } from "@/hooks/useApi";
+import { useCourse, enrollCourse, rateCourse, updateCourseProgress, submitCourseCompletion, trackRecommendationInteraction } from "@/hooks/useApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PermissionGate } from "@/components/shared/PermissionGate";
@@ -26,6 +26,9 @@ import {
   Loader2,
   Archive,
   Target,
+  Upload,
+  Clock,
+  XCircle,
 } from "lucide-react";
 
 function StarRating({ value, onChange, readonly, size = "md" }: {
@@ -79,6 +82,8 @@ export default function CourseDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
   const [sliderValue, setSliderValue] = useState<number | null>(null);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [submittingCompletion, setSubmittingCompletion] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const from = searchParams.get("from");
@@ -128,7 +133,10 @@ export default function CourseDetailPage() {
 
   const enrolled = course.enrolled || false;
   const progress = course.progress ?? 0;
-  const isCompleted = progress >= 100;
+  const endorsementStatus = course.completion_endorsement_status as "pending" | "endorsed" | "rejected" | null | undefined;
+  const isCompleted = course.enrollment_status === "completed";
+  const isPendingEndorsement = endorsementStatus === "pending";
+  const isRejected = endorsementStatus === "rejected";
   const isArchived = course.enrollment_status === "removed";
   const dist = course.rating_distribution || {};
   const totalRatings = (Object.values(dist) as number[]).reduce((a, b) => a + b, 0);
@@ -149,6 +157,21 @@ export default function CourseDetailPage() {
       toast.error(msg);
     } finally {
       setEnrolling(false);
+    }
+  };
+
+  const handleSubmitCompletion = async () => {
+    if (!proofFile) return;
+    setSubmittingCompletion(true);
+    try {
+      await submitCourseCompletion(params.id as string, proofFile);
+      toast.success(t("courses.completionSubmitted"));
+      mutate({ ...course, enrollment_status: "pending_endorsement", progress: 100, completion_endorsement_status: "pending", completion_endorsement_note: null }, false);
+      setProofFile(null);
+    } catch {
+      toast.error(t("courses.completionSubmitFailed"));
+    } finally {
+      setSubmittingCompletion(false);
     }
   };
 
@@ -298,26 +321,28 @@ export default function CourseDetailPage() {
                 <div className="flex items-center gap-2">
                   {isCompleted ? (
                     <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  ) : isPendingEndorsement ? (
+                    <Clock className="w-5 h-5 text-amber-500" />
                   ) : (
                     <BarChart3 className="w-5 h-5 text-violet-500 dark:text-violet-400" />
                   )}
                   <span className="font-semibold text-foreground">
-                    {isCompleted ? t("courses.completedLabel") : t("courses.yourProgress")}
+                    {isCompleted ? t("courses.completedLabel") : isPendingEndorsement ? t("courses.pendingEndorsement") : t("courses.yourProgress")}
                   </span>
                 </div>
-                <span className={`text-lg font-bold ${isCompleted ? "text-green-600 dark:text-green-400" : "text-violet-600 dark:text-violet-400"}`}>
+                <span className={`text-lg font-bold ${isCompleted ? "text-green-600 dark:text-green-400" : isPendingEndorsement ? "text-amber-600 dark:text-amber-400" : "text-violet-600 dark:text-violet-400"}`}>
                   {Math.round(progress)}%
                 </span>
               </div>
               <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    isCompleted ? "bg-green-500 dark:bg-green-400" : "bg-gradient-to-r from-violet-500 to-indigo-500 dark:from-violet-400/50 dark:to-indigo-400/50"
+                    isCompleted ? "bg-green-500 dark:bg-green-400" : isPendingEndorsement ? "bg-amber-500 dark:bg-amber-400" : "bg-gradient-to-r from-violet-500 to-indigo-500 dark:from-violet-400/50 dark:to-indigo-400/50"
                   }`}
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 />
               </div>
-              {/* Progress Slider */}
+              {/* Progress Slider (disabled once submitted for endorsement or completed) */}
               <div className="mt-4 flex items-center gap-3">
                 <span className="text-xs text-muted-foreground shrink-0">0%</span>
                 <input
@@ -326,7 +351,7 @@ export default function CourseDetailPage() {
                   max={100}
                   step={5}
                   value={sliderValue ?? Math.round(progress)}
-                  disabled={submitting}
+                  disabled={submitting || isPendingEndorsement || isCompleted}
                   onChange={(e) => {
                     const val = Number(e.target.value);
                     setSliderValue(val);
@@ -334,15 +359,8 @@ export default function CourseDetailPage() {
                     debounceRef.current = setTimeout(async () => {
                       try {
                         await updateCourseProgress(params.id as string, val);
-                        const wasNotCompleted = (course?.progress ?? 0) < 100;
                         mutate({ ...course, progress: val }, false);
                         setSliderValue(null);
-                        if (val >= 100 && wasNotCompleted) {
-                          toast.success(t("courses.completedLabel"));
-                          if (from === "recommended") {
-                            trackRecommendationInteraction(params.id as string, "complete", { source: "recommended" }).catch(() => {});
-                          }
-                        }
                       } catch {
                         setSliderValue(null);
                         toast.error(t("courses.failedToSubmitRating"));
@@ -353,6 +371,48 @@ export default function CourseDetailPage() {
                 />
                 <span className="text-xs text-muted-foreground shrink-0">100%</span>
               </div>
+
+              {/* Completion proof upload — shown at 100% when not yet pending/completed */}
+              {progress >= 100 && !isCompleted && !isPendingEndorsement && (
+                <div className="mt-4 p-4 rounded-xl border border-violet-200 dark:border-violet-400/20 bg-violet-500/5">
+                  {isRejected && course.completion_endorsement_note && (
+                    <div className="mb-3 flex items-start gap-2 text-sm text-red-600 dark:text-red-400">
+                      <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="font-semibold">{t("courses.completionRejected")}</p>
+                        <p className="text-muted-foreground">{course.completion_endorsement_note}</p>
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+                    <Upload className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                    {t("courses.uploadProofPrompt")}
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+                    className="block w-full text-sm text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-violet-500/10 file:text-violet-700 dark:file:text-violet-300 hover:file:bg-violet-500/20"
+                  />
+                  <button
+                    onClick={handleSubmitCompletion}
+                    disabled={!proofFile || submittingCompletion}
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium disabled:opacity-50 transition-colors"
+                  >
+                    {submittingCompletion ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    {t("courses.submitCompletion")}
+                  </button>
+                </div>
+              )}
+
+              {/* Pending endorsement hint */}
+              {isPendingEndorsement && (
+                <div className="mt-4 flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 text-sm text-amber-700 dark:text-amber-400">
+                  <Clock className="w-4 h-4 shrink-0" />
+                  {t("courses.pendingEndorsementHint")}
+                </div>
+              )}
+
               {course.url && (
                 <div className="mt-3 flex justify-end">
                   <Link

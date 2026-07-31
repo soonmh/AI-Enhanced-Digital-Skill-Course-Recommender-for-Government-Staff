@@ -3,7 +3,7 @@
 import useSWR from "swr";
 import { fetcher } from "@/lib/axios";
 import api from "@/lib/axios";
-import type { DashboardData, AssessmentStartData, AssessmentResultsData, User, CertificateVerification, BenchmarkData, JobRoleProfile, RoleGapData } from "@/types";
+import type { DashboardData, AssessmentStartData, AssessmentResultsData, User, CertificateVerification, BenchmarkData, JobRoleProfile, RoleGapData, PendingEndorsement, PendingCourseCompletion, EndorsementHistoryItem } from "@/types";
 
 export function useDashboard() {
   const { data, error, isLoading, mutate } = useSWR<DashboardData>("/api/dashboard", fetcher);
@@ -156,6 +156,17 @@ export async function updateCourseProgress(id: string, progress: number) {
   return result.data;
 }
 
+export async function submitCourseCompletion(id: string, file: File) {
+  const formData = new FormData();
+  formData.append("proof", file);
+  // Unset the instance's default application/json so the browser generates the
+  // multipart/form-data boundary itself — otherwise the file is dropped server-side.
+  const result = await api.post(`/api/courses/${id}/submit-completion`, formData, {
+    headers: { "Content-Type": undefined },
+  });
+  return result.data;
+}
+
 export function useUsers() {
   const { data, error, isLoading, mutate } = useSWR("/api/admin/users", fetcher);
   return { users: data, isLoading, isError: error, mutate };
@@ -169,6 +180,41 @@ export function useStaffAnalysis() {
 export function useMyTeam() {
   const { data, error, isLoading } = useSWR("/api/reports/my-team", fetcher);
   return { data, isLoading, isError: error };
+}
+
+export function usePendingEndorsements() {
+  const { data, error, isLoading, mutate } = useSWR<{ pending: PendingEndorsement[] }>("/api/endorsements/pending", fetcher);
+  return { pending: data?.pending ?? [], isLoading, isError: error, refresh: mutate };
+}
+
+export async function endorseAssessment(id: number, note?: string) {
+  const result = await api.post(`/api/endorsements/${id}/endorse`, { note });
+  return result.data;
+}
+
+export async function rejectAssessment(id: number, note: string) {
+  const result = await api.post(`/api/endorsements/${id}/reject`, { note });
+  return result.data;
+}
+
+export function usePendingCourseCompletions() {
+  const { data, error, isLoading, mutate } = useSWR<{ pending: PendingCourseCompletion[] }>("/api/endorsements/course-completions/pending", fetcher);
+  return { pending: data?.pending ?? [], isLoading, isError: error, refresh: mutate };
+}
+
+export async function endorseCourseCompletion(id: number, note?: string) {
+  const result = await api.post(`/api/endorsements/course-completions/${id}/endorse`, { note });
+  return result.data;
+}
+
+export async function rejectCourseCompletion(id: number, note: string) {
+  const result = await api.post(`/api/endorsements/course-completions/${id}/reject`, { note });
+  return result.data;
+}
+
+export function useEndorsementHistory() {
+  const { data, error, isLoading } = useSWR<{ history: EndorsementHistoryItem[] }>("/api/endorsements/history", fetcher);
+  return { history: data?.history ?? [], isLoading, isError: error };
 }
 
 export function useStaffReport(id: string) {

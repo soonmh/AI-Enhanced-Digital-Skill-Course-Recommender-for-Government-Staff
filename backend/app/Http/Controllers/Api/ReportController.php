@@ -32,7 +32,7 @@ class ReportController extends Controller
     public function teamMemberReport(Request $request, int $id): JsonResponse
     {
         $target = User::where('id', $id)
-            ->where('manager_id', $request->user()->id)
+            ->where('hod_id', $request->user()->id)
             ->firstOrFail();
 
         return response()->json($this->staffReport->individualReport($target));

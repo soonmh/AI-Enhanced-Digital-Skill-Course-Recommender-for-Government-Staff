@@ -58,10 +58,10 @@ class AiInsightController extends Controller
         $locale = $request->user()->locale ?? 'en';
 
         $staff = User::whereHas('roles', fn($q) => $q->where('name', 'Staff'))
-            ->with('latestAssessmentResponse')
+            ->with('latestEndorsedAssessmentResponse')
             ->get();
 
-        $responses = $staff->pluck('latestAssessmentResponse')->filter();
+        $responses = $staff->pluck('latestEndorsedAssessmentResponse')->filter();
 
         if ($responses->isEmpty()) {
             return response()->json([

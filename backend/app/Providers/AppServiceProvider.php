@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Events\AssessmentEndorsed;
 use App\Events\AssessmentSubmitted;
 use App\Events\CourseCompleted;
 use App\Listeners\GenerateAiInsights;
 use App\Listeners\InvalidateRecommendationCache;
 use App\Listeners\IssueCertificate;
+use App\Listeners\NotifyHodOfPendingEndorsement;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,10 +27,18 @@ class AppServiceProvider extends ServiceProvider
         );
         Event::listen(
             AssessmentSubmitted::class,
-            [IssueCertificate::class, 'handle'],
+            [NotifyHodOfPendingEndorsement::class, 'handle'],
         );
         Event::listen(
             AssessmentSubmitted::class,
+            [InvalidateRecommendationCache::class, 'handle'],
+        );
+        Event::listen(
+            AssessmentEndorsed::class,
+            [IssueCertificate::class, 'handle'],
+        );
+        Event::listen(
+            AssessmentEndorsed::class,
             [InvalidateRecommendationCache::class, 'handle'],
         );
         Event::listen(

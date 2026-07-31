@@ -2,15 +2,16 @@
 
 namespace App\Listeners;
 
+use App\Events\AssessmentEndorsed;
 use App\Events\AssessmentSubmitted;
 use App\Events\CourseCompleted;
 use Illuminate\Support\Facades\Cache;
 
 class InvalidateRecommendationCache
 {
-    public function handle(AssessmentSubmitted|CourseCompleted $event): void
+    public function handle(AssessmentSubmitted|AssessmentEndorsed|CourseCompleted $event): void
     {
-        if ($event instanceof AssessmentSubmitted) {
+        if ($event instanceof AssessmentSubmitted || $event instanceof AssessmentEndorsed) {
             $userId = $event->response->user_id;
         } else {
             $userId = $event->userCourse->user_id;
@@ -29,7 +30,9 @@ class InvalidateRecommendationCache
         }
 
         // Clear pattern-based caches
-        $responseId = $event instanceof AssessmentSubmitted ? $event->response->id : null;
+        $responseId = ($event instanceof AssessmentSubmitted || $event instanceof AssessmentEndorsed)
+            ? $event->response->id
+            : null;
         if ($responseId) {
             Cache::forget("ai_recommendations:{$userId}:{$responseId}");
         }

@@ -36,9 +36,10 @@ function classifyCourses(courses: ApiRecord[]) {
     if (!c.enrolled) continue;
     if (c.status === "removed") {
       archived.push(c);
-    } else if (c.status === "completed" || (c.progress ?? 0) >= 100) {
+    } else if (c.status === "completed") {
       completed.push(c);
     } else {
+      // active / pending_endorsement stay in progress (100% but awaiting HOD endorsement)
       inProgress.push(c);
     }
   }
@@ -101,6 +102,12 @@ function CourseCard({ course, variant, t }: { course: ApiRecord; variant: "progr
               <span className="flex items-center gap-1 text-xs text-green-600 font-medium">
                 <Sparkles className="w-3 h-3" />
                 {t("courses.completedBadge")}
+              </span>
+            )}
+            {variant === "progress" && course.status === "pending_endorsement" && (
+              <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                <Clock className="w-3 h-3" />
+                {t("courses.pendingEndorsement")}
               </span>
             )}
             {variant === "archived" && (

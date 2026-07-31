@@ -6,9 +6,12 @@ const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 async function proxy(request: NextRequest, segments: string[]) {
   const url = `${BACKEND}/api/${segments.join("/")}`;
 
+  // Forward the caller's content-type (e.g. multipart/form-data with its
+  // boundary) so file uploads pass through intact; default to JSON otherwise.
+  const incomingContentType = request.headers.get("content-type");
   const headers: Record<string, string> = {
     accept: "application/json",
-    "content-type": "application/json",
+    "content-type": incomingContentType || "application/json",
   };
 
   // Read Sanctum token from NextAuth JWT and use Bearer auth
@@ -19,7 +22,8 @@ async function proxy(request: NextRequest, segments: string[]) {
 
   const init: RequestInit = { method: request.method, headers };
   if (request.method !== "GET" && request.method !== "HEAD") {
-    init.body = await request.text();
+    // Forward raw bytes (not text) so binary multipart bodies stay intact.
+    init.body = await request.arrayBuffer();
   }
 
   const upstream = await fetch(url, init);

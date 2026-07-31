@@ -1,15 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useMyTeam } from "@/hooks/useApi";
+import { useMyTeam, usePendingEndorsements, endorseAssessment, rejectAssessment, usePendingCourseCompletions, endorseCourseCompletion, rejectCourseCompletion, useEndorsementHistory } from "@/hooks/useApi";
 import { useTranslation } from "@/i18n/context";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { CompetencyRadar } from "@/components/charts/CompetencyRadar";
 import { getMaturityLevel } from "@/lib/maturity";
 import { COMPETENCIES } from "@/lib/constants";
+import type { PendingEndorsement, PendingCourseCompletion } from "@/types";
 import {
   Users,
   BookOpen,
@@ -17,7 +21,368 @@ import {
   Target,
   ArrowRight,
   UserX,
+  ClipboardCheck,
+  XCircle,
+  Loader2,
+  GraduationCap,
+  FileText,
+  History,
+  Inbox,
 } from "lucide-react";
+
+function PendingEndorsements() {
+  const { t } = useTranslation();
+  const { pending, isLoading, refresh } = usePendingEndorsements();
+  const [rejecting, setRejecting] = useState<PendingEndorsement | null>(null);
+  const [note, setNote] = useState("");
+  const [submittingId, setSubmittingId] = useState<number | null>(null);
+
+  if (isLoading || pending.length === 0) {
+    return null;
+  }
+
+  const handleEndorse = async (id: number) => {
+    setSubmittingId(id);
+    try {
+      await endorseAssessment(id);
+      refresh();
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejecting || !note.trim()) return;
+    setSubmittingId(rejecting.id);
+    try {
+      await rejectAssessment(rejecting.id, note.trim());
+      refresh();
+      setRejecting(null);
+      setNote("");
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
+  return (
+    <>
+      <Card className="mb-8 py-0 border-0 shadow-md">
+        <CardContent className="p-0">
+          <div className="flex items-center gap-2 px-5 py-3 border-b">
+            <ClipboardCheck className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <h2 className="text-base font-semibold text-foreground">{t("endorsements.title")}</h2>
+            <span className="text-sm text-muted-foreground">({pending.length})</span>
+          </div>
+          <div className="divide-y">
+            {pending.map((item) => (
+              <div key={item.id} className="flex items-center justify-between gap-4 px-5 py-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <UserAvatar name={item.name} size={34} />
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">{item.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {t("endorsements.dsri")}: {item.dsri}% - {new Date(item.submitted_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={submittingId === item.id}
+                    onClick={() => setRejecting(item)}
+                  >
+                    <XCircle className="w-4 h-4" />
+                    {t("endorsements.reject")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={submittingId === item.id}
+                    onClick={() => handleEndorse(item.id)}
+                  >
+                    {submittingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CircleCheck className="w-4 h-4" />}
+                    {t("endorsements.endorse")}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={!!rejecting} onOpenChange={(open) => !open && setRejecting(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("endorsements.rejectTitle")}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-1.5">
+            <label className="text-sm text-muted-foreground">{t("endorsements.noteLabel")}</label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+              className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm"
+              placeholder={t("endorsements.notePlaceholder")}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejecting(null)}>
+              {t("endorsements.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!note.trim() || submittingId === rejecting?.id}
+              onClick={handleReject}
+            >
+              {t("endorsements.confirmReject")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function PendingCourseCompletions() {
+  const { t } = useTranslation();
+  const { pending, isLoading, refresh } = usePendingCourseCompletions();
+  const [rejecting, setRejecting] = useState<PendingCourseCompletion | null>(null);
+  const [note, setNote] = useState("");
+  const [submittingId, setSubmittingId] = useState<number | null>(null);
+
+  if (isLoading || pending.length === 0) {
+    return null;
+  }
+
+  const handleEndorse = async (id: number) => {
+    setSubmittingId(id);
+    try {
+      await endorseCourseCompletion(id);
+      refresh();
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejecting || !note.trim()) return;
+    setSubmittingId(rejecting.id);
+    try {
+      await rejectCourseCompletion(rejecting.id, note.trim());
+      refresh();
+      setRejecting(null);
+      setNote("");
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
+  return (
+    <>
+      <Card className="mb-8 py-0 border-0 shadow-md">
+        <CardContent className="p-0">
+          <div className="flex items-center gap-2 px-5 py-3 border-b">
+            <GraduationCap className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+            <h2 className="text-base font-semibold text-foreground">{t("endorsements.courseTitle")}</h2>
+            <span className="text-sm text-muted-foreground">({pending.length})</span>
+          </div>
+          <div className="divide-y">
+            {pending.map((item) => (
+              <div key={item.id} className="flex items-center justify-between gap-4 px-5 py-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <UserAvatar name={item.name} size={34} />
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">{item.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{item.course_title}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {item.proof_url && (
+                    <a
+                      href={item.proof_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 transition-colors"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      {t("endorsements.viewProof")}
+                    </a>
+                  )}
+                  <Button size="sm" variant="outline" disabled={submittingId === item.id} onClick={() => setRejecting(item)}>
+                    <XCircle className="w-4 h-4" />
+                    {t("endorsements.reject")}
+                  </Button>
+                  <Button size="sm" disabled={submittingId === item.id} onClick={() => handleEndorse(item.id)}>
+                    {submittingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CircleCheck className="w-4 h-4" />}
+                    {t("endorsements.endorse")}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={!!rejecting} onOpenChange={(open) => !open && setRejecting(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("endorsements.rejectCourseTitle")}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-1.5">
+            <label className="text-sm text-muted-foreground">{t("endorsements.noteLabel")}</label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+              className="w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm"
+              placeholder={t("endorsements.notePlaceholder")}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejecting(null)}>
+              {t("endorsements.cancel")}
+            </Button>
+            <Button variant="destructive" disabled={!note.trim() || submittingId === rejecting?.id} onClick={handleReject}>
+              {t("endorsements.confirmReject")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function EndorsementHistory() {
+  const { t } = useTranslation();
+  const { history, isLoading } = useEndorsementHistory();
+
+  if (isLoading) {
+    return <Skeleton className="h-32 w-full rounded-xl mb-8" />;
+  }
+
+  if (history.length === 0) {
+    return (
+      <Card className="mb-8 border-0 shadow-md">
+        <CardContent className="p-10 text-center text-muted-foreground">
+          <Inbox className="w-10 h-10 mx-auto mb-3 opacity-40" />
+          <p>{t("endorsements.noHistory")}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="mb-8 py-0 border-0 shadow-md">
+      <CardContent className="p-0">
+        <div className="flex items-center gap-2 px-5 py-3 border-b">
+          <History className="w-5 h-5 text-muted-foreground" />
+          <h2 className="text-base font-semibold text-foreground">{t("endorsements.historyTitle")}</h2>
+          <span className="text-sm text-muted-foreground">({history.length})</span>
+        </div>
+        <div className="divide-y">
+          {history.map((item) => (
+            <div key={`${item.type}-${item.id}`} className="flex items-center justify-between gap-4 px-5 py-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <UserAvatar name={item.name} size={34} />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-foreground truncate">{item.name}</p>
+                    <span className="px-2 py-0.5 rounded-full text-xs bg-muted text-muted-foreground shrink-0">
+                      {item.type === "assessment" ? t("endorsements.typeAssessment") : t("endorsements.typeCourse")}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {item.type === "assessment" ? `${t("endorsements.dsri")}: ${item.detail}%` : item.detail}
+                    {" · "}
+                    {new Date(item.decided_at).toLocaleDateString()}
+                  </p>
+                  {item.note && <p className="text-xs text-muted-foreground italic truncate">{item.note}</p>}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {item.type === "course" && item.proof_url && (
+                  <a
+                    href={item.proof_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-violet-600 dark:text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 transition-colors"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    {t("endorsements.viewProof")}
+                  </a>
+                )}
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                  item.decision === "endorsed"
+                    ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300"
+                    : "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300"
+                }`}>
+                  {item.decision === "endorsed" ? <CircleCheck className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                  {item.decision === "endorsed" ? t("endorsements.decisionEndorsed") : t("endorsements.decisionRejected")}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EndorsementCenter() {
+  const { t } = useTranslation();
+  const [tab, setTab] = useState<"pending" | "history">("pending");
+  const { pending: pendingAssessments } = usePendingEndorsements();
+  const { pending: pendingCourses } = usePendingCourseCompletions();
+  const pendingCount = pendingAssessments.length + pendingCourses.length;
+
+  return (
+    <div className="mb-8">
+      <div className="inline-flex rounded-lg border border-border bg-card p-1 mb-4">
+        <button
+          onClick={() => setTab("pending")}
+          className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            tab === "pending" ? "bg-violet-600 text-white" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <ClipboardCheck className="w-4 h-4" />
+          {t("endorsements.tabPending")}
+          {pendingCount > 0 && (
+            <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-xs ${tab === "pending" ? "bg-white/25" : "bg-violet-500/15 text-violet-600 dark:text-violet-300"}`}>
+              {pendingCount}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab("history")}
+          className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            tab === "history" ? "bg-violet-600 text-white" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <History className="w-4 h-4" />
+          {t("endorsements.tabHistory")}
+        </button>
+      </div>
+
+      {tab === "pending" ? (
+        pendingCount === 0 ? (
+          <Card className="border-0 shadow-md">
+            <CardContent className="p-10 text-center text-muted-foreground">
+              <Inbox className="w-10 h-10 mx-auto mb-3 opacity-40" />
+              <p>{t("endorsements.noPending")}</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <PendingEndorsements />
+            <PendingCourseCompletions />
+          </>
+        )
+      ) : (
+        <EndorsementHistory />
+      )}
+    </div>
+  );
+}
 
 export default function MyTeamPage() {
   const { t } = useTranslation();
@@ -80,6 +445,8 @@ export default function MyTeamPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        <EndorsementCenter />
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>

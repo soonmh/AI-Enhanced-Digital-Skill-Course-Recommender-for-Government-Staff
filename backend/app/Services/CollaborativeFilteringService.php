@@ -110,7 +110,7 @@ class CollaborativeFilteringService
      */
     public function getRecommendations(User $user, int $limit = 20): Collection
     {
-        if (!$user->latestAssessmentResponse) {
+        if (!$user->latestEndorsedAssessmentResponse) {
             return collect();
         }
 
@@ -151,7 +151,7 @@ class CollaborativeFilteringService
      */
     public function getPeerCount(User $user): int
     {
-        if (!$user->latestAssessmentResponse) {
+        if (!$user->latestEndorsedAssessmentResponse) {
             return 0;
         }
 
