@@ -252,12 +252,12 @@ export default function AssessmentResultsPage() {
         </div>
 
         {/* Score Header Card */}
-        <Card className="mb-8 overflow-hidden border-0 shadow-lg bg-gradient-to-r from-blue-600 to-purple-600 dark:from-violet-900 dark:via-indigo-950 dark:to-gray-900 text-white print-no-break">
+        <Card className="mb-8 overflow-hidden border-0 shadow-lg bg-linear-to-r from-blue-600 to-purple-600 dark:from-violet-900 dark:via-indigo-950 dark:to-gray-900 text-white print-no-break">
           <CardContent className="p-8">
             <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 bg-card/20 rounded-xl backdrop-blur-sm">
+                  <div className="p-3 bg-card/20 rounded-xl backdrop-blur-xs">
                     <SquareChartGantt className="w-7 h-7 text-white" />
                   </div>
                   <div>
@@ -318,7 +318,7 @@ export default function AssessmentResultsPage() {
                 </div>
               </div>
               <div className="w-full lg:w-80">
-                <div className="bg-card/10 backdrop-blur-sm rounded-xl p-6">
+                <div className="bg-card/10 backdrop-blur-xs rounded-xl p-6">
                   <h3 className="text-lg font-semibold text-white mb-1">{t("assessment.scoreBreakdown")}</h3>
                   <div className="w-full bg-muted rounded-full h-3 mb-2">
                     <div
@@ -339,9 +339,9 @@ export default function AssessmentResultsPage() {
 
         {/* Rejected Endorsement Notice */}
         {data.latest.endorsement_status === "rejected" && (
-          <Card className="mb-8 border-0 shadow-md overflow-hidden !p-0 !gap-0">
+          <Card className="mb-8 border-0 shadow-md overflow-hidden p-0! gap-0!">
             <div className="flex">
-              <div className="w-1.5 shrink-0 bg-gradient-to-b from-red-400 to-red-600" />
+              <div className="w-1.5 shrink-0 bg-linear-to-b from-red-400 to-red-600" />
               <div className="flex-1 px-6 py-5">
                 <div className="flex items-center gap-2 text-red-700 dark:text-red-400 font-semibold mb-1">
                   <XCircle className="w-5 h-5" />
@@ -358,9 +358,9 @@ export default function AssessmentResultsPage() {
 
         {/* Certificate Card */}
         {data.certificate && (
-          <Card className="mb-8 border-0 shadow-md overflow-hidden !p-0 !gap-0">
+          <Card className="mb-8 border-0 shadow-md overflow-hidden p-0! gap-0!">
             <div className="flex">
-              <div className="w-1.5 shrink-0 bg-gradient-to-b from-amber-400 to-amber-600" />
+              <div className="w-1.5 shrink-0 bg-linear-to-b from-amber-400 to-amber-600" />
               <div className="flex-1 px-6 py-5">
                   <div className="flex items-center justify-between flex-wrap gap-4">
                     <div className="flex items-center gap-4">
@@ -627,7 +627,7 @@ export default function AssessmentResultsPage() {
             ) : (
               <>
                 {/* Overall Readiness */}
-                <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 border border-indigo-100 dark:border-indigo-500/20">
+                <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 p-4 rounded-xl bg-linear-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 border border-indigo-100 dark:border-indigo-500/20">
                   <div className="text-center sm:text-left">
                     <div className="text-sm text-muted-foreground">{t("assessment.overallReadiness")}</div>
                     <div className="text-3xl font-bold text-indigo-700 dark:text-indigo-300">
@@ -637,7 +637,7 @@ export default function AssessmentResultsPage() {
                   <div className="flex-1 w-full sm:w-auto">
                     <div className="w-full bg-muted rounded-full h-3">
                       <div
-                        className="h-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
+                        className="h-3 rounded-full bg-linear-to-r from-indigo-500 to-purple-500 transition-all duration-500"
                         style={{ width: `${Math.min(100, roleGap.overall_readiness)}%` }}
                       />
                     </div>
@@ -941,7 +941,7 @@ export default function AssessmentResultsPage() {
                       if (improved.length === 0 && declined.length === 0) return null;
 
                       return (
-                        <div className="mt-6 p-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
+                        <div className="mt-6 p-4 bg-linear-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/10 dark:to-purple-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
                           <h4 className="font-semibold text-indigo-900 dark:text-indigo-300 mb-2 flex items-center gap-2">
                             <Activity className="w-4 h-4" />
                             {t("assessment.comparisonInsights")}

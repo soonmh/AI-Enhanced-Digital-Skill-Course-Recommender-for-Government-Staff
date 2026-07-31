@@ -42,7 +42,7 @@ function AuthLayoutContent({ children }: { children: React.ReactNode }) {
           {/* Logo branding */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-3 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+              <div className="w-12 h-12 bg-linear-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
                 <Brain className="w-7 h-7 text-white" />
               </div>
               <div className="text-left">

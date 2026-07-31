@@ -98,7 +98,7 @@ export default function CourseDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="bg-card shadow-sm border-b">
+        <div className="bg-card shadow-xs border-b">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <Skeleton className="h-4 w-28 mb-6" />
             <Skeleton className="h-56 w-full rounded-xl mb-8" />
@@ -150,7 +150,7 @@ export default function CourseDetailPage() {
       mutate({ ...course, enrolled: true, progress: 0, enrollment_count: (course.enrollment_count || 0) + 1 }, false);
       // Track conversion if user enrolled from a recommendation
       if (from === "recommended") {
-        trackRecommendationInteraction(params.id as string, "enroll", { source: "recommended" }).catch(() => {});
+        trackRecommendationInteraction(Number(params.id), "enroll", { source: "recommended" }).catch(() => {});
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : t("courses.failedToEnroll");
@@ -195,12 +195,12 @@ export default function CourseDetailPage() {
         {course.image ? (
           <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 flex items-center justify-center">
+          <div className="w-full h-full bg-linear-to-r from-violet-600 via-purple-600 to-indigo-700 flex items-center justify-center">
             <BookOpen className="w-24 h-24 text-white/10" />
           </div>
         )}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]" />
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-linear-to-t from-black/20 to-transparent" />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-16 relative z-10 pb-12">
@@ -229,7 +229,7 @@ export default function CourseDetailPage() {
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+                  <div className="w-14 h-14 bg-linear-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
                     <BookOpen className="w-7 h-7 text-white" />
                   </div>
                   <div className="min-w-0">
@@ -298,7 +298,7 @@ export default function CourseDetailPage() {
                   <button
                     onClick={handleEnroll}
                     disabled={enrolling}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-colors font-semibold text-sm shadow-sm disabled:opacity-60"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-colors font-semibold text-sm shadow-xs disabled:opacity-60"
                   >
                     {enrolling ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -337,7 +337,7 @@ export default function CourseDetailPage() {
               <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    isCompleted ? "bg-green-500 dark:bg-green-400" : isPendingEndorsement ? "bg-amber-500 dark:bg-amber-400" : "bg-gradient-to-r from-violet-500 to-indigo-500 dark:from-violet-400/50 dark:to-indigo-400/50"
+                    isCompleted ? "bg-green-500 dark:bg-green-400" : isPendingEndorsement ? "bg-amber-500 dark:bg-amber-400" : "bg-linear-to-r from-violet-500 to-indigo-500 dark:from-violet-400/50 dark:to-indigo-400/50"
                   }`}
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 />
@@ -460,7 +460,7 @@ export default function CourseDetailPage() {
                   <Link
                     href={course.url}
                     target="_blank"
-                    className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-500/20 dark:to-indigo-500/20 dark:text-violet-300 text-white rounded-xl hover:from-violet-700 hover:to-indigo-700 dark:hover:from-violet-500/30 dark:hover:to-indigo-500/30 transition-all font-medium text-sm shadow-sm"
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-linear-to-r from-violet-600 to-indigo-600 dark:from-violet-500/20 dark:to-indigo-500/20 dark:text-violet-300 text-white rounded-xl hover:from-violet-700 hover:to-indigo-700 dark:hover:from-violet-500/30 dark:hover:to-indigo-500/30 transition-all font-medium text-sm shadow-xs"
                   >
                     <Play className="w-4 h-4" />
                     {t("courses.openCourse")}
@@ -664,7 +664,7 @@ export default function CourseDetailPage() {
             )}
             {/* Quick Enroll CTA */}
             {!enrolled && !isArchived && (
-              <Card className="p-0 border-0 shadow-md bg-gradient-to-br from-violet-600 to-indigo-600">
+              <Card className="p-0 border-0 shadow-md bg-linear-to-br from-violet-600 to-indigo-600">
                 <CardContent className="p-5">
                   <div className="text-center">
                     <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-3">

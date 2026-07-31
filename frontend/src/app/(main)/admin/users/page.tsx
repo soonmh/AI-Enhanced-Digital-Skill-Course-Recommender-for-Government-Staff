@@ -199,7 +199,7 @@ export default function AdminUsersPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="bg-card shadow-sm border-b">
+        <div className="bg-card shadow-xs border-b">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <Skeleton className="h-9 w-48 mb-1" />
             <Skeleton className="h-5 w-64" />
@@ -244,7 +244,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-card shadow-sm border-b">
+      <div className="bg-card shadow-xs border-b">
         <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">{t("admin.userManagementTitle")}</h1>
@@ -259,7 +259,7 @@ export default function AdminUsersPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card><CardContent className="p-5"><div className="flex items-center gap-3"><div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-sm"><Users className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{t("admin.totalUsers")}</p><p className="text-2xl font-bold">{allUsers.length}</p></div></div></CardContent></Card>
+          <Card><CardContent className="p-5"><div className="flex items-center gap-3"><div className="p-3 bg-linear-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-xs"><Users className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{t("admin.totalUsers")}</p><p className="text-2xl font-bold">{allUsers.length}</p></div></div></CardContent></Card>
           {roles.map((role: string) => {
             const count = allUsers.filter((u: any) => u.role === role).length;
             const cfg: Record<string, { icon: any; gradient: string; label: string }> = {
@@ -271,7 +271,7 @@ export default function AdminUsersPage() {
             const c = cfg[role] || { icon: Users, gradient: "from-gray-400 to-gray-500", label: role };
             const Icon = c.icon;
             return (
-              <Card key={role}><CardContent className="p-5"><div className="flex items-center gap-3"><div className={`p-3 bg-gradient-to-br ${c.gradient} dark:from-white/10 dark:to-white/5 rounded-xl shadow-sm`}><Icon className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{c.label}</p><p className="text-2xl font-bold">{count}</p></div></div></CardContent></Card>
+              <Card key={role}><CardContent className="p-5"><div className="flex items-center gap-3"><div className={`p-3 bg-linear-to-br ${c.gradient} dark:from-white/10 dark:to-white/5 rounded-xl shadow-xs`}><Icon className="w-5 h-5 text-white" /></div><div><p className="text-sm text-muted-foreground">{c.label}</p><p className="text-2xl font-bold">{count}</p></div></div></CardContent></Card>
             );
           }).slice(0, 3)}
         </div>
@@ -282,7 +282,7 @@ export default function AdminUsersPage() {
             <div className="flex flex-wrap gap-4">
               <div className="relative flex-1 min-w-48">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input type="text" placeholder={t("admin.searchUsers")} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" placeholder={t("admin.searchUsers")} value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-card text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500" />
               </div>
               <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className="px-3 py-2 rounded-lg border border-border bg-card text-sm">
                 <option value="">{t("admin.allRoles")}</option>
@@ -384,7 +384,7 @@ export default function AdminUsersPage() {
             <div className="flex items-center justify-between px-4 py-3 border-t text-sm">
               <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
                 {[10, 25, 50].map((n) => (
-                  <button key={n} onClick={() => { setPageSize(n); setPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${pageSize === n ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
+                  <button key={n} onClick={() => { setPageSize(n); setPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${pageSize === n ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
                 ))}
               </div>
               <div className="flex items-center gap-1">
@@ -561,7 +561,7 @@ export default function AdminUsersPage() {
               placeholder={t("admin.searchCourses")}
               value={assignSearch}
               onChange={(e) => setAssignSearch(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-hidden focus:ring-2 focus:ring-violet-500"
             />
             <div className="max-h-64 overflow-y-auto space-y-1">
               {(allCourses || [])

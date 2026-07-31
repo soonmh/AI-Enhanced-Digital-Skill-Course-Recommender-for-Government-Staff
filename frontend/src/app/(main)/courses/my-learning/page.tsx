@@ -77,7 +77,7 @@ function CourseCard({ course, variant, t }: { course: ApiRecord; variant: "progr
     <Link href={`/courses/${course.id}?from=my-learning`}>
       <div
         className={cn(
-          "bg-card rounded-xl border border-border border-l-4 shadow-sm hover:shadow-md transition-all duration-200 h-full",
+          "bg-card rounded-xl border border-border border-l-4 shadow-xs hover:shadow-md transition-all duration-200 h-full",
           s.border,
           variant === "archived" && "opacity-70"
         )}
@@ -194,7 +194,7 @@ export default function MyLearningPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="bg-card shadow-sm border-b">
+        <div className="bg-card shadow-xs border-b">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <Skeleton className="h-9 w-36 mb-1" />
             <Skeleton className="h-5 w-64" />
@@ -219,7 +219,7 @@ export default function MyLearningPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card shadow-sm border-b">
+      <div className="bg-card shadow-xs border-b">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <h1 className="text-3xl font-bold text-foreground">{t("courses.myLearningTitle")}</h1>
           <p className="text-muted-foreground mt-1">{t("courses.myLearningDescription")}</p>

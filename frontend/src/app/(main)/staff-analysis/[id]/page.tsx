@@ -68,7 +68,7 @@ export default function StaffReportPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="bg-card shadow-sm border-b">
+        <div className="bg-card shadow-xs border-b">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <div className="flex items-center gap-4">
               <Skeleton className="h-10 w-10 rounded-lg" />
@@ -122,7 +122,7 @@ export default function StaffReportPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card shadow-sm border-b">
+      <div className="bg-card shadow-xs border-b">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -161,10 +161,10 @@ export default function StaffReportPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="shadow-xs hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm">
+                <div className="p-3 bg-linear-to-br from-blue-500 to-blue-600 rounded-xl shadow-xs">
                   <BarChart3 className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -176,10 +176,10 @@ export default function StaffReportPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="shadow-xs hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-sm">
+                <div className="p-3 bg-linear-to-br from-emerald-500 to-green-600 rounded-xl shadow-xs">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -189,10 +189,10 @@ export default function StaffReportPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="shadow-xs hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-sm">
+                <div className="p-3 bg-linear-to-br from-violet-500 to-purple-600 rounded-xl shadow-xs">
                   <BookOpen className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -202,10 +202,10 @@ export default function StaffReportPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="shadow-xs hover:shadow-md transition-shadow">
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-sm">
+                <div className="p-3 bg-linear-to-br from-amber-500 to-orange-500 rounded-xl shadow-xs">
                   <CircleCheck className="w-5 h-5 text-white" />
                 </div>
                 <div>

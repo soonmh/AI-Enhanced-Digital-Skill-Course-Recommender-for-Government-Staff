@@ -77,7 +77,7 @@ function Breadcrumbs() {
 
   return (
     <nav aria-label="breadcrumb">
-      <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
+      <ol className="flex flex-wrap items-center gap-1.5 wrap-break-word text-sm text-muted-foreground sm:gap-2.5">
         {breadcrumbs.map((crumb, idx) => (
           <li key={crumb.href} className="inline-flex items-center gap-1.5">
             <BreadcrumbItem
@@ -180,7 +180,7 @@ function TopBar() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
-              className="w-48 h-8 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-48 h-8 rounded-md border border-input bg-background px-3 text-sm focus:outline-hidden focus:ring-2 focus:ring-ring"
             />
           </form>
         ) : (

@@ -179,7 +179,7 @@ function LearningPathSection() {
           <div className="relative border-l-2 border-indigo-200 dark:border-indigo-500/30 ml-3">
             {path.map((step: { step: number; course_title: string; reason: string; estimated_weeks: number; milestone: string }, i: number) => (
               <div key={i} className="relative pl-8 pb-6 last:pb-0">
-                <div className="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500/25 dark:text-indigo-300 text-white flex items-center justify-center text-sm font-bold">
+                <div className="absolute left-[-17px] top-0 w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500/25 dark:text-indigo-300 text-white flex items-center justify-center text-sm font-bold">
                   {step.step}
                 </div>
                 <div className="bg-background rounded-lg p-4 border border-border">

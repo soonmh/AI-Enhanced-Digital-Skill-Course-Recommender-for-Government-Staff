@@ -91,7 +91,7 @@ export function CommandPalette() {
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <Command.Input
               placeholder={t("nav.searchPagesActions")}
-              className="flex h-12 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
+              className="flex h-12 w-full bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground"
             />
           </div>
           <Command.List className="max-h-64 overflow-y-auto p-2">

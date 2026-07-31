@@ -95,7 +95,7 @@ export default function RecommendedCoursesPage() {
         <div className="flex items-start justify-between mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
+              <div className="p-2.5 bg-linear-to-br from-emerald-500 to-teal-600 rounded-xl">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-4xl font-bold text-foreground">{t("courses.recommendedTitle")}</h1>
@@ -110,7 +110,7 @@ export default function RecommendedCoursesPage() {
 
         {/* No Assessment - Prompt to take assessment */}
         {!hasAssessment && (
-          <Card className="border-0 shadow-md bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-900/30 dark:to-indigo-900/30">
+          <Card className="border-0 shadow-md bg-linear-to-br from-violet-50 to-indigo-50 dark:from-violet-900/30 dark:to-indigo-900/30">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-violet-100 dark:bg-violet-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Target className="w-8 h-8 text-violet-600 dark:text-violet-400" />
@@ -119,7 +119,7 @@ export default function RecommendedCoursesPage() {
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">{t("courses.noAssessmentDescription") || "Take the Digital Skills Readiness Assessment to get personalised course recommendations based on your skill gaps."}</p>
               <Link
                 href="/assessment/start"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg hover:from-violet-700 hover:to-indigo-700 transition-all font-medium shadow-md"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-violet-600 to-indigo-600 text-white rounded-lg hover:from-violet-700 hover:to-indigo-700 transition-all font-medium shadow-md"
               >
                 <BookOpen className="w-5 h-5" />
                 {t("assessment.startAssessment")}
@@ -130,7 +130,7 @@ export default function RecommendedCoursesPage() {
 
         {/* Skill Gaps Banner */}
         {hasAssessment && weakSections.length > 0 && (
-          <Card className="border-0 shadow-md mb-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30">
+          <Card className="border-0 shadow-md mb-6 bg-linear-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30">
             <CardContent className="p-5">
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg">
@@ -144,7 +144,7 @@ export default function RecommendedCoursesPage() {
                       return comp ? (
                         <span
                           key={code}
-                          className="px-3 py-1 bg-card rounded-full text-sm font-medium text-amber-700 shadow-sm border border-amber-200"
+                          className="px-3 py-1 bg-card rounded-full text-sm font-medium text-amber-700 shadow-xs border border-amber-200"
                         >
                           {code}: {comp.nameEn}
                         </span>
@@ -196,7 +196,7 @@ export default function RecommendedCoursesPage() {
                   onClick={() => setSortBy(opt.value)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                     sortBy === opt.value
-                      ? "bg-emerald-500/10 text-emerald-700 shadow-sm"
+                      ? "bg-emerald-500/10 text-emerald-700 shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -237,21 +237,21 @@ export default function RecommendedCoursesPage() {
                       {course.image ? (
                         <img src={course.image} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
-                        <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+                        <div className={`w-full h-full bg-linear-to-br ${gradient} flex items-center justify-center`}>
                           <BookOpen className="w-14 h-14 text-white/20" />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                       {/* Badges */}
                       <div className="absolute top-3 left-3 flex items-center gap-2">
-                        <span className="flex items-center gap-1 px-2.5 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
+                        <span className="flex items-center gap-1 px-2.5 py-1 bg-white/20 backdrop-blur-xs rounded-full text-xs text-white font-medium">
                           <Sparkles className="w-3 h-3" />
                           {t("courses.recommendedBadge")}
                         </span>
                       </div>
                       <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
                         {course.level && (
-                          <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-xs text-white font-medium">
+                          <span className="px-2 py-0.5 bg-white/20 backdrop-blur-xs rounded-full text-xs text-white font-medium">
                             {t(`common.level${course.level.charAt(0).toUpperCase() + course.level.slice(1)}`)}
                           </span>
                         )}
@@ -298,7 +298,7 @@ export default function RecommendedCoursesPage() {
                                 <span className="text-xs text-muted-foreground flex-1 truncate">{comp.name}</span>
                                 <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
                                   <div
-                                    className={`h-full rounded-full ${isWeak ? "bg-gradient-to-r from-red-400 to-amber-400" : "bg-emerald-400"}`}
+                                    className={`h-full rounded-full ${isWeak ? "bg-linear-to-r from-red-400 to-amber-400" : "bg-emerald-400"}`}
                                     style={{ width: `${comp.user_pct}%` }}
                                   />
                                 </div>

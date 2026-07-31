@@ -52,20 +52,20 @@ export default function AssessmentLandingPage() {
     <div className="min-h-screen bg-background">
       {/* Hero */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 dark:from-violet-900 dark:via-indigo-950 dark:to-gray-900" />
+        <div className="absolute inset-0 bg-linear-to-br from-violet-600 via-indigo-600 to-purple-700 dark:from-violet-900 dark:via-indigo-950 dark:to-gray-900" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.05),transparent_50%)]" />
 
         <div className="relative max-w-7xl mx-auto px-6 py-16 lg:py-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-card/10 backdrop-blur-sm rounded-full px-4 py-2 text-sm text-white/90 font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-card/10 backdrop-blur-xs rounded-full px-4 py-2 text-sm text-white/90 font-medium mb-6">
                 <Sparkles className="w-4 h-4" />
                 {t("assessment.landingTitle")}
               </div>
               <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
                 {t("assessment.landingHeroTitle1")}{" "}
-                <span className="bg-gradient-to-r from-yellow-300 via-amber-300 to-orange-300 bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-yellow-300 via-amber-300 to-orange-300 bg-clip-text text-transparent">
                   {t("assessment.landingHeroTitle2")}
                 </span>
               </h1>
@@ -75,7 +75,7 @@ export default function AssessmentLandingPage() {
               <div className="flex flex-wrap items-center gap-4">
                 <Link
                   href="/assessment/start"
-                  className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/25 transition-colors shadow-lg shadow-black/10 text-base"
+                  className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-xs text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/25 transition-colors shadow-lg shadow-black/10 text-base"
                 >
                   <Play className="w-5 h-5" />
                   {hasResults ? t("assessment.retakeAssessment") : t("assessment.startAssessment")}
@@ -111,7 +111,7 @@ export default function AssessmentLandingPage() {
               {hasResults ? (
                 <div className="bg-card/10 backdrop-blur-md border border-white/20 rounded-2xl p-8">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-linear-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
                       <BarChart3 className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -131,7 +131,7 @@ export default function AssessmentLandingPage() {
                     })()}
                   </div>
                   <div className="w-full bg-card/10 rounded-full h-3 mb-2">
-                    <div className="h-3 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 transition-all" style={{ width: `${latestDsri}%` }} />
+                    <div className="h-3 rounded-full bg-linear-to-r from-yellow-400 to-orange-400 transition-all" style={{ width: `${latestDsri}%` }} />
                   </div>
                   <div className="flex items-center justify-between text-sm text-white/50 mt-3">
                     <span>{t("assessment.assessmentsTaken", { count: historyCount })}</span>
@@ -156,7 +156,7 @@ export default function AssessmentLandingPage() {
                           <span>{item.pct}%</span>
                         </div>
                         <div className="w-full bg-card/10 rounded-full h-2">
-                          <div className="h-2 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400" style={{ width: `${item.pct}%` }} />
+                          <div className="h-2 rounded-full bg-linear-to-r from-yellow-400 to-orange-400" style={{ width: `${item.pct}%` }} />
                         </div>
                       </div>
                     ))}
@@ -204,7 +204,7 @@ export default function AssessmentLandingPage() {
                 <Card className="p-0 border-0 shadow-md h-full">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4 mb-4">
-                      <div className={`w-12 h-12 bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center shadow-sm`}>
+                      <div className={`w-12 h-12 bg-linear-to-br ${gradient} rounded-xl flex items-center justify-center shadow-xs`}>
                         <Icon className="w-6 h-6 text-white" />
                       </div>
                       <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-sm font-bold text-muted-foreground">
@@ -230,7 +230,7 @@ export default function AssessmentLandingPage() {
             {Object.entries(COMPETENCIES).map(([code, comp], idx) => {
               const Icon = COMPETENCY_ICONS[idx % COMPETENCY_ICONS.length];
               return (
-                <Card key={code} className="p-0 border-0 shadow-sm hover:shadow-md transition-shadow">
+                <Card key={code} className="p-0 border-0 shadow-xs hover:shadow-md transition-shadow">
                   <CardContent className="p-4 text-center">
                     <div className="w-10 h-10 bg-violet-500/10 dark:bg-violet-400/15 rounded-xl flex items-center justify-center mx-auto mb-2">
                       <Icon className="w-5 h-5 text-violet-600 dark:text-violet-300" />
@@ -256,7 +256,7 @@ export default function AssessmentLandingPage() {
               { icon: Star, value: "1-5", label: t("assessment.statsRatingScale"), gradient: "from-amber-500 to-orange-500", gradientDark: "from-amber-600/80 to-orange-600/80" },
               { icon: Award, value: "100", label: t("assessment.statsMaxDsriScore"), gradient: "from-emerald-500 to-green-600", gradientDark: "from-emerald-600/80 to-green-700/80" },
             ].map(({ icon: Icon, value, label, gradient, gradientDark }) => (
-              <div key={label} className={`bg-gradient-to-br ${gradient} dark:${gradientDark} rounded-2xl p-6 text-white`}>
+              <div key={label} className={`bg-linear-to-br ${gradient} dark:${gradientDark} rounded-2xl p-6 text-white`}>
                 <Icon className="w-6 h-6 text-white/60 mb-3" />
                 <div className="text-3xl font-bold">{value}</div>
                 <div className="text-sm text-white/70">{label}</div>
@@ -277,7 +277,7 @@ export default function AssessmentLandingPage() {
               { icon: RefreshCw, q: t("assessment.faq3Question"), a: t("assessment.faq3Answer") },
               { icon: Award, q: t("assessment.faq4Question"), a: t("assessment.faq4Answer") },
             ].map(({ icon: Icon, q, a }) => (
-              <Card key={q} className="p-0 border-0 shadow-sm">
+              <Card key={q} className="p-0 border-0 shadow-xs">
                 <CardContent className="p-5">
                   <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                     <Icon className="w-4 h-4 text-violet-600" />
@@ -292,7 +292,7 @@ export default function AssessmentLandingPage() {
 
         {/* Bottom CTA */}
         <div className="pb-16">
-          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-900 dark:via-indigo-950 dark:to-gray-900 rounded-2xl p-10 text-center relative overflow-hidden">
+          <div className="bg-linear-to-r from-violet-600 to-indigo-600 dark:from-violet-900 dark:via-indigo-950 dark:to-gray-900 rounded-2xl p-10 text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.05),transparent_60%)]" />
             <div className="relative">
               <h2 className="text-3xl font-bold text-white mb-3">
@@ -305,7 +305,7 @@ export default function AssessmentLandingPage() {
               </p>
               <Link
                 href="/assessment/start"
-                className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/25 transition-colors shadow-lg text-base"
+                className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-xs text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/25 transition-colors shadow-lg text-base"
               >
                 <Zap className="w-5 h-5" />
                 {hasResults ? t("assessment.retakeAssessment") : t("assessment.startAssessment")}

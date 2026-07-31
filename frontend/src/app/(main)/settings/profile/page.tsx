@@ -208,7 +208,7 @@ export default function ProfilePage() {
                   id="working_field"
                   value={form.working_field}
                   onChange={update("working_field")}
-                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="">{t("settings.selectWorkingField")}</option>
                   {WORKING_FIELDS.map((f) => (
@@ -225,7 +225,7 @@ export default function ProfilePage() {
                   id="job_level"
                   value={form.job_level}
                   onChange={update("job_level")}
-                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="">{t("settings.selectJobLevel")}</option>
                   {JOB_LEVELS.map((l) => (
@@ -242,7 +242,7 @@ export default function ProfilePage() {
                   id="experience_years"
                   value={form.experience_years}
                   onChange={update("experience_years")}
-                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="">{t("settings.selectExperienceRange")}</option>
                   {EXPERIENCE_RANGES.map((r) => (

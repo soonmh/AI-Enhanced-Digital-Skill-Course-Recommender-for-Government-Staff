@@ -213,7 +213,7 @@ export function Sidebar() {
               href="/dashboard"
               className="flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-purple-600">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-linear-to-br from-blue-600 to-purple-600">
                 <Glasses className="w-4 h-4 text-white" />
               </div>
               <div className="ml-1 grid flex-1 text-left text-sm leading-tight">
@@ -244,7 +244,7 @@ export function Sidebar() {
                       className={cn(
                         "flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground group select-none",
                         active
-                          ? "bg-accent text-accent-foreground shadow-sm"
+                          ? "bg-accent text-accent-foreground shadow-xs"
                           : "text-muted-foreground hover:text-foreground"
                       )}
                     >
@@ -281,7 +281,7 @@ export function Sidebar() {
                               className={cn(
                                 "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground group",
                                 childActive
-                                  ? "bg-accent text-accent-foreground shadow-sm"
+                                  ? "bg-accent text-accent-foreground shadow-xs"
                                   : "text-muted-foreground hover:text-foreground"
                               )}
                             >
@@ -311,7 +311,7 @@ export function Sidebar() {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-accent hover:text-accent-foreground group",
                     isActive(item.href)
-                      ? "bg-accent text-accent-foreground shadow-sm"
+                      ? "bg-accent text-accent-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >

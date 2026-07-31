@@ -96,7 +96,7 @@ export default function DashboardPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="shadow-sm hover:shadow-md transition-shadow overflow-hidden !p-0 !gap-0 !py-0">
+          <Card className="shadow-xs hover:shadow-md transition-shadow overflow-hidden p-0! gap-0! py-0!">
             <div className="flex h-full">
               <div className={`w-1.5 shrink-0 ${getDsriLevel(latestScore).color}`} />
               <div className="flex-1 px-5 py-3">
@@ -115,7 +115,7 @@ export default function DashboardPage() {
                       </Badge>
                     )}
                   </div>
-                  <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-sm">
+                  <div className="p-3 bg-linear-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-xs">
                     <TrendingUp className="w-6 h-6 text-white" />
                   </div>
                 </div>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="shadow-sm hover:shadow-md transition-shadow overflow-hidden !p-0 !gap-0 !py-0">
+          <Card className="shadow-xs hover:shadow-md transition-shadow overflow-hidden p-0! gap-0! py-0!">
             <div className="flex h-full">
               <div className="w-1.5 shrink-0 bg-emerald-500 dark:bg-emerald-500/40" />
               <div className="flex-1 px-5 py-3">
@@ -139,7 +139,7 @@ export default function DashboardPage() {
                       {(stats?.total_assessments ?? 0) > 0 ? t("dashboard.keepImproving") : t("dashboard.startYourJourney")}
                     </p>
                   </div>
-                  <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-sm">
+                  <div className="p-3 bg-linear-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-xs">
                     <Target className="w-6 h-6 text-white" />
                   </div>
                 </div>
@@ -147,7 +147,7 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="shadow-sm hover:shadow-md transition-shadow overflow-hidden !p-0 !gap-0 !py-0">
+          <Card className="shadow-xs hover:shadow-md transition-shadow overflow-hidden p-0! gap-0! py-0!">
             <div className="flex h-full">
               <div className="w-1.5 shrink-0 bg-violet-500 dark:bg-violet-500/40" />
               <div className="flex-1 px-5 py-3">
@@ -163,7 +163,7 @@ export default function DashboardPage() {
                       {(stats?.courses_in_progress ?? 0) > 0 ? t("dashboard.continueLearning") : t("dashboard.startACourse")}
                     </p>
                   </div>
-                  <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-sm">
+                  <div className="p-3 bg-linear-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-xs">
                     <BookOpen className="w-6 h-6 text-white" />
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export default function DashboardPage() {
 
         {/* DSRI Trend Chart */}
         {history.length >= 2 && (
-          <Card className="shadow-sm hover:shadow-md transition-shadow mb-8">
+          <Card className="shadow-xs hover:shadow-md transition-shadow mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -206,7 +206,7 @@ export default function DashboardPage() {
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
           {/* Assessment Progress */}
           <div className="lg:col-span-2">
-            <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
+            <Card className="shadow-xs hover:shadow-md transition-shadow h-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ClipboardList className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -244,14 +244,14 @@ export default function DashboardPage() {
                     <div className="flex gap-3">
                       <Link
                         href="/assessment"
-                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-sm"
+                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-xs"
                       >
                         <TrendingUp className="w-4 h-4" />
                         {t("dashboard.takeNewAssessment")}
                       </Link>
                       <Link
                         href="/assessment/results"
-                        className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                        className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent hover:shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 transition-all"
                       >
                         {t("dashboard.viewResults")}
                         <ArrowRight className="w-4 h-4" />
@@ -260,7 +260,7 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="text-center py-10">
-                    <div className="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/15 dark:to-purple-500/15 rounded-2xl flex items-center justify-center mb-4">
+                    <div className="mx-auto w-16 h-16 bg-linear-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/15 dark:to-purple-500/15 rounded-2xl flex items-center justify-center mb-4">
                       <Target className="w-8 h-8 text-indigo-400" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">
@@ -271,7 +271,7 @@ export default function DashboardPage() {
                     </p>
                     <Link
                       href="/assessment"
-                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-sm"
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300 dark:hover:bg-indigo-500/30 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-xs"
                     >
                       <TrendingUp className="w-4 h-4" />
                       {t("dashboard.takeFirstAssessment")}
@@ -284,7 +284,7 @@ export default function DashboardPage() {
 
           {/* Quick Actions */}
           <div>
-            <Card className="shadow-sm hover:shadow-md transition-shadow h-full">
+            <Card className="shadow-xs hover:shadow-md transition-shadow h-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
@@ -300,9 +300,9 @@ export default function DashboardPage() {
                   <Link
                     key={action.href}
                     href={action.href}
-                    className="flex items-center gap-3 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm hover:shadow-md hover:border-border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all group"
+                    className="flex items-center gap-3 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm hover:shadow-md hover:border-border focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 transition-all group"
                   >
-                    <div className={`p-2 bg-gradient-to-br ${action.bg} dark:from-white/10 dark:to-white/5 rounded-lg shadow-sm`}>
+                    <div className={`p-2 bg-linear-to-br ${action.bg} dark:from-white/10 dark:to-white/5 rounded-lg shadow-xs`}>
                       <action.icon className="w-4 h-4 text-white" />
                     </div>
                     <div className="text-left">
@@ -319,7 +319,7 @@ export default function DashboardPage() {
 
         {/* Learning Path */}
         {dashboard?.latestSectionScores && (
-          <Card className="shadow-sm hover:shadow-md transition-shadow mb-8">
+          <Card className="shadow-xs hover:shadow-md transition-shadow mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -335,7 +335,7 @@ export default function DashboardPage() {
 
         {/* Benchmark Comparison */}
         {benchmark?.has_data && (
-          <Card className="shadow-sm hover:shadow-md transition-shadow mb-8">
+          <Card className="shadow-xs hover:shadow-md transition-shadow mb-8">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -407,7 +407,7 @@ export default function DashboardPage() {
 
         {/* Recommended Courses */}
         {courses.length > 0 && (
-          <Card className="shadow-sm hover:shadow-md transition-shadow mb-8">
+          <Card className="shadow-xs hover:shadow-md transition-shadow mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-amber-500 dark:text-amber-400" />
@@ -435,7 +435,7 @@ export default function DashboardPage() {
                       </div>
                       <Link
                         href={course.url || "/courses"}
-                        className="inline-flex items-center gap-1 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/15 px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20"
+                        className="inline-flex items-center gap-1 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/15 px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40 transition-colors group-hover:bg-indigo-100 dark:group-hover:bg-indigo-500/20"
                       >
                         <CirclePlay className="w-3.5 h-3.5" />
                         {t("dashboard.start")}
@@ -448,7 +448,7 @@ export default function DashboardPage() {
                 <div className="mt-5 text-center">
                   <Link
                     href="/courses/recommended"
-                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:shadow-xs focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 transition-all"
                   >
                     {t("dashboard.viewAllRecommended")}
                     <ArrowRight className="w-4 h-4" />
@@ -461,7 +461,7 @@ export default function DashboardPage() {
 
         {/* Assessment History */}
         {history.length > 0 && (
-          <Card className="shadow-sm hover:shadow-md transition-shadow">
+          <Card className="shadow-xs hover:shadow-md transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <History className="w-5 h-5 text-violet-600 dark:text-violet-400" />
@@ -472,7 +472,7 @@ export default function DashboardPage() {
               <div className="overflow-x-auto rounded-lg border border-border">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-gradient-to-b from-background to-muted/80">
+                    <tr className="bg-linear-to-b from-background to-muted/80">
                       <th className="text-left py-3 px-3 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
                         Date
                       </th>

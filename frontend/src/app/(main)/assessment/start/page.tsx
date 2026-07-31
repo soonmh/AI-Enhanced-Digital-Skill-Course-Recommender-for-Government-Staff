@@ -238,7 +238,7 @@ export default function AssessmentStartPage() {
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div
-                    className="bg-gradient-to-r from-violet-500 to-indigo-500 dark:from-violet-400/50 dark:to-indigo-400/50 h-2 rounded-full transition-all duration-500"
+                    className="bg-linear-to-r from-violet-500 to-indigo-500 dark:from-violet-400/50 dark:to-indigo-400/50 h-2 rounded-full transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -294,7 +294,7 @@ export default function AssessmentStartPage() {
                 {/* Section Header */}
                 <div className="mb-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 dark:from-violet-500/20 dark:to-indigo-500/20 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-linear-to-br from-violet-500 to-indigo-600 dark:from-violet-500/20 dark:to-indigo-500/20 rounded-xl flex items-center justify-center">
                       <SectionIcon className="w-5 h-5 text-white dark:text-violet-300" />
                     </div>
                     <div>
@@ -321,7 +321,7 @@ export default function AssessmentStartPage() {
                         className={`bg-card rounded-2xl p-6 transition-all duration-300 ${
                           answered
                             ? "ring-2 ring-violet-400/50 shadow-md shadow-violet-100 dark:ring-violet-400/30 dark:shadow-violet-400/5"
-                            : "shadow-sm border border-border hover:shadow-md"
+                            : "shadow-xs border border-border hover:shadow-md"
                         }`}
                       >
                         {/* Question number + text */}
@@ -344,7 +344,7 @@ export default function AssessmentStartPage() {
                                 key={val}
                                 title={t(RATING_LABEL_KEYS[val])}
                                 onClick={() => handleAnswer(q.id, val)}
-                                className={`w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 ${
+                                className={`w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm transition-all duration-150 focus:outline-hidden focus:ring-2 focus:ring-violet-400 focus:ring-offset-1 ${
                                   answers[q.id] === val
                                     ? RATING_COLORS[val] + " shadow-md scale-110"
                                     : `bg-background text-muted-foreground border border-border ${RATING_HOVER[val]}`
@@ -411,7 +411,7 @@ export default function AssessmentStartPage() {
                     <button
                       onClick={handleSubmitClick}
                       disabled={submitting}
-                      className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 dark:from-green-500/20 dark:to-emerald-500/20 dark:hover:from-green-500/30 dark:hover:to-emerald-500/30 dark:text-green-300 text-white text-sm font-semibold transition-all disabled:opacity-50"
+                      className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 dark:from-green-500/20 dark:to-emerald-500/20 dark:hover:from-green-500/30 dark:hover:to-emerald-500/30 dark:text-green-300 text-white text-sm font-semibold transition-all disabled:opacity-50"
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       {t("assessment.submitAssessment")}
@@ -507,7 +507,7 @@ export default function AssessmentStartPage() {
       <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
         <DialogContent className="bg-card rounded-2xl p-8 max-w-md w-full shadow-2xl">
           <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-linear-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Send className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">{t("assessment.submitConfirmTitle")}</h3>

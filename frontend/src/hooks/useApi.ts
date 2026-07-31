@@ -90,8 +90,8 @@ export async function updateLanguage(locale: string) {
 }
 
 export function useCourses() {
-  const { data, error, isLoading } = useSWR("/api/courses", fetcher);
-  return { courses: data, isLoading, isError: error };
+  const { data, error, isLoading, mutate } = useSWR("/api/courses", fetcher);
+  return { courses: data, isLoading, isError: error, mutate };
 }
 
 export function useCourse(id: string) {

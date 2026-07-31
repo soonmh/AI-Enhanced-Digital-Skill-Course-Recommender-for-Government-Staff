@@ -391,7 +391,7 @@ export default function MyTeamPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="bg-card shadow-sm border-b">
+        <div className="bg-card shadow-xs border-b">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <Skeleton className="h-9 w-48 mb-1" />
             <Skeleton className="h-5 w-72" />
@@ -413,7 +413,7 @@ export default function MyTeamPage() {
   if (!data?.has_team) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="bg-card shadow-sm border-b">
+        <div className="bg-card shadow-xs border-b">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <h1 className="text-3xl font-bold text-foreground">{t("myTeam.title")}</h1>
             <p className="text-muted-foreground mt-1">{t("myTeam.description")}</p>
@@ -437,7 +437,7 @@ export default function MyTeamPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-card shadow-sm border-b">
+      <div className="bg-card shadow-xs border-b">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <h1 className="text-3xl font-bold text-foreground">{t("myTeam.title")}</h1>
           <p className="text-muted-foreground mt-1">{t("myTeam.description")}</p>
@@ -452,7 +452,7 @@ export default function MyTeamPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-linear-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-xs shrink-0">
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -465,7 +465,7 @@ export default function MyTeamPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-linear-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-xs shrink-0">
                   <CircleCheck className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -478,7 +478,7 @@ export default function MyTeamPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-linear-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-xs shrink-0">
                   <BookOpen className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -491,7 +491,7 @@ export default function MyTeamPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-linear-to-br from-amber-500 to-orange-500 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl shadow-xs shrink-0">
                   <Target className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -596,7 +596,7 @@ export default function MyTeamPage() {
                       <td className="p-4">
                         <Link
                           href={`/my-team/${s.id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 dark:bg-violet-400/15 hover:bg-violet-500/20 hover:shadow-sm transition-all"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 dark:bg-violet-400/15 hover:bg-violet-500/20 hover:shadow-xs transition-all"
                         >
                           {t("myTeam.viewReport")} <ArrowRight className="w-3 h-3" />
                         </Link>

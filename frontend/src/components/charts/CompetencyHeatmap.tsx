@@ -102,7 +102,7 @@ export function CompetencyHeatmap({ departments }: HeatmapProps) {
       </div>
 
       {/* Heatmap table */}
-      <div className="overflow-x-auto rounded-xl border border-border shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-border shadow-xs">
         <table className="w-full">
           <thead>
             <tr className="bg-background">

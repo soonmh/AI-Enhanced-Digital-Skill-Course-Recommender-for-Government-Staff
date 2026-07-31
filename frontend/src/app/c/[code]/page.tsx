@@ -42,12 +42,12 @@ export default function CertificateVerifyPage() {
   const levelOrder = ["novice", "developing", "capable", "proficient", "expert"] as const;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 print:hidden">
           <div className="flex items-center gap-2">
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-purple-600">
+            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-linear-to-br from-blue-600 to-purple-600">
               <Glasses className="w-4 h-4 text-white" />
             </div>
             <span className="font-semibold text-foreground">DSRA</span>

@@ -156,7 +156,7 @@ export function DepartmentComparisonBar({ departments, competencies }: Departmen
           <button
             onClick={() => setLayout("grouped")}
             className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-              layout === "grouped" ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"
+              layout === "grouped" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Grouped
@@ -164,7 +164,7 @@ export function DepartmentComparisonBar({ departments, competencies }: Departmen
           <button
             onClick={() => setLayout("stacked")}
             className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-              layout === "stacked" ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"
+              layout === "stacked" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Stacked

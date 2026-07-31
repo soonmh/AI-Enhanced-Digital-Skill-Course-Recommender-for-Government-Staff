@@ -35,7 +35,7 @@ export function AiInsightCard() {
   const { recommendations, skill_gaps } = insights;
 
   return (
-    <Card className="border-0 shadow-lg mb-8 bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
+    <Card className="border-0 shadow-lg mb-8 bg-linear-to-r from-indigo-500/10 to-purple-500/10">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Lightbulb className="w-5 h-5 text-yellow-500" />

@@ -51,7 +51,7 @@ export default function CourseProgressPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="bg-card shadow-sm border-b">
+        <div className="bg-card shadow-xs border-b">
           <div className="max-w-7xl mx-auto px-6 py-8">
             <Skeleton className="h-9 w-48 mb-1" />
             <Skeleton className="h-5 w-72" />
@@ -96,7 +96,7 @@ export default function CourseProgressPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-card shadow-sm border-b">
+      <div className="bg-card shadow-xs border-b">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <h1 className="text-3xl font-bold text-foreground">{t("reports.courseProgressTitle")}</h1>
           <p className="text-muted-foreground mt-1">{t("reports.courseProgressDescription")}</p>
@@ -113,7 +113,7 @@ export default function CourseProgressPage() {
                   <p className="text-sm text-muted-foreground">{t("reports.totalCourses")}</p>
                   <p className="text-3xl font-bold text-foreground">{summary.total_courses}</p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-sm">
+                <div className="p-3 bg-linear-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-xs">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function CourseProgressPage() {
                   <p className="text-sm text-muted-foreground">{t("reports.totalEnrollments")}</p>
                   <p className="text-3xl font-bold text-foreground">{summary.total_enrollments}</p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 dark:from-blue-500/20 dark:to-cyan-600/20 rounded-xl shadow-sm">
+                <div className="p-3 bg-linear-to-br from-blue-500 to-cyan-600 dark:from-blue-500/20 dark:to-cyan-600/20 rounded-xl shadow-xs">
                   <Users className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -139,7 +139,7 @@ export default function CourseProgressPage() {
                   <p className="text-sm text-muted-foreground">{t("reports.avgCompletionRate")}</p>
                   <p className="text-3xl font-bold text-foreground">{summary.avg_completion_rate}%</p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-sm">
+                <div className="p-3 bg-linear-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-xs">
                   <Trophy className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -152,7 +152,7 @@ export default function CourseProgressPage() {
                   <p className="text-sm text-muted-foreground">{t("reports.avgProgress")}</p>
                   <p className="text-3xl font-bold text-foreground">{summary.avg_progress}%</p>
                 </div>
-                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl shadow-sm">
+                <div className="p-3 bg-linear-to-br from-amber-500 to-orange-500 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl shadow-xs">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
               </div>
@@ -268,19 +268,19 @@ export default function CourseProgressPage() {
               placeholder={tab === "courses" ? t("reports.searchCourses") : t("admin.searchUsers")}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCoursePage(1); setUserPage(1); }}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-card text-sm focus:outline-hidden focus:ring-2 focus:ring-violet-500"
             />
           </div>
           <div className="flex gap-1 bg-muted rounded-lg p-1">
             <button
               onClick={() => setTab("courses")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === "courses" ? "bg-card shadow text-foreground" : "text-muted-foreground"}`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === "courses" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"}`}
             >
               Courses
             </button>
             <button
               onClick={() => setTab("users")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === "users" ? "bg-card shadow text-foreground" : "text-muted-foreground"}`}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${tab === "users" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"}`}
             >
               Users
             </button>
@@ -366,7 +366,7 @@ export default function CourseProgressPage() {
             <div className="flex items-center justify-between mt-6 text-sm">
               <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
                 {[4, 6, 8, 12].map((n) => (
-                  <button key={n} onClick={() => { setCoursePageSize(n); setCoursePage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${coursePageSize === n ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
+                  <button key={n} onClick={() => { setCoursePageSize(n); setCoursePage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${coursePageSize === n ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
                 ))}
               </div>
               {courseTotalPages > 1 && (
@@ -436,7 +436,7 @@ export default function CourseProgressPage() {
               <div className="flex items-center justify-between px-4 py-3 border-t text-sm">
                 <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
                   {[5, 6, 10, 25].map((n) => (
-                    <button key={n} onClick={() => { setUserPageSize(n); setUserPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${userPageSize === n ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
+                    <button key={n} onClick={() => { setUserPageSize(n); setUserPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${userPageSize === n ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
                   ))}
                 </div>
                 <div className="flex items-center gap-1">

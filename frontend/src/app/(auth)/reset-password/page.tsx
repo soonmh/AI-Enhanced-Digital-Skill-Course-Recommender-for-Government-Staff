@@ -50,7 +50,7 @@ function ResetPasswordForm() {
   };
 
   return (
-    <Card className="border-0 shadow-xl backdrop-blur-sm bg-card/95">
+    <Card className="border-0 shadow-xl backdrop-blur-xs bg-card/95">
       <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl font-bold text-foreground">{t("auth.resetPasswordTitle")}</CardTitle>
         <CardDescription className="text-muted-foreground">
@@ -113,7 +113,7 @@ function ResetPasswordForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2.5 rounded-md disabled:opacity-50 transition-colors"
+              className="w-full bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2.5 rounded-md disabled:opacity-50 transition-colors"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin mr-2 inline" />}
               {loading ? t("auth.resetting") : t("auth.resetButton")}

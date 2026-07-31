@@ -43,7 +43,7 @@ export default function StaffAnalysisPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="bg-card shadow-sm border-b">
+        <div className="bg-card shadow-xs border-b">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <Skeleton className="h-9 w-48 mb-1" />
             <Skeleton className="h-5 w-72" />
@@ -85,7 +85,7 @@ export default function StaffAnalysisPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-card shadow-sm border-b">
+      <div className="bg-card shadow-xs border-b">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <h1 className="text-3xl font-bold text-foreground">{t("reports.staffAnalysisTitle")}</h1>
           <p className="text-muted-foreground mt-1">{t("reports.staffAnalysisDescription")}</p>
@@ -98,7 +98,7 @@ export default function StaffAnalysisPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-linear-to-br from-blue-500 to-blue-600 dark:from-blue-500/20 dark:to-blue-600/20 rounded-xl shadow-xs shrink-0">
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -111,7 +111,7 @@ export default function StaffAnalysisPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-linear-to-br from-emerald-500 to-green-600 dark:from-emerald-500/20 dark:to-green-600/20 rounded-xl shadow-xs shrink-0">
                   <CircleCheck className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -124,7 +124,7 @@ export default function StaffAnalysisPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-linear-to-br from-violet-500 to-purple-600 dark:from-violet-500/20 dark:to-purple-600/20 rounded-xl shadow-xs shrink-0">
                   <BookOpen className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -137,7 +137,7 @@ export default function StaffAnalysisPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl shadow-sm shrink-0">
+                <div className="p-3 bg-linear-to-br from-amber-500 to-orange-500 dark:from-amber-500/20 dark:to-orange-500/20 rounded-xl shadow-xs shrink-0">
                   <Target className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -151,7 +151,7 @@ export default function StaffAnalysisPage() {
 
         {/* AI Department Insights */}
         {deptInsights?.has_data && deptInsights?.insights && (
-          <Card className="mb-8 border-0 shadow-lg bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
+          <Card className="mb-8 border-0 shadow-lg bg-linear-to-r from-indigo-500/10 to-purple-500/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-yellow-500" />
@@ -272,13 +272,13 @@ export default function StaffAnalysisPage() {
                   placeholder={t("reports.searchStaff")}
                   value={search}
                   onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
                 />
               </div>
               <select
                 value={fieldFilter}
                 onChange={(e) => { setFieldFilter(e.target.value); setPage(1); }}
-                className="px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
+                className="px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
               >
                 <option value="">{t("reports.allFields")}</option>
                 {fields.map((f: string) => <option key={f} value={f}>{f}</option>)}
@@ -286,7 +286,7 @@ export default function StaffAnalysisPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                className="px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
+                className="px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
               >
                 <option value="">{t("common.all")}</option>
                 <option value="completed">{t("common.completed")}</option>
@@ -298,7 +298,7 @@ export default function StaffAnalysisPage() {
                 placeholder={t("reports.dsriScore") + " min"}
                 value={dsriMin}
                 onChange={(e) => setDsriMin(e.target.value)}
-                className="w-28 px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
+                className="w-28 px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
                 min="0"
                 max="100"
               />
@@ -307,7 +307,7 @@ export default function StaffAnalysisPage() {
                 placeholder={t("reports.dsriScore") + " max"}
                 value={dsriMax}
                 onChange={(e) => setDsriMax(e.target.value)}
-                className="w-28 px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
+                className="w-28 px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400 transition-shadow"
                 min="0"
                 max="100"
               />
@@ -325,7 +325,7 @@ export default function StaffAnalysisPage() {
                   exportToCsv("staff-analysis.csv", headers, rows);
                   toast.success("Exported staff analysis");
                 }}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300 text-white text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-sm"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300 text-white text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-500/30 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40 transition-colors shadow-xs"
               >
                 <Download className="w-4 h-4" />
                 {t("reports.exportCsv")}
@@ -404,7 +404,7 @@ export default function StaffAnalysisPage() {
                             </span>
                           </td>
                           <td className="p-4">
-                            <a href={`/staff-analysis/${s.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 dark:bg-violet-400/15 hover:bg-violet-500/20 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40 transition-all">
+                            <a href={`/staff-analysis/${s.id}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 dark:bg-violet-400/15 hover:bg-violet-500/20 hover:shadow-xs focus:outline-hidden focus:ring-2 focus:ring-violet-500/40 transition-all">
                               View <ArrowRight className="w-3 h-3" />
                             </a>
                           </td>
@@ -418,16 +418,16 @@ export default function StaffAnalysisPage() {
             <div className="flex items-center justify-between px-4 py-3 border-t text-sm">
               <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
                 {[10, 25, 50].map((n) => (
-                  <button key={n} onClick={() => { setPageSize(n); setPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40 ${pageSize === n ? "bg-card shadow text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
+                  <button key={n} onClick={() => { setPageSize(n); setPage(1); }} className={`px-3 py-1 rounded-md text-xs font-medium transition-colors focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 ${pageSize === n ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{n}</button>
                 ))}
               </div>
               {totalPages > 1 && (
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setPage(1)} disabled={page === 1} className="px-2 py-1 rounded hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500/40 disabled:opacity-40">&laquo;</button>
-                  <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-2 py-1 rounded hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500/40 disabled:opacity-40">&lsaquo;</button>
+                  <button onClick={() => setPage(1)} disabled={page === 1} className="px-2 py-1 rounded hover:bg-muted focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 disabled:opacity-40">&laquo;</button>
+                  <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-2 py-1 rounded hover:bg-muted focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 disabled:opacity-40">&lsaquo;</button>
                   <span className="px-3 text-muted-foreground">{page} / {totalPages}</span>
-                  <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-2 py-1 rounded hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500/40 disabled:opacity-40">&rsaquo;</button>
-                  <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-2 py-1 rounded hover:bg-muted focus:outline-none focus:ring-2 focus:ring-blue-500/40 disabled:opacity-40">&raquo;</button>
+                  <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-2 py-1 rounded hover:bg-muted focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 disabled:opacity-40">&rsaquo;</button>
+                  <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-2 py-1 rounded hover:bg-muted focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 disabled:opacity-40">&raquo;</button>
                 </div>
               )}
             </div>
