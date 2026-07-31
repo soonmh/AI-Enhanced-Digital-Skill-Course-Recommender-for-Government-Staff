@@ -79,6 +79,29 @@ export const authOptions: NextAuthOptions = {
         token.experience_years = user.experience_years;
         token.has_direct_reports = user.has_direct_reports;
         token.accessToken = user.accessToken;
+        token.validatedAt = Date.now();
+        return token;
+      }
+
+      // Periodically confirm the backend token is still valid so the session
+      // reflects backend reality (e.g. token revoked / DB reset) instead of
+      // only discovering it when an API call 401s. Bounded to one check per
+      // interval; a network error does NOT log the user out.
+      const REVALIDATE_MS = 5 * 60 * 1000;
+      if (token.accessToken && Date.now() - ((token.validatedAt as number) ?? 0) > REVALIDATE_MS) {
+        try {
+          const res = await fetch(`${backendUrl}/api/user`, {
+            headers: { Authorization: `Bearer ${token.accessToken}`, Accept: "application/json" },
+          });
+          if (res.status === 401) {
+            delete token.accessToken;
+            token.invalid = true;
+          } else if (res.ok) {
+            token.validatedAt = Date.now();
+          }
+        } catch {
+          // Backend unreachable — leave the token untouched, retry next interval.
+        }
       }
       return token;
     },
@@ -143,5 +166,7 @@ declare module "next-auth/jwt" {
     experience_years?: string;
     has_direct_reports?: boolean;
     accessToken?: string;
+    validatedAt?: number;
+    invalid?: boolean;
   }
 }
