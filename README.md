@@ -9,7 +9,7 @@
 [![Socket.io](https://img.shields.io/badge/Socket.io-4-010101?logo=socket.io&logoColor=white)](https://socket.io/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
-A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform designed for Malaysian government staff. The system assesses digital skills readiness through a structured questionnaire, calculates a composite DSRI score with a 5-level maturity model, identifies skill gaps against job-role competency benchmarks, and recommends relevant courses using a hybrid AI-powered recommendation engine — with certificates, PDF reports, and manager dashboards.
+A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform designed for Malaysian government staff. The system assesses digital skills readiness through a structured questionnaire, calculates a composite DSRI score with a 5-level maturity model, identifies skill gaps against job-role competency benchmarks, and recommends relevant courses using a hybrid AI-powered recommendation engine — with HOD-endorsed results, certificates, PDF reports, and manager dashboards.
 
 > **FYP-1 Project** — Final Year Project for Bachelor's Degree in Computer Science
 
@@ -29,6 +29,7 @@ A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform d
   - [Backend Setup](#backend-setup-laravel)
   - [Frontend Setup](#frontend-setup-nextjs)
   - [Real-time Server (Optional)](#real-time-server-optional)
+  - [Running Tests](#running-tests)
 - [Demo Accounts](#demo-accounts)
 - [Database Schema](#database-schema)
 - [API Documentation](#api-documentation)
@@ -37,7 +38,8 @@ A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform d
 - [Course Recommendation System](#course-recommendation-system)
 - [AI Integration](#ai-integration)
 - [Certificates](#certificates)
-- [Manager View (Direct Reports)](#manager-view-direct-reports)
+- [HOD Endorsement & Verification](#hod-endorsement--verification-1)
+- [HOD / Team View (Direct Reports)](#hod--team-view-direct-reports)
 - [Roles & Permissions](#roles--permissions)
 - [Localization](#localization)
 - [A/B Testing & Evaluation](#ab-testing--evaluation)
@@ -108,9 +110,16 @@ A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform d
 - Includes recommended courses, action plan, and certificate verification link
 - Server-side rendering via Puppeteer
 
-### Manager View (Direct Reports)
+### HOD Endorsement & Verification
+- **Assessment endorsement** — a staff member's submitted DSRI result stays *Pending HOD Endorsement* until their Head of Department (their `hod_id` relationship) reviews it. Only endorsed results feed certificates, course recommendations, and org-wide reports
+- **Course-completion endorsement** — reaching 100% on a course requires uploading proof (certificate/screenshot); the HOD then endorses or rejects it. Completion only counts once endorsed
+- **Endorse / Reject with feedback** — the HOD approves, or rejects with a required note; the staff member is notified in real time and prompted to retake/re-upload
+- **Endorsement history** — a HOD sees a combined, chronological log of every assessment and course-completion decision they've made
+
+### HOD / Team View (Direct Reports)
 - Team overview with size, assessment completion rate, course enrollment, and average DSRI
 - Team-level competency radar chart
+- Pending endorsement queue and endorsement history in one place
 - Individual team member detailed reports with DSRI trend, competency breakdown, and course progress
 - CSV export of team data
 
@@ -146,13 +155,14 @@ A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform d
 | **Frontend** | Next.js (App Router) | 14.2 |
 | | React | 18 |
 | | TypeScript | 5 |
-| | Tailwind CSS | 3.4 |
-| | shadcn/ui | 4.7 |
+| | Tailwind CSS | 4.0 |
+| | shadcn/ui + base-ui | — |
 | | NextAuth.js | 4.24 |
 | | SWR | 2.4 |
 | | Axios | 1.16 |
 | | Recharts | 3.8 |
 | | Socket.io Client | 4.8 |
+| | Vitest (unit tests) | 4.1 |
 | **Backend** | Laravel | 11 |
 | | PHP | 8.3 |
 | | Laravel Sanctum | 4.0 |
@@ -244,10 +254,10 @@ fyp1/
 │   │   │   ├── CollaborativeFilteringService.php      # User-user collaborative filtering
 │   │   │   ├── HybridRecommendationService.php        # Adaptive hybrid orchestrator
 │   │   │   └── RealtimePublisher.php                  # Redis event publisher
-│   │   ├── Events/                   # AssessmentSubmitted, CourseCompleted
-│   │   └── Listeners/                # GenerateAiInsights, InvalidateRecommendationCache, IssueCertificate
+│   │   ├── Events/                   # AssessmentSubmitted, AssessmentEndorsed, CourseCompleted
+│   │   └── Listeners/                # GenerateAiInsights, IssueCertificate, NotifyHodOfPendingEndorsement, InvalidateRecommendationCache
 │   ├── database/
-│   │   ├── migrations/               # 23 migrations
+│   │   ├── migrations/               # 26 migrations
 │   │   └── seeders/                  # Demo data + JobRoleProfile seeder
 │   └── routes/api.php               # All API routes
 │
@@ -454,6 +464,16 @@ cd realtime && npm install && npm run dev
 
 Open **http://localhost:3000** and log in with a demo account.
 
+### Running Tests
+
+```bash
+# Backend — Laravel feature/unit tests (PHPUnit)
+cd backend && php artisan test
+
+# Frontend — unit tests (Vitest)
+cd frontend && npm test
+```
+
 ---
 
 ## Demo Accounts
@@ -483,7 +503,7 @@ User ──┬── hasMany ── AssessmentResponse (DSRI scores per attempt)
        ├── hasMany ── Notification (user notifications)
        ├── hasMany ── AiRecommendation (AI-generated insights)
        ├── hasMany ── Certificate (auto-generated certificates)
-       ├── belongsTo ── User (manager)            # Manager relationship
+       ├── belongsTo ── User (hod)                # Head of Department (hod_id)
        ├── hasMany ── User (direct reports)        # Direct reports
        └── belongsToMany ── Role ── belongsToMany ── Permission
 
@@ -502,13 +522,13 @@ JobRoleProfile ── (standalone, seeded reference data)
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Staff accounts with profile info + `manager_id` for direct reports |
+| `users` | Staff accounts with profile info + `hod_id` (Head of Department / direct-reports link) |
 | `roles` | Admin, Staff, Top Management, Trainer |
 | `permissions` | Granular access control entries |
 | `courses` | Training courses with bilingual content |
-| `user_courses` | Enrollment tracking with progress & status |
+| `user_courses` | Enrollment tracking with progress, status & course-completion endorsement (`completion_endorsement_status`, proof path, endorser, note) |
 | `assessments` | Assessment definitions |
-| `assessment_responses` | Completed assessments with C1–C10 scores, DSRI, and `type` (full/retest) |
+| `assessment_responses` | Completed assessments with C1–C10 scores, DSRI, `type` (full/retest), and HOD endorsement (`endorsement_status`, endorser, endorsed_at, note) |
 | `assessment_drafts` | Auto-saved in-progress assessments |
 | `course_competency_mappings` | Maps courses to competency categories (C1–C10) |
 | `course_ratings` | User ratings (1–5 stars) with timestamps |
@@ -645,8 +665,21 @@ All protected endpoints require a valid Sanctum session cookie (obtained via `/l
 | `GET` | `/reports/staff/{id}` | `user-reporting` | Individual staff detail |
 | `GET` | `/reports/department-comparison` | `user-reporting` | Department comparison |
 | `GET` | `/reports/course-progress` | `course-reporting` | Course enrollment & completion |
-| `GET` | `/reports/my-team` | auth | Manager's direct reports overview |
-| `GET` | `/reports/team-member/{id}` | auth | Individual team member report |
+| `GET` | `/reports/my-team` | auth (HOD) | HOD's direct-reports overview |
+| `GET` | `/reports/team-member/{id}` | auth (HOD) | Individual team member report |
+
+### HOD Endorsement
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| `GET` | `/endorsements/pending` | auth (HOD) | Assessments awaiting endorsement |
+| `POST` | `/endorsements/{id}/endorse` | auth (HOD) | Endorse an assessment |
+| `POST` | `/endorsements/{id}/reject` | auth (HOD) | Reject an assessment (note required) |
+| `GET` | `/endorsements/course-completions/pending` | auth (HOD) | Course completions awaiting endorsement |
+| `POST` | `/endorsements/course-completions/{id}/endorse` | auth (HOD) | Endorse a course completion |
+| `POST` | `/endorsements/course-completions/{id}/reject` | auth (HOD) | Reject a course completion (note required) |
+| `GET` | `/endorsements/history` | auth (HOD) | Combined endorsement decision history |
+| `POST` | `/courses/{id}/submit-completion` | auth | Submit 100% course completion with proof upload |
 
 ### AI Insights
 
@@ -839,7 +872,7 @@ The system integrates with **Google Gemini 3.1 Flash Lite** for seven AI-powered
 
 ## Certificates
 
-Certificates are automatically generated when a user completes an assessment. Each certificate includes:
+Certificates are automatically generated once a user's assessment is **endorsed by their HOD** (see [HOD Endorsement](#hod-endorsement--verification-1)) — a certificate always corresponds to a verified result. Each certificate includes:
 
 - Unique verification code (UUID-based)
 - DSRI score and maturity level (L1–L5)
@@ -850,20 +883,44 @@ Certificates are automatically generated when a user completes an assessment. Ea
 **Public Verification:** Anyone with the link can verify a certificate at `/c/{code}` — no login required. The verification page displays the certificate with a radar chart and competency progress bars.
 
 **Implementation:**
-- `IssueCertificate` listener fires on `AssessmentSubmitted` event
+- `IssueCertificate` listener fires on the `AssessmentEndorsed` event (after HOD approval)
 - `Certificate` model stores all data; `CertificateController` handles verification
 - Frontend certificate page at `frontend/src/app/c/[code]/page.tsx`
 
 ---
 
-## Manager View (Direct Reports)
+## HOD Endorsement & Verification
 
-Users with the `manager_id` field set (linking to another user as their manager) appear as direct reports. Managers can access:
+Self-assessed results and self-reported course completions are verified by the
+staff member's **Head of Department** (the `hod_id` relationship) before they
+count for training/development decisions.
+
+**Assessment endorsement**
+- On submit, a full assessment starts as `pending`. It is visible to its owner (badged *Pending HOD Endorsement*) but is **excluded** from certificate issuance, course recommendations, and org-wide reports until endorsed.
+- The certificate is issued on the `AssessmentEndorsed` event (not on submit), so a certificate always corresponds to a verified result.
+- The HOD endorses, or rejects with a required note; the staff member is notified and can retake.
+
+**Course-completion endorsement**
+- Dragging progress to 100% no longer auto-completes. The user uploads proof (image/PDF) and the enrollment enters `pending_endorsement`.
+- The HOD endorses (→ `completed`, fires `CourseCompleted`) or rejects with a note (→ back to `active`, prompt to re-upload).
+
+**Where the HOD works** — the `/my-team` page has a *Pending / History* switch:
+- **Pending** — combined queue of assessments and course completions awaiting review, with View Proof / Endorse / Reject actions.
+- **History** — chronological log of every past decision (type, decision badge, date, note, proof link).
+
+Endpoints live under `/endorsements/*` and reuse the existing direct-reports (`hod_id`) relationship — no extra role or permission.
+
+---
+
+## HOD / Team View (Direct Reports)
+
+Users with the `hod_id` field set (linking to another user as their Head of Department) appear as direct reports. The HOD can access:
 
 **My Team page** (`/my-team`):
-- Team size, assessment completion rate, average DSRI
+- Team size, assessment completion rate, average DSRI (endorsed results only)
 - Team competency radar chart (averaged across members)
 - Member list with latest DSRI, maturity level, and course enrollment status
+- Pending endorsement queue + endorsement history (see above)
 
 **Team Member Detail** (`/my-team/{id}`):
 - Individual DSRI score, trend chart, and maturity level
@@ -922,6 +979,7 @@ Generates a self-contained HTML report (`ab-report.html`) with:
 | PDF Report Export | Yes | Yes | — | Yes |
 | Single-Competency Retest | Yes | Yes | — | Yes |
 | My Team (Direct Reports) | Yes | — | Yes | — |
+| HOD Endorsement (assessments + course completions) | If HOD | If HOD | If HOD | If HOD |
 | Manage Courses | Yes | — | — | Yes |
 | Create / Edit Course | Yes | — | — | Yes |
 | User Reporting | Yes | — | Yes | — |
@@ -960,7 +1018,8 @@ Courses store both `title`/`title_bm` and `description`/`description_bm` fields.
 - **Gamification** — Badges, leaderboards, and achievement tracking
 - **Offline assessment** — PWA-based offline assessment capability
 - **Multi-tenancy** — Support for multiple government agencies
-- **Assessment validation** — Manager verification of self-assessed scores
+- **Externalized question bank** — Move assessment questions out of the controller into the database for non-code editing
+- **Private proof storage** — Move course-completion proof uploads to a private disk with authenticated download
 
 ---
 
