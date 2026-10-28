@@ -14,7 +14,7 @@ class ReadinessCheckService
 
     public function check(User $user, string $locale = 'en'): array
     {
-        $lastAssessment = $user->assessmentResponses()->orderByDesc('submitted_at')->first();
+        $lastAssessment = $user->assessmentResponses()->where('assessment_type', 'full')->orderByDesc('submitted_at')->first();
 
         if (!$lastAssessment) {
             return [

@@ -17,7 +17,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $latest = $user->latestAssessmentResponse;
-        $history = $user->assessmentResponses()->orderByDesc('submitted_at')->get();
+        $history = $user->assessmentResponses()->where('assessment_type', 'full')->orderByDesc('submitted_at')->get();
         $userCourses = $user->userCourses()->with('course')->get();
 
         $stats = [
@@ -86,6 +86,7 @@ class DashboardController extends Controller
 
         // Get latest response per user (MAX id per user_id)
         $latestIds = AssessmentResponse::selectRaw('MAX(id) as id')
+            ->where('assessment_type', 'full')
             ->groupBy('user_id')
             ->pluck('id');
 
@@ -114,6 +115,7 @@ class DashboardController extends Controller
         if ($deptName) {
             $deptUserIds = User::where('working_field', $deptName)->pluck('id');
             $deptLatestIds = AssessmentResponse::selectRaw('MAX(id) as id')
+                ->where('assessment_type', 'full')
                 ->whereIn('user_id', $deptUserIds)
                 ->groupBy('user_id')
                 ->pluck('id');

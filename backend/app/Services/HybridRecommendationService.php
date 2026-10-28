@@ -42,7 +42,7 @@ class HybridRecommendationService
 
         $cacheKey = "hybrid_recommendations:{$user->id}";
 
-        return Cache::remember($cacheKey, now()->addHours(6), function () use ($user, $response, $locale, $limit, $abGroup) {
+        $result = Cache::remember($cacheKey, now()->addHours(6), function () use ($user, $response, $locale, $limit, $abGroup) {
             // Step 1: Get content-based results
             $contentResults = $this->contentService->getRecommendations($user, 20);
 
@@ -59,7 +59,8 @@ class HybridRecommendationService
             // Step 5: Build response
             $weakSections = $this->getWeakSections($response);
 
-            $courses = $merged->take($limit)->map(function ($item) use ($user, $response, $locale, $weights, $similarUsers) {
+            $explanationRequests = [];
+            $courses = $merged->take($limit)->map(function ($item) use ($user, $response, $locale, $weights, $similarUsers, &$explanationRequests) {
                 $course = $item['course'] ?? Course::find($item['course_id']);
                 if (!$course) {
                     return null;
@@ -104,6 +105,13 @@ class HybridRecommendationService
                     ];
                 }
 
+                $explanationRequests[$course->id] = $this->courseExplanation->enhancedRequest(
+                    $course->title,
+                    $course->description ?? '',
+                    $explanationData,
+                    $locale
+                );
+
                 return [
                     'id' => $course->id,
                     'title' => $course->title,
@@ -118,12 +126,7 @@ class HybridRecommendationService
                     'ratings_count' => $course->ratings()->count(),
                     'match_percentage' => is_nan($hybridScore) ? 0 : (int) round($hybridScore * 100),
                     'competency_codes' => $competencyCodes,
-                    'ai_explanation' => $this->courseExplanation->generateEnhanced(
-                        $course->title,
-                        $course->description ?? '',
-                        $explanationData,
-                        $locale
-                    ),
+                    'ai_explanation' => '',
                     'content_score' => round($contentScore, 4),
                     'collaborative_score' => $collabScore > 0 ? round($collabScore, 4) : null,
                     'hybrid_score' => round($hybridScore, 4),
@@ -146,8 +149,22 @@ class HybridRecommendationService
                 'content_weight' => $weights['content_weight'],
                 'collaborative_weight' => $weights['collaborative_weight'],
                 'total_peers' => $peerCount,
+                'explanation_requests' => $explanationRequests,
             ];
         });
+
+        // Explanations are filled in outside the 6h cache: each has its own 12h cache and the
+        // missing ones come from one concurrent Gemini round-trip, so a fallback from a slow or
+        // failed call is retried on the next request instead of sticking for 6 hours
+        $explanations = $this->courseExplanation->resolve($result['explanation_requests'] ?? []);
+        foreach ($result['courses'] as $i => $row) {
+            if (isset($explanations[$row['id']])) {
+                $result['courses'][$i]['ai_explanation'] = $explanations[$row['id']];
+            }
+        }
+        unset($result['explanation_requests']);
+
+        return $result;
     }
 
     /**
@@ -364,9 +381,9 @@ class HybridRecommendationService
         $weakSections = [];
         $competencies = $this->dsriService->getCompetencies();
 
-        foreach (array_keys($competencies) as $code) {
+        foreach ($competencies as $code => $config) {
             $field = strtolower($code) . '_score';
-            if (($latestResponse->$field ?? 0) < 50) {
+            if (($latestResponse->$field ?? 0) < $config['max_score'] * 0.5) {
                 $weakSections[] = $code;
             }
         }
@@ -384,7 +401,7 @@ class HybridRecommendationService
             $weakScores[$code] = $latestResponse->$field ?? 0;
         }
 
-        $result = $courses->map(function ($c) use ($weakSections, $weakNames, $weakScores, $user, $locale) {
+        $result = $courses->map(function ($c) use ($weakSections, $weakScores, $locale) {
             $mappings = $c->competencyMappings()->pluck('competency_code')->toArray();
             $matchPct = count($weakSections) > 0
                 ? round((count(array_intersect($mappings, $weakSections)) / count($weakSections)) * 100)
@@ -395,16 +412,6 @@ class HybridRecommendationService
                 $weight = $this->dsriService->getCompetencies()[$code]['weight'] ?? 1;
                 $score = $weakScores[$code] ?? 0;
                 $severity += $weight / max($score, 1);
-            }
-
-            $aiExplanation = '';
-            if ($matchPct > 0 && !empty($weakNames)) {
-                $aiExplanation = $this->courseExplanation->generate(
-                    $c->title,
-                    $c->description ?? '',
-                    $weakNames,
-                    $user->locale ?? 'en'
-                );
             }
 
             return [
@@ -420,7 +427,7 @@ class HybridRecommendationService
                 'ratings_count' => $c->ratings_count,
                 'match_percentage' => $matchPct,
                 'competency_codes' => $mappings,
-                'ai_explanation' => $aiExplanation,
+                'ai_explanation' => '',
                 'content_score' => null,
                 'collaborative_score' => null,
                 'hybrid_score' => null,
@@ -434,6 +441,23 @@ class HybridRecommendationService
             // Legacy sort by severity (stored via matchPct for simplicity)
             return $item['match_percentage'];
         })->values()->take($limit)->toArray();
+
+        // Explanations only for the courses shown, in one concurrent Gemini round-trip
+        $explanationRequests = [];
+        foreach ($result as $row) {
+            if ($row['match_percentage'] > 0) {
+                $explanationRequests[$row['id']] = $this->courseExplanation->request(
+                    $row['title'],
+                    $row['description'] ?? '',
+                    $weakNames,
+                    $user->locale ?? 'en'
+                );
+            }
+        }
+        $explanations = $this->courseExplanation->resolve($explanationRequests);
+        foreach ($result as $i => $row) {
+            $result[$i]['ai_explanation'] = $explanations[$row['id']] ?? '';
+        }
 
         return [
             'courses' => $result,

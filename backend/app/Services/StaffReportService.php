@@ -44,6 +44,7 @@ class StaffReportService
     public function individualReport(User $user): array
     {
         $responses = AssessmentResponse::where('user_id', $user->id)
+            ->where('assessment_type', 'full')
             ->where('endorsement_status', 'endorsed')
             ->orderByDesc('submitted_at')
             ->get();

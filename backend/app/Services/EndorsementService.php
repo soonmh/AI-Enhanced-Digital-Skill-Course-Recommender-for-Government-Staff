@@ -72,6 +72,7 @@ class EndorsementService
     private function authorize(AssessmentResponse $response, User $hod): void
     {
         abort_unless($response->user->hod_id === $hod->id, 403, 'You are not the HOD for this user.');
+        abort_unless($response->endorsement_status === 'pending', 422, 'This assessment has already been reviewed.');
     }
 
     public function pendingCourseCompletionsForHod(User $hod): Collection
@@ -135,6 +136,7 @@ class EndorsementService
     private function authorizeCourse(UserCourse $uc, User $hod): void
     {
         abort_unless($uc->user->hod_id === $hod->id, 403, 'You are not the HOD for this user.');
+        abort_unless($uc->completion_endorsement_status === 'pending', 422, 'This course completion has already been reviewed.');
     }
 
     public function endorsementHistoryForHod(User $hod): Collection

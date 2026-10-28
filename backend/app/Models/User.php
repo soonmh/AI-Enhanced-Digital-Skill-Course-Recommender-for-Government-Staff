@@ -61,7 +61,13 @@ class User extends Authenticatable
 
     public function latestAssessmentResponse()
     {
-        return $this->hasOne(AssessmentResponse::class)->latestOfMany();
+        // Full assessments only — section retest rows hold 0 for the other nine competencies
+        return $this->hasOne(AssessmentResponse::class)->ofMany(
+            ['id' => 'max'],
+            function ($query) {
+                $query->where('assessment_type', 'full');
+            }
+        );
     }
 
     public function latestEndorsedAssessmentResponse()

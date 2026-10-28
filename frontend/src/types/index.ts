@@ -62,6 +62,7 @@ export interface AssessmentSection {
 export interface AssessmentQuestion {
   id: string;
   text: string;
+  weight: number;
   options: AssessmentOption[];
 }
 

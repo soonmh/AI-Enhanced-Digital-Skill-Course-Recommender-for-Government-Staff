@@ -10,9 +10,9 @@ class SubmitAssessmentRequest extends FormRequest
     {
         return [
             'assessment_id' => ['required', 'exists:assessments,id'],
-            'responses' => ['required', 'array'],
-            'responses.*.section' => ['required', 'string', 'in:C1,C2,C3,C4,C5,C6,C7,C8,C9,C10'],
-            'responses.*.score' => ['required', 'numeric', 'min:0'],
+            // 1–5 rating per question id (e.g. "C1_Q1" => 4); section scores are computed server-side
+            'answers' => ['required', 'array'],
+            'answers.*' => ['required', 'integer', 'between:1,5'],
         ];
     }
 }

@@ -40,18 +40,18 @@ export function useUser() {
   return { user: data, isLoading, isError: error };
 }
 
-export async function submitAssessment(responses: { section: string; score: number }[], assessmentId: number) {
+export async function submitAssessment(answers: Record<string, number>, assessmentId: number) {
   const result = await api.post("/api/assessment/submit", {
     assessment_id: assessmentId,
-    responses,
+    answers,
   });
   return result.data;
 }
 
-export async function submitSectionRetest(sectionCode: string, score: number) {
+export async function submitSectionRetest(sectionCode: string, answers: Record<string, number>) {
   const result = await api.post("/api/assessment/submit-section", {
     section_code: sectionCode,
-    score,
+    answers,
   });
   return result.data;
 }

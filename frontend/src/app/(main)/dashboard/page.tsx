@@ -379,7 +379,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {benchmark.department
-                      ? t("dashboard.sameDeptPeers", { n: benchmark.department.sample_size ?? 0 })
+                      ? t("dashboard.sameDeptPeers", { n: benchmark.department.sample_size ?? 0, name: benchmark.department.name })
                       : t("dashboard.allUsers", { n: benchmark.sample_size ?? 0 })}
                   </div>
                 </div>

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAssessmentStart, submitSectionRetest, saveAssessmentDraft, loadAssessmentDraft, clearAssessmentDraft } from "@/hooks/useApi";
+import { useAssessmentStart, submitSectionRetest } from "@/hooks/useApi";
 import { useTranslation } from "@/i18n/context";
 import { COMPETENCIES } from "@/lib/constants";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,18 +47,6 @@ export default function RetestPage() {
 
   const section = data?.sections?.find((s: any) => s.section_code === sectionCode);
   const questions = section?.questions || [];
-
-  useEffect(() => {
-    if (answers && Object.keys(answers).length > 0) {
-      saveAssessmentDraft(answers, 0);
-    }
-  }, [answers]);
-
-  useEffect(() => {
-    loadAssessmentDraft().then((draft: any) => {
-      if (draft?.answers) setAnswers(draft.answers);
-    });
-  }, []);
 
   if (!comp) {
     return (
@@ -109,15 +97,13 @@ export default function RetestPage() {
   }
 
   const allAnswered = questions.length > 0 && questions.every((q: any) => answers[q.id] != null);
-  const totalScore = Object.values(answers).reduce((sum: number, v: number) => sum + v, 0);
 
   const handleSubmit = async () => {
     if (!allAnswered || submitting) return;
     setSubmitting(true);
     setError("");
     try {
-      await submitSectionRetest(sectionCode, totalScore);
-      clearAssessmentDraft();
+      await submitSectionRetest(sectionCode, answers);
       setSubmitted(true);
     } catch {
       setError("Failed to submit. Please try again.");
@@ -170,7 +156,7 @@ export default function RetestPage() {
                 {[1, 2, 3, 4, 5].map((rating) => (
                   <button
                     key={rating}
-                    onClick={() => setAnswers({ ...answers, [q.id]: rating })}
+                    onClick={() => setAnswers((prev) => ({ ...prev, [q.id]: rating }))}
                     className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-all ${
                       answers[q.id] === rating
                         ? RATING_COLORS[rating]

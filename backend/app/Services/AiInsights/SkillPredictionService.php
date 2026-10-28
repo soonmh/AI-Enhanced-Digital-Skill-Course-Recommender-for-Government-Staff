@@ -14,7 +14,7 @@ class SkillPredictionService
 
     public function predict(User $user, string $locale = 'en'): array
     {
-        $history = $user->assessmentResponses()->orderByDesc('submitted_at')->limit(5)->get();
+        $history = $user->assessmentResponses()->where('assessment_type', 'full')->orderByDesc('submitted_at')->limit(5)->get();
 
         if ($history->count() < 2) {
             return [

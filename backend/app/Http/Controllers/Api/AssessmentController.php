@@ -14,6 +14,7 @@ use App\Services\DsriCalculationService;
 use App\Services\RealtimePublisher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class AssessmentController extends Controller
 {
@@ -55,9 +56,10 @@ class AssessmentController extends Controller
 
     public function submit(SubmitAssessmentRequest $request): JsonResponse
     {
-        $sectionScores = collect($request->responses)
-            ->pluck('score', 'section')
-            ->toArray();
+        $sectionScores = [];
+        foreach (array_keys($this->dsriService->getCompetencies()) as $code) {
+            $sectionScores[$code] = $this->scoreSection($code, $request->answers);
+        }
 
         $result = $this->dsriService->calculate($sectionScores);
 
@@ -89,7 +91,7 @@ class AssessmentController extends Controller
                 'dsri' => $result['dsri'],
             ]);
         } catch (\Throwable $e) {
-            log()->warning('Failed to publish dashboard update: ' . $e->getMessage());
+            logger()->warning('Failed to publish dashboard update: ' . $e->getMessage());
         }
 
         return response()->json([
@@ -107,7 +109,7 @@ class AssessmentController extends Controller
             ->where('assessment_type', 'full')
             ->orderByDesc('submitted_at')
             ->first();
-        $history = $user->assessmentResponses()->orderByDesc('submitted_at')->get();
+        $history = $user->assessmentResponses()->where('assessment_type', 'full')->orderByDesc('submitted_at')->get();
 
         return response()->json([
             'latest' => $latest,
@@ -122,20 +124,21 @@ class AssessmentController extends Controller
     {
         $request->validate([
             'section_code' => 'required|string|in:C1,C2,C3,C4,C5,C6,C7,C8,C9,C10',
-            'score' => 'required|numeric|min:0',
+            'answers' => 'required|array',
+            'answers.*' => 'required|integer|between:1,5',
         ]);
 
         $user = $request->user();
         $sectionCode = $request->section_code;
 
-        $latestFull = $user->assessmentResponses()->where('assessment_type', 'full')->latestOfMany()->first();
+        $latestFull = $user->assessmentResponses()->where('assessment_type', 'full')->orderByDesc('submitted_at')->first();
         if (!$latestFull) {
             return response()->json(['message' => 'Complete a full assessment first'], 422);
         }
 
         $competencies = $this->dsriService->getCompetencies();
         $config = $competencies[$sectionCode];
-        $score = min($request->score, $config['max_score']);
+        $score = min($this->scoreSection($sectionCode, $request->answers), $config['max_score']);
 
         $response = AssessmentResponse::create([
             'user_id' => $user->id,
@@ -161,6 +164,25 @@ class AssessmentController extends Controller
             'percentage' => round(($score / $config['max_score']) * 100, 1),
             'section_details' => $this->dsriService->getSectionDetails($score, $sectionCode, $user->locale ?? 'en'),
         ], 201);
+    }
+
+    /**
+     * Weighted section score: Σ (rating × question weight), so a section answered
+     * all 5s scores exactly its max_score. Every question in the section must be answered.
+     */
+    private function scoreSection(string $code, array $answers): float
+    {
+        $score = 0;
+        foreach ($this->getSectionQuestions($code) as $question) {
+            if (!isset($answers[$question['id']])) {
+                throw ValidationException::withMessages([
+                    'answers' => "Question {$question['id']} has not been answered.",
+                ]);
+            }
+            $score += (int) $answers[$question['id']] * $question['weight'];
+        }
+
+        return $score;
     }
 
     private function getSectionQuestions(string $code): array

@@ -2,6 +2,8 @@
 
 namespace App\Services\Concerns;
 
+use Illuminate\Http\Client\Pool;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -78,5 +80,47 @@ trait UsesGeminiApi
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Send several plain-text prompts to Gemini concurrently, so the total wait is
+     * about one round-trip. Returns [key => text], with null for any request that
+     * failed or timed out.
+     */
+    protected function callGeminiRawMany(array $prompts, int $maxTokens = 256, int $timeout = 15): array
+    {
+        $texts = array_fill_keys(array_keys($prompts), null);
+        $apiKey = config('services.gemini.key');
+        $model = config('services.gemini.model', 'gemini-3.1-flash-lite');
+
+        if (empty($apiKey) || empty($prompts)) {
+            return $texts;
+        }
+
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
+        try {
+            $responses = Http::pool(fn (Pool $pool) => collect($prompts)->map(
+                fn ($prompt, $key) => $pool->as((string) $key)->timeout($timeout)->post($url, [
+                    'contents' => [['parts' => [['text' => $prompt]]]],
+                    'generationConfig' => [
+                        'temperature' => 0.3,
+                        'maxOutputTokens' => $maxTokens,
+                    ],
+                ])
+            )->all());
+        } catch (\Throwable $e) {
+            Log::error('Gemini API exception', ['message' => $e->getMessage()]);
+            return $texts;
+        }
+
+        foreach ($texts as $key => $_) {
+            $response = $responses[$key] ?? null;
+            if ($response instanceof Response && $response->successful()) {
+                $texts[$key] = $response->json('candidates.0.content.parts.0.text');
+            }
+        }
+
+        return $texts;
     }
 }

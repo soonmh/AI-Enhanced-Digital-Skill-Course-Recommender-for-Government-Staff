@@ -9,6 +9,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\UserCourse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class RecommendationTest extends TestCase
@@ -116,6 +118,82 @@ class RecommendationTest extends TestCase
         $titles = collect($response->json())->pluck('title')->toArray();
         $this->assertContains('Digital Literacy Course', $titles);
         $this->assertNotContains('Other Course', $titles);
+    }
+
+    /** Endorsed assessment that is weak in C1 only, plus $courses courses that cover C1. */
+    private function weakInC1WithCourses(int $courses): void
+    {
+        foreach (Course::factory()->count($courses)->create(['level' => 'beginner']) as $course) {
+            CourseCompetencyMapping::create(['course_id' => $course->id, 'competency_code' => 'C1']);
+        }
+        $this->staffUser->assessmentResponses()->create([
+            'assessment_id' => Assessment::create(['title' => 'Test', 'description' => 'Test'])->id,
+            'c1_score' => 10, 'c2_score' => 75, 'c3_score' => 50, 'c4_score' => 50, 'c5_score' => 50,
+            'c6_score' => 50, 'c7_score' => 55, 'c8_score' => 20, 'c9_score' => 25, 'c10_score' => 50,
+            'dsri' => 88, 'submitted_at' => now(), 'endorsement_status' => 'endorsed',
+        ]);
+    }
+
+    private function geminiReply(string $text): array
+    {
+        return ['candidates' => [['content' => ['parts' => [['text' => $text]]]]]];
+    }
+
+    public function test_course_explanations_are_fetched_once_per_course_and_cached(): void
+    {
+        config(['services.gemini.key' => 'test-key']);
+        Http::fake(['generativelanguage.googleapis.com/*' => Http::response($this->geminiReply('Fills your C1 gap.'))]);
+        $this->weakInC1WithCourses(3);
+
+        $response = $this->actingAs($this->staffUser)->getJson('/api/courses/recommended')->assertOk();
+        $this->assertSame(
+            ['Fills your C1 gap.', 'Fills your C1 gap.', 'Fills your C1 gap.'],
+            array_column($response->json('courses'), 'ai_explanation')
+        );
+        Http::assertSentCount(3);
+
+        // Recomputing the recommendations reuses the cached explanations
+        Cache::forget("hybrid_recommendations:{$this->staffUser->id}");
+        $this->actingAs($this->staffUser)->getJson('/api/courses/recommended')->assertOk();
+        Http::assertSentCount(3);
+    }
+
+    public function test_failed_explanation_falls_back_and_is_retried_later(): void
+    {
+        config(['services.gemini.key' => 'test-key']);
+        Http::fakeSequence('generativelanguage.googleapis.com/*')
+            ->pushStatus(500)
+            ->push($this->geminiReply('Fills your C1 gap.'));
+        $this->weakInC1WithCourses(1);
+
+        $this->actingAs($this->staffUser)->getJson('/api/courses/recommended')
+            ->assertOk()
+            ->assertJsonPath('courses.0.ai_explanation', 'This course addresses your weak areas: Digital Literacy (C1): 13.3%.');
+
+        // The fallback isn't cached (not even inside the 6h recommendations cache),
+        // so the very next request asks Gemini again
+        $this->actingAs($this->staffUser)->getJson('/api/courses/recommended')
+            ->assertOk()
+            ->assertJsonPath('courses.0.ai_explanation', 'Fills your C1 gap.');
+    }
+
+    public function test_control_group_flags_weak_sections_relative_to_max_score(): void
+    {
+        config(['services.recommendations.ab_testing' => true, 'services.recommendations.control_ratio' => 1.0]);
+        Http::fake();
+
+        // Every category at 80% of its max score: nothing is weak
+        $this->staffUser->assessmentResponses()->create([
+            'assessment_id' => Assessment::create(['title' => 'Test', 'description' => 'Test'])->id,
+            'c1_score' => 60, 'c2_score' => 60, 'c3_score' => 40, 'c4_score' => 40, 'c5_score' => 40,
+            'c6_score' => 40, 'c7_score' => 44, 'c8_score' => 16, 'c9_score' => 20, 'c10_score' => 40,
+            'dsri' => 80, 'submitted_at' => now(), 'endorsement_status' => 'endorsed',
+        ]);
+
+        $this->actingAs($this->staffUser)->getJson('/api/courses/recommended')
+            ->assertOk()
+            ->assertJsonPath('recommendation_method', 'legacy')
+            ->assertJsonPath('weak_sections', []);
     }
 
     public function test_course_show_includes_peer_enrollments(): void

@@ -143,17 +143,12 @@ export default function AssessmentStartPage() {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  const getSectionScore = (sectionCode: string) => {
-    const sec = sections.find((s) => s.section_code === sectionCode);
-    if (!sec) return 0;
-    return sec.questions.reduce((sum, q) => sum + (answers[q.id] || 0), 0);
-  };
-
   const getSectionFeedback = (sectionCode: string) => {
     const sec = sections.find((s) => s.section_code === sectionCode);
     if (!sec) return null;
-    const score = sec.questions.reduce((sum, q) => sum + (answers[q.id] || 0), 0);
-    const maxScore = sec.questions.length * 5;
+    // Same weighting the backend uses: Σ (rating × question weight)
+    const score = sec.questions.reduce((sum, q) => sum + (answers[q.id] || 0) * q.weight, 0);
+    const maxScore = sec.questions.reduce((sum, q) => sum + 5 * q.weight, 0);
     const pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
     if (pct >= 70) return { pct, tip: "Strong performance in this area! Keep it up.", color: "bg-green-500/10 border-green-500/20 text-green-700" };
     if (pct >= 40) return { pct, tip: "Good progress. Targeted practice will help you improve further.", color: "bg-yellow-500/10 border-yellow-500/20 text-yellow-700" };
@@ -170,11 +165,7 @@ export default function AssessmentStartPage() {
     setSubmitting(true);
     setShowConfirm(false);
     try {
-      const responses = sections.map((s) => ({
-        section: s.section_code,
-        score: getSectionScore(s.section_code),
-      }));
-      await submitAssessment(responses, data.assessment.id);
+      await submitAssessment(answers, data.assessment.id);
       localStorage.removeItem("assessment_draft");
       clearAssessmentDraft().catch(() => {});
       setAlertSuccess(true);

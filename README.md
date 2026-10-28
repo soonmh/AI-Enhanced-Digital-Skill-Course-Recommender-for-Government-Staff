@@ -215,7 +215,7 @@ A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform d
 
 **Request Flow:**
 1. Browser sends request to Next.js frontend (port 3000)
-2. Next.js API routes proxy to Laravel backend (port 8000) via Sanctum CSRF-based SPA authentication
+2. A catch-all Next.js route handler (`/api/[...path]`) proxies each call to the Laravel backend (port 8000), adding the user's Sanctum token as an `Authorization: Bearer` header
 3. Laravel handles business logic, DSRI calculation, and AI calls
 4. Real-time events are published to Redis and delivered to clients via Socket.io server (port 3001)
 
@@ -417,6 +417,15 @@ php artisan serve
 
 The API runs at `http://localhost:8000`.
 
+**Queue worker (recommended):** after each assessment submission, a queued job pre-generates the user's AI insights so the AI Insights page opens instantly. With `QUEUE_CONNECTION=database`, queued jobs only run while a worker is running:
+
+```bash
+cd backend
+php artisan queue:work
+```
+
+Without a worker the jobs just stay queued, and the AI insights are generated when the page is first opened instead (this takes several seconds).
+
 ### Frontend Setup (Next.js)
 
 ```bash
@@ -460,6 +469,9 @@ cd frontend && npm install && npm run dev
 
 # Terminal 4 — Real-time (optional)
 cd realtime && npm install && npm run dev
+
+# Terminal 5 — Queue worker (recommended)
+cd backend && php artisan queue:work
 ```
 
 Open **http://localhost:3000** and log in with a demo account.
@@ -528,7 +540,7 @@ JobRoleProfile ── (standalone, seeded reference data)
 | `courses` | Training courses with bilingual content |
 | `user_courses` | Enrollment tracking with progress, status & course-completion endorsement (`completion_endorsement_status`, proof path, endorser, note) |
 | `assessments` | Assessment definitions |
-| `assessment_responses` | Completed assessments with C1–C10 scores, DSRI, `type` (full/retest), and HOD endorsement (`endorsement_status`, endorser, endorsed_at, note) |
+| `assessment_responses` | Completed assessments with C1–C10 scores, DSRI, `assessment_type` (`full` / `section` retest) + `section_code`, and HOD endorsement (`endorsement_status`, endorser, endorsed_at, note) |
 | `assessment_drafts` | Auto-saved in-progress assessments |
 | `course_competency_mappings` | Maps courses to competency categories (C1–C10) |
 | `course_ratings` | User ratings (1–5 stars) with timestamps |
@@ -549,15 +561,15 @@ JobRoleProfile ── (standalone, seeded reference data)
 http://localhost:8000/api
 ```
 
-All protected endpoints require a valid Sanctum session cookie (obtained via `/login`).
+All protected endpoints require a Sanctum API token sent as `Authorization: Bearer <token>` (returned by `/login`). In the app, the browser calls same-origin `/api/...` on Next.js, which adds the token (see [Authentication Flow](#authentication-flow)).
 
 ### Authentication
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/register` | Register a new user |
-| `POST` | `/login` | Login and start session |
-| `POST` | `/logout` | End session |
+| `POST` | `/login` | Log in; returns the user and a Sanctum API token |
+| `POST` | `/logout` | Revoke the current token |
 | `GET` | `/user` | Get current authenticated user |
 | `PUT` | `/user/profile` | Update profile |
 | `PUT` | `/user/password` | Change password |
@@ -568,8 +580,8 @@ All protected endpoints require a valid Sanctum session cookie (obtained via `/l
 |--------|----------|------------|-------------|
 | `GET` | `/assessment` | `take-assessment` | Get assessment overview |
 | `GET` | `/assessment/start` | `take-assessment` | Get all questions |
-| `POST` | `/assessment/submit` | `take-assessment` | Submit completed assessment |
-| `POST` | `/assessment/submit-section` | `take-assessment` | Submit single section (retest) |
+| `POST` | `/assessment/submit` | `take-assessment` | Submit a full assessment (raw 1–5 answers, scored on the server) |
+| `POST` | `/assessment/submit-section` | `take-assessment` | Retest one competency (raw 1–5 answers for that section) |
 | `GET` | `/assessment/results` | `take-assessment` | Get all past results |
 | `GET` | `/assessment/role-profiles` | `take-assessment` | Get available job roles |
 | `POST` | `/assessment/role-gap` | `take-assessment` | Calculate role-specific competency gaps |
@@ -581,31 +593,52 @@ All protected endpoints require a valid Sanctum session cookie (obtained via `/l
 
 ```json
 // POST /api/assessment/submit
+// One 1–5 rating per question id. All 63 questions must be answered (otherwise 422).
+// The client sends answers only; section scores and DSRI are computed on the server.
 {
   "assessment_id": 1,
   "answers": {
-    "c1": [4, 3, 5],
-    "c2": [2, 4, 3],
-    "c3": [5, 4],
-    "c4": [3, 2],
-    "c5": [4, 4],
-    "c6": [3, 5],
-    "c7": [2, 3, 4],
-    "c8": [1],
-    "c9": [2, 3],
-    "c10": [4, 3]
+    "C1_Q1": 5,
+    "C1_Q2": 5,
+    "...": "...",
+    "C10_Q6": 5
   }
 }
 
-// Response
+// Response (201) — the result stays "pending" until the HOD endorses it
 {
-  "dsri_score": 68.5,
-  "category_scores": {
-    "c1": { "score": 12, "max": 15, "percentage": 80 },
-    "c2": { "score": 9, "max": 15, "percentage": 60 },
-    "...": "..."
+  "message": "Assessment submitted successfully",
+  "response": {
+    "id": 15,
+    "c1_score": 75,
+    "c2_score": 75,
+    "...": "...",
+    "c10_score": 50,
+    "dsri": 100,
+    "endorsement_status": "pending"
   },
-  "weak_sections": ["C4", "C8", "C9"]
+  "maturity": { "level": 5, "code": "expert", "label": "Expert", "gap_to_next": 0, "...": "..." }
+}
+```
+
+**Sample — Retest One Competency:**
+
+```json
+// POST /api/assessment/submit-section
+// Ratings for every question in the retested section (other sections' answers are ignored).
+{
+  "section_code": "C5",
+  "answers": { "C5_Q1": 3, "C5_Q2": 3, "C5_Q3": 3, "C5_Q4": 3 }
+}
+
+// Response (201) — C5 weights are 2, 2, 3, 3, so 3 × 10 = 30
+{
+  "message": "Section retest submitted successfully",
+  "section_code": "C5",
+  "score": 30,
+  "max_score": 50,
+  "percentage": 60,
+  "section_details": { "...": "..." }
 }
 ```
 
@@ -724,35 +757,35 @@ All protected endpoints require a valid Sanctum session cookie (obtained via `/l
 
 ## Authentication Flow
 
-The system uses **Laravel Sanctum SPA Authentication** proxied through Next.js:
+The system uses **NextAuth.js (credentials provider) + Laravel Sanctum API tokens**, with Next.js proxying every API call to Laravel:
 
 ```
-Browser                     Next.js (3000)              Laravel (8000)
-  │                             │                           │
-  │  1. POST /login             │                           │
-  │  (email, password)          │                           │
-  │─────────────────────────────▶│  2. GET /sanctum/csrf    │
-  │                             │──────────────────────────▶│
-  │                             │  ◀─── Set CSRF cookie ───│
-  │                             │  3. POST /api/login       │
-  │                             │  (with CSRF token)        │
-  │                             │──────────────────────────▶│
-  │                             │  ◀─── Session cookie ────│
-  │  ◀── Set session cookie ───│                           │
-  │                             │                           │
-  │  4. GET /api/courses        │                           │
-  │  (with session cookie)      │                           │
-  │─────────────────────────────▶│  5. Proxy to Laravel     │
-  │                             │──────────────────────────▶│
-  │                             │  ◀─── JSON response ─────│
-  │  ◀── JSON data ────────────│                           │
+Browser                   Next.js (3000)                      Laravel (8000)
+  │                             │                                    │
+  │  1. Sign in                 │                                    │
+  │  (email, password)          │                                    │
+  │────────────────────────────▶│  2. GET /sanctum/csrf-cookie       │
+  │                             │───────────────────────────────────▶│
+  │                             │     POST /api/login (+ XSRF token) │
+  │                             │───────────────────────────────────▶│
+  │                             │  ◀── user + Sanctum API token ─────│
+  │  ◀── NextAuth session ──────│                                    │
+  │      cookie (JWT + token)   │                                    │
+  │                             │                                    │
+  │  3. GET /api/courses        │                                    │
+  │  (NextAuth cookie)          │  4. Proxy with                     │
+  │────────────────────────────▶│  Authorization: Bearer <token>     │
+  │                             │───────────────────────────────────▶│
+  │                             │  ◀──────── JSON response ──────────│
+  │  ◀── JSON data ─────────────│                                    │
 ```
 
-1. Next.js fetches a CSRF cookie from Laravel's `/sanctum/csrf-cookie` endpoint
-2. Frontend sends login credentials with the CSRF token to `/api/login`
-3. Laravel validates credentials, creates a Sanctum session, and returns a session cookie
-4. Next.js API routes proxy subsequent requests to Laravel, forwarding the session cookie
-5. Laravel's `EnsureHasPermission` middleware checks authorization on protected routes
+1. The login page calls NextAuth's credentials provider (`frontend/src/lib/auth.ts`), which runs on the Next.js server
+2. The provider fetches Laravel's CSRF cookie from `/sanctum/csrf-cookie`, then posts the credentials to `/api/login`; Laravel returns the user and a Sanctum personal access token, which NextAuth keeps in its JWT session cookie
+3. The browser calls same-origin `/api/...` routes on Next.js
+4. The catch-all route handler `frontend/src/app/api/[...path]/route.ts` reads the token from the JWT and forwards the request to Laravel with `Authorization: Bearer <token>`
+5. Laravel's `auth:sanctum` guard authenticates the token, and the `EnsureHasPermission` middleware checks permissions on protected routes
+6. Every 5 minutes the JWT callback re-validates the token against `/api/user`; if Laravel rejects it, `middleware.ts` sends the user back to `/login`. The Socket.io server authenticates with the same token
 
 ---
 
@@ -761,8 +794,11 @@ Browser                     Next.js (3000)              Laravel (8000)
 The **Digital Skills Readiness Index (DSRI)** is a weighted composite score (0–100) calculated from 10 competency categories:
 
 ```
-DSRI = Σ (category_score / category_max_score × category_weight)
+category_score = Σ (rating × question_weight)        rating: 1–5
+DSRI           = Σ (category_score / category_max_score × category_weight)
 ```
+
+Each question carries a weight, and a category's question weights add up to its category weight, so rating every question 5 scores exactly the category's max (5 × weight). Scores are always computed on the server from the raw answers; the client never sends scores.
 
 ### 5-Level Maturity Model
 
@@ -780,22 +816,24 @@ Implemented in `frontend/src/lib/maturity.ts`. Maturity levels are displayed thr
 
 ### Competency Framework
 
-| Code | Category | Weight | Max Score | Questions |
+| Code | Category | Weight | Max Score | Questions (count × question weight) |
 |------|----------|--------|-----------|-----------|
-| C1 | Digital Literacy | 15 | 75 | 15 questions (×5) |
-| C2 | Digital Skills | 15 | 75 | 15 questions (×5) |
-| C3 | Communication & Collaboration | 10 | 50 | 10 questions (×5) |
-| C4 | Problem-Solving & Critical Thinking | 10 | 50 | 10 questions (×5) |
-| C5 | Digital Safety & Security | 10 | 50 | 10 questions (×5) |
-| C6 | Professional Development & Engagement | 10 | 50 | 10 questions (×5) |
-| C7 | Digital Transformation & Governance | 11 | 55 | 11 questions (×5) |
-| C8 | Digital Creation & Innovation | 4 | 20 | 4 questions (×5) |
-| C9 | Digital Ethics & Inclusion | 5 | 25 | 5 questions (×5) |
-| C10 | Functional Skills & Applications | 10 | 50 | 10 questions (×5) |
+| C1 | Digital Literacy | 15 | 75 | 7: 6 × 2 + 1 × 3 |
+| C2 | Digital Skills | 15 | 75 | 9: 6 × 2 + 3 × 1 |
+| C3 | Communication & Collaboration | 10 | 50 | 5: 5 × 2 |
+| C4 | Problem-Solving & Critical Thinking | 10 | 50 | 5: 5 × 2 |
+| C5 | Digital Safety & Security | 10 | 50 | 4: 2 × 2 + 2 × 3 |
+| C6 | Professional Development & Engagement | 10 | 50 | 7: 6 × 1.5 + 1 × 1 |
+| C7 | Digital Transformation & Governance | 11 | 55 | 11: 11 × 1 |
+| C8 | Digital Creation & Innovation | 4 | 20 | 2: 2 × 2 |
+| C9 | Digital Ethics & Inclusion | 5 | 25 | 7: 3 × 1 + 4 × 0.5 |
+| C10 | Functional Skills & Applications | 10 | 50 | 6: 4 × 2 + 2 × 1 |
 
-**Total: 100 points maximum**
+**Total: 63 questions, 100 points maximum**
 
-The calculation is implemented in `DsriCalculationService.php`. Categories scoring below 50% are flagged as "weak sections" and used to drive course recommendations.
+The scoring is implemented in `AssessmentController.php` (answers → category scores) and `DsriCalculationService.php` (category scores → DSRI). Categories scoring below 50% are flagged as "weak sections" and used to drive course recommendations.
+
+**Single-competency retest:** retaking one category re-scores it the same way and stores it as a `section` row. The retest updates that category's score on the results page (merged with the latest full assessment), but it does not recompute the DSRI, is not counted as an assessment in history, dashboards or reports, and does not go through HOD endorsement.
 
 ---
 

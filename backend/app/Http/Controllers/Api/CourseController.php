@@ -211,7 +211,7 @@ class CourseController extends Controller
                     'data' => ['user_course_id' => $uc->id, 'user_id' => $user->id],
                 ]);
             } catch (\Throwable $e) {
-                log()->warning('Failed to notify HOD of course completion: ' . $e->getMessage());
+                logger()->warning('Failed to notify HOD of course completion: ' . $e->getMessage());
             }
         }
 
