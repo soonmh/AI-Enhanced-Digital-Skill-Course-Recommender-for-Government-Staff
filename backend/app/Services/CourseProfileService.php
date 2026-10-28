@@ -37,7 +37,7 @@ class CourseProfileService
             'recent_reviews' => $this->recentReviews($course->id),
             'rating_distribution' => $this->ratingDistribution($course->id),
             'peer_enrollments' => $this->peerEnrollments($course->id, $viewer?->id),
-            'competency_breakdown' => $this->competencyBreakdown($course, $viewer?->latestEndorsedAssessmentResponse),
+            'competency_breakdown' => $this->competencyBreakdown($course, $viewer?->latestValidAssessmentResponse),
         ];
     }
 

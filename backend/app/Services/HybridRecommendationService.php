@@ -33,7 +33,9 @@ class HybridRecommendationService
             return $this->getLegacyRecommendations($user, $locale, $limit);
         }
 
-        $response = $user->latestEndorsedAssessmentResponse;
+        // Personal recommendations use the latest submitted assessment straight away (unless the HOD
+        // rejected it); only certificates and org-wide reports wait for HOD endorsement
+        $response = $user->latestValidAssessmentResponse;
 
         // No assessment: fall back to popularity
         if (!$response) {
@@ -260,7 +262,7 @@ class HybridRecommendationService
         array $matchedComps,
         Collection $similarUsers
     ): array {
-        $response = $user->latestEndorsedAssessmentResponse;
+        $response = $user->latestValidAssessmentResponse;
 
         return [
             'user_role' => $user->roles->first()?->name ?? 'Staff',
@@ -333,7 +335,7 @@ class HybridRecommendationService
      */
     private function getLegacyRecommendations(User $user, string $locale, int $limit): array
     {
-        $latestResponse = $user->latestEndorsedAssessmentResponse;
+        $latestResponse = $user->latestValidAssessmentResponse;
         $enrolledIds = $user->userCourses()->pluck('course_id')->toArray();
 
         $baseQuery = Course::whereNotIn('id', $enrolledIds)

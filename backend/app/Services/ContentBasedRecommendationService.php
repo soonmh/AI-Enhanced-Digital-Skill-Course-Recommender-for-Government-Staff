@@ -83,7 +83,7 @@ class ContentBasedRecommendationService
      */
     public function getRecommendations(User $user, int $limit = 20): Collection
     {
-        $response = $user->latestEndorsedAssessmentResponse;
+        $response = $user->latestValidAssessmentResponse;
 
         if (!$response) {
             return collect();

@@ -404,7 +404,8 @@ export default function AssessmentResultsPage() {
                       </Link>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(data.certificate!.share_url);
+                          // /c/<code> is a frontend page; the API's share_url points at the backend's host
+                          navigator.clipboard.writeText(`${window.location.origin}/c/${data.certificate!.verification_code}`);
                         }}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors"
                       >

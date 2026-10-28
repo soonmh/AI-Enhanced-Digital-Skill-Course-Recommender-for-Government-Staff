@@ -111,7 +111,7 @@ A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform d
 - Server-side rendering via Puppeteer
 
 ### HOD Endorsement & Verification
-- **Assessment endorsement** — a staff member's submitted DSRI result stays *Pending HOD Endorsement* until their Head of Department (their `hod_id` relationship) reviews it. Only endorsed results feed certificates, course recommendations, and org-wide reports
+- **Assessment endorsement** — a staff member's submitted DSRI result stays *Pending HOD Endorsement* until their Head of Department (their `hod_id` relationship) reviews it. The staff member sees their scores and personalised course recommendations straight away, but only endorsed results feed certificates and org-wide reports
 - **Course-completion endorsement** — reaching 100% on a course requires uploading proof (certificate/screenshot); the HOD then endorses or rejects it. Completion only counts once endorsed
 - **Endorse / Reject with feedback** — the HOD approves, or rejects with a required note; the staff member is notified in real time and prompted to retake/re-upload
 - **Endorsement history** — a HOD sees a combined, chronological log of every assessment and course-completion decision they've made
@@ -475,6 +475,8 @@ cd backend && php artisan queue:work
 ```
 
 Open **http://localhost:3000** and log in with a demo account.
+
+To put the system online for testers, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ### Running Tests
 
@@ -934,9 +936,9 @@ staff member's **Head of Department** (the `hod_id` relationship) before they
 count for training/development decisions.
 
 **Assessment endorsement**
-- On submit, a full assessment starts as `pending`. It is visible to its owner (badged *Pending HOD Endorsement*) but is **excluded** from certificate issuance, course recommendations, and org-wide reports until endorsed.
+- On submit, a full assessment starts as `pending`. Its owner sees it immediately (badged *Pending HOD Endorsement*) and it drives their course recommendations and AI insights straight away, but it is **excluded** from certificate issuance and org-wide reports until endorsed.
 - The certificate is issued on the `AssessmentEndorsed` event (not on submit), so a certificate always corresponds to a verified result.
-- The HOD endorses, or rejects with a required note; the staff member is notified and can retake.
+- The HOD endorses, or rejects with a required note; the staff member is notified and can retake. A rejected result stops driving their recommendations, which fall back to their previous valid (pending or endorsed) result.
 
 **Course-completion endorsement**
 - Dragging progress to 100% no longer auto-completes. The user uploads proof (image/PDF) and the enrollment enters `pending_endorsement`.

@@ -8,6 +8,7 @@ use App\Models\AssessmentResponse;
 use App\Models\User;
 use App\Models\UserCourse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class EndorsementService
 {
@@ -58,6 +59,9 @@ class EndorsementService
             'endorsed_at' => now(),
             'endorsement_note' => $note,
         ]);
+
+        // A rejected result no longer drives recommendations, so drop the ones cached from it
+        Cache::forget("hybrid_recommendations:{$response->user_id}");
 
         $this->realtime->publishNotification($response->user_id, [
             'type' => 'endorsement_rejected',

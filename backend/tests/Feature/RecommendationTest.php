@@ -11,6 +11,7 @@ use App\Models\UserCourse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
 
 class RecommendationTest extends TestCase
@@ -120,8 +121,8 @@ class RecommendationTest extends TestCase
         $this->assertNotContains('Other Course', $titles);
     }
 
-    /** Endorsed assessment that is weak in C1 only, plus $courses courses that cover C1. */
-    private function weakInC1WithCourses(int $courses): void
+    /** Assessment ($status) that is weak in C1 only, plus $courses courses that cover C1. */
+    private function weakInC1WithCourses(int $courses, string $status = 'endorsed'): void
     {
         foreach (Course::factory()->count($courses)->create(['level' => 'beginner']) as $course) {
             CourseCompetencyMapping::create(['course_id' => $course->id, 'competency_code' => 'C1']);
@@ -130,13 +131,61 @@ class RecommendationTest extends TestCase
             'assessment_id' => Assessment::create(['title' => 'Test', 'description' => 'Test'])->id,
             'c1_score' => 10, 'c2_score' => 75, 'c3_score' => 50, 'c4_score' => 50, 'c5_score' => 50,
             'c6_score' => 50, 'c7_score' => 55, 'c8_score' => 20, 'c9_score' => 25, 'c10_score' => 50,
-            'dsri' => 88, 'submitted_at' => now(), 'endorsement_status' => 'endorsed',
+            'dsri' => 88, 'submitted_at' => now(), 'endorsement_status' => $status,
         ]);
+    }
+
+    public function test_pending_assessment_drives_recommendations_but_issues_no_certificate(): void
+    {
+        Http::fake();
+        $this->weakInC1WithCourses(1, 'pending');
+        $courseId = Course::firstOrFail()->id;
+
+        $this->actingAs($this->staffUser)->getJson('/api/courses/recommended')
+            ->assertOk()
+            ->assertJsonPath('has_assessment', true)
+            ->assertJsonPath('weak_sections', ['C1'])
+            ->assertJsonPath('courses.0.id', $courseId);
+
+        // The course page shows the same, not-yet-endorsed scores
+        $breakdown = $this->actingAs($this->staffUser)->getJson("/api/courses/{$courseId}")
+            ->assertOk()
+            ->json('competency_breakdown');
+        $this->assertEquals(10, $breakdown[0]['user_score']);
+
+        // The certificate still waits for the HOD
+        $this->assertDatabaseCount('certificates', 0);
     }
 
     private function geminiReply(string $text): array
     {
         return ['candidates' => [['content' => ['parts' => [['text' => $text]]]]]];
+    }
+
+    public function test_rejected_assessment_stops_driving_recommendations(): void
+    {
+        Http::fake();
+        Redis::shouldReceive('publish')->andReturn(0);
+        $hod = User::factory()->createOne();
+        $this->staffUser->update(['hod_id' => $hod->id]);
+
+        // Older endorsed result is weak in C1; the newer one (pending) is weak in C2
+        $this->weakInC1WithCourses(1);
+        $newer = $this->staffUser->assessmentResponses()->create([
+            'assessment_id' => Assessment::firstOrFail()->id,
+            'c1_score' => 75, 'c2_score' => 10, 'c3_score' => 50, 'c4_score' => 50, 'c5_score' => 50,
+            'c6_score' => 50, 'c7_score' => 55, 'c8_score' => 20, 'c9_score' => 25, 'c10_score' => 50,
+            'dsri' => 88, 'submitted_at' => now(), 'endorsement_status' => 'pending',
+        ]);
+
+        $this->actingAs($this->staffUser)->getJson('/api/courses/recommended')
+            ->assertJsonPath('weak_sections', ['C2']);
+
+        // Once the HOD rejects it, recommendations fall back to the last valid result right away
+        $this->actingAs($hod)->postJson("/api/endorsements/{$newer->id}/reject", ['note' => 'Please retake'])->assertOk();
+        // fresh(): a real request loads the user anew instead of reusing relations loaded above
+        $this->actingAs($this->staffUser->fresh())->getJson('/api/courses/recommended')
+            ->assertJsonPath('weak_sections', ['C1']);
     }
 
     public function test_course_explanations_are_fetched_once_per_course_and_cached(): void

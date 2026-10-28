@@ -9,8 +9,12 @@ use App\Listeners\GenerateAiInsights;
 use App\Listeners\InvalidateRecommendationCache;
 use App\Listeners\IssueCertificate;
 use App\Listeners\NotifyHodOfPendingEndorsement;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +25,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Logins and registrations reach Laravel from the Next.js server, so they all share one IP.
+        // Throttle per account instead, so one user's attempts can't lock everyone else out.
+        RateLimiter::for('auth', fn (Request $request) => Limit::perMinute(5)->by(
+            Str::lower((string) $request->input('email')) . '|' . $request->ip()
+        ));
+
         Event::listen(
             AssessmentSubmitted::class,
             [GenerateAiInsights::class, 'handle'],

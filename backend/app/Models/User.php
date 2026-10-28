@@ -70,6 +70,18 @@ class User extends Authenticatable
         );
     }
 
+    // Latest full assessment the HOD hasn't rejected (pending or endorsed) — drives personal recommendations
+    public function latestValidAssessmentResponse()
+    {
+        return $this->hasOne(AssessmentResponse::class)->ofMany(
+            ['id' => 'max'],
+            function ($query) {
+                $query->where('assessment_type', 'full')
+                    ->where('endorsement_status', '!=', 'rejected');
+            }
+        );
+    }
+
     public function latestEndorsedAssessmentResponse()
     {
         return $this->hasOne(AssessmentResponse::class)->ofMany(
