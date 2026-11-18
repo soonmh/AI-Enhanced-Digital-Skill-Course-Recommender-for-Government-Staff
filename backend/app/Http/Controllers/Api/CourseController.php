@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCourseRequest;
 use App\Models\Course;
 use App\Models\CourseRating;
+use App\Models\User;
 use App\Models\UserCourse;
 use App\Models\RecommendationInteraction;
 use App\Services\CourseProfileService;
@@ -13,6 +14,7 @@ use App\Services\HybridRecommendationService;
 use App\Services\RealtimePublisher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CourseController extends Controller
 {
@@ -113,9 +115,12 @@ class CourseController extends Controller
     public function store(StoreCourseRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $codes = $data['competency_codes'] ?? null;
+        unset($data['competency_codes']);
         $data['created_by'] = $request->user()->id;
 
         $course = Course::create($data);
+        $this->syncCompetencies($course, $codes);
 
         return response()->json([
             'message' => 'Course created successfully',
@@ -126,7 +131,12 @@ class CourseController extends Controller
     public function update(StoreCourseRequest $request, int $id): JsonResponse
     {
         $course = Course::findOrFail($id);
-        $course->update($request->validated());
+        $data = $request->validated();
+        $codes = $data['competency_codes'] ?? null;
+        unset($data['competency_codes']);
+
+        $course->update($data);
+        $this->syncCompetencies($course, $codes);
 
         return response()->json([
             'message' => 'Course updated successfully',
@@ -138,6 +148,7 @@ class CourseController extends Controller
     {
         $course = Course::findOrFail($id);
         $course->delete();
+        $this->forgetRecommendationCaches();
 
         return response()->json(['message' => 'Course deleted successfully']);
     }
@@ -269,10 +280,35 @@ class CourseController extends Controller
             'course_id' => $validated['course_id'],
             'interaction_type' => $validated['interaction_type'],
             'source' => $validated['source'] ?? 'recommended',
-            'ab_group' => $validated['metadata']['ab_group'] ?? null,
+            // Enrolments are tracked from the course page, which doesn't know the A/B group;
+            // a user always stays in one group, so reuse the group of their latest impression or click
+            'ab_group' => $validated['metadata']['ab_group']
+                ?? RecommendationInteraction::where('user_id', $request->user()->id)
+                    ->whereNotNull('ab_group')->latest('id')->value('ab_group'),
             'metadata' => $validated['metadata'] ?? null,
         ]);
 
         return response()->json(['message' => 'Tracked'], 201);
+    }
+
+    /**
+     * Replace a course's competency mappings (C1–C10) when the form sends them,
+     * then drop cached recommendations so the course change shows up right away.
+     */
+    private function syncCompetencies(Course $course, ?array $codes): void
+    {
+        if ($codes !== null) {
+            $course->competencyMappings()->delete();
+            foreach (array_unique($codes) as $code) {
+                $course->competencyMappings()->create(['competency_code' => $code]);
+            }
+        }
+
+        $this->forgetRecommendationCaches();
+    }
+
+    private function forgetRecommendationCaches(): void
+    {
+        User::pluck('id')->each(fn ($id) => Cache::forget("hybrid_recommendations:{$id}"));
     }
 }

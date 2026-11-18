@@ -55,7 +55,7 @@ export default function ListCoursePage() {
   const [assignSearch, setAssignSearch] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
-  const { users: allUsers } = useUsers();
+  const { users: allUsers } = useUsers(!!isAdmin);
   const { assignedUserIds, mutate: mutateAssigned } = useAssignedUsers(assignCourse ? String(assignCourse.id) : null);
   const [removeUserTarget, setRemoveUserTarget] = useState<{ userId: number; name: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<any>(null);

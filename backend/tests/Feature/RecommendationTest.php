@@ -245,6 +245,22 @@ class RecommendationTest extends TestCase
             ->assertJsonPath('weak_sections', []);
     }
 
+    public function test_enrolment_from_recommendations_keeps_the_users_ab_group(): void
+    {
+        $course = Course::factory()->create();
+        $track = fn (array $body) => $this->actingAs($this->staffUser)
+            ->postJson('/api/courses/recommendations/track', ['course_id' => $course->id] + $body)
+            ->assertCreated();
+
+        // The recommendations page sends the group; the course page only says where the user came from
+        $track(['interaction_type' => 'impression', 'metadata' => ['ab_group' => 'control']]);
+        $track(['interaction_type' => 'enroll', 'metadata' => ['source' => 'recommended']]);
+
+        $this->assertDatabaseHas('recommendation_interactions', [
+            'user_id' => $this->staffUser->id, 'interaction_type' => 'enroll', 'ab_group' => 'control',
+        ]);
+    }
+
     public function test_course_show_includes_peer_enrollments(): void
     {
         $course = Course::factory()->create();

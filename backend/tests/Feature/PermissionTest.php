@@ -86,4 +86,17 @@ class PermissionTest extends TestCase
         $response = $this->actingAs($admin)->getJson('/api/admin/users');
         $response->assertStatus(200);
     }
+
+    public function test_a_user_cannot_be_assigned_as_their_own_hod(): void
+    {
+        $admin = $this->createUserWithRole('Admin');
+        $staff = $this->createUserWithRole('Staff');
+
+        $this->actingAs($admin)->putJson("/api/admin/users/{$staff->id}", ['hod_id' => $staff->id])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('hod_id');
+
+        $this->actingAs($admin)->putJson("/api/admin/users/{$staff->id}", ['hod_id' => $admin->id])
+            ->assertOk();
+    }
 }

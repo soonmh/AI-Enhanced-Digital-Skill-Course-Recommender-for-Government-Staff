@@ -396,7 +396,7 @@ export default function StaffReportPage() {
                           <p className="text-[10px] text-muted-foreground">Best Score</p>
                         </div>
                         <div className="bg-background rounded-lg p-2">
-                          <p className="text-lg font-bold text-foreground">{Math.round(assessmentHistory.reduce((s: number, a: ApiRecord) => s + (a.dsri || 0), 0) / totalAssessments)}</p>
+                          <p className="text-lg font-bold text-foreground">{Math.round(assessmentHistory.reduce((s: number, a: ApiRecord) => s + Number(a.dsri || 0), 0) / totalAssessments)}</p>
                           <p className="text-[10px] text-muted-foreground">Average</p>
                         </div>
                       </div>

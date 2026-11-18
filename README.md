@@ -164,7 +164,7 @@ A full-stack web-based **Digital Skills Readiness Assessment (DSRA)** platform d
 | | Socket.io Client | 4.8 |
 | | Vitest (unit tests) | 4.1 |
 | **Backend** | Laravel | 11 |
-| | PHP | 8.3 |
+| | PHP | 8.4 |
 | | Laravel Sanctum | 4.0 |
 | | Eloquent ORM | — |
 | | Predis | 3.4 |
@@ -323,7 +323,7 @@ fyp1/
 
 ### Prerequisites
 
-- **PHP** >= 8.3
+- **PHP** >= 8.4
 - **Node.js** >= 18
 - **Composer** >= 2
 - **Docker** & Docker Compose

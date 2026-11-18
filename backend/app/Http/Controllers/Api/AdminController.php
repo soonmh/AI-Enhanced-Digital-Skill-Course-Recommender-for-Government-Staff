@@ -89,7 +89,7 @@ class AdminController extends Controller
             'working_field' => 'nullable|string|max:255',
             'job_level' => 'nullable|string|max:255',
             'experience_years' => 'nullable|string|max:255',
-            'hod_id' => 'nullable|integer|exists:users,id',
+            'hod_id' => 'nullable|integer|exists:users,id|not_in:' . $id,
             'is_active' => 'boolean',
             'role' => 'sometimes|string|in:Admin,Staff,Top Management,Trainer',
         ]);

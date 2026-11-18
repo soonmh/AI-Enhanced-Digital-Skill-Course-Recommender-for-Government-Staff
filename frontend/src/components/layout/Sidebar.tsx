@@ -60,7 +60,6 @@ const getNavItems = (t: (key: string, params?: Record<string, string | number>) 
         href: "/assessment",
         icon: TrendingUp,
         permission: "take-assessment",
-        roles: ["Admin", "Staff"],
       },
       {
         key: "assessment-results",
@@ -68,11 +67,9 @@ const getNavItems = (t: (key: string, params?: Record<string, string | number>) 
         href: "/assessment/results",
         icon: Target,
         permission: "take-assessment",
-        roles: ["Admin", "Staff"],
       },
     ],
     permission: "take-assessment",
-    roles: ["Admin", "Staff"],
   },
   {
     key: "courses",

@@ -25,6 +25,7 @@ class CourseProfileService
             'description' => $course->description,
             'description_bm' => $course->description_bm,
             'level' => $course->level,
+            'working_field' => $course->working_field,
             'image' => $course->image,
             'url' => $course->url,
             'remark' => $course->remark,

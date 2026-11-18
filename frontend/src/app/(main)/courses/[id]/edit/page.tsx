@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowLeft, Loader2, Save, Trash2 } from "lucide-react";
+import { COMPETENCIES } from "@/lib/constants";
 
 export default function EditCoursePage() {
   const params = useParams();
@@ -22,6 +23,8 @@ export default function EditCoursePage() {
     description_bm: "",
     level: "beginner",
     working_field: "",
+    url: "",
+    competency_codes: [] as string[],
   });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -36,6 +39,8 @@ export default function EditCoursePage() {
         description_bm: course.description_bm || "",
         level: course.level || "beginner",
         working_field: course.working_field || "",
+        url: course.url || "",
+        competency_codes: (course.competency_breakdown || []).map((c: { code: string }) => c.code),
       });
     }
   }, [course]);
@@ -61,13 +66,18 @@ export default function EditCoursePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.competency_codes.length === 0) {
+      setError("Select at least one competency so the course can be recommended to users with that skill gap.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
       await updateCourse(params.id as string, form);
       router.push(`/courses/${params.id}`);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to update course";
+      const apiMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const message = apiMessage || (err instanceof Error ? err.message : "Failed to update course");
       setError(message);
     } finally {
       setSaving(false);
@@ -89,6 +99,14 @@ export default function EditCoursePage() {
 
   const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [field]: e.target.value });
+
+  const toggleCompetency = (code: string) =>
+    setForm((f) => ({
+      ...f,
+      competency_codes: f.competency_codes.includes(code)
+        ? f.competency_codes.filter((c) => c !== code)
+        : [...f.competency_codes, code],
+    }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -151,6 +169,26 @@ export default function EditCoursePage() {
               <div className="grid gap-2">
                 <Label htmlFor="working_field">Working Field</Label>
                 <Input id="working_field" value={form.working_field} onChange={update("working_field")} placeholder="e.g., Information Technology" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="url">Course URL</Label>
+                <Input id="url" type="url" value={form.url} onChange={update("url")} placeholder="https://..." />
+              </div>
+              <div className="grid gap-2">
+                <Label>Competencies Covered</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {Object.values(COMPETENCIES).map((c) => (
+                    <label key={c.code} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.competency_codes.includes(c.code)}
+                        onChange={() => toggleCompetency(c.code)}
+                        className="accent-violet-600"
+                      />
+                      <span><span className="font-medium">{c.code}</span> {c.nameEn}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

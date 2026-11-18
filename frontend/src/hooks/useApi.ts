@@ -132,7 +132,7 @@ export async function createCourse(formData: Record<string, string>) {
   return result.data;
 }
 
-export async function updateCourse(id: string, formData: Record<string, string>) {
+export async function updateCourse(id: string, formData: Record<string, unknown>) {
   const result = await api.put(`/api/courses/${id}`, formData);
   return result.data;
 }
@@ -167,8 +167,8 @@ export async function submitCourseCompletion(id: string, file: File) {
   return result.data;
 }
 
-export function useUsers() {
-  const { data, error, isLoading, mutate } = useSWR("/api/admin/users", fetcher);
+export function useUsers(enabled = true) {
+  const { data, error, isLoading, mutate } = useSWR(enabled ? "/api/admin/users" : null, fetcher);
   return { users: data, isLoading, isError: error, mutate };
 }
 

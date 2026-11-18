@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import api from "@/lib/axios";
+import { COMPETENCIES } from "@/lib/constants";
 
 export default function CreateCoursePage() {
   const [form, setForm] = useState({
@@ -16,17 +17,19 @@ export default function CreateCoursePage() {
     description_bm: "",
     level: "beginner",
     working_field: "",
-    material_title: "",
-    material_type: "video",
-    material_url: "",
+    url: "",
+    competency_codes: [] as string[],
   });
-  const [uploadMode, setUploadMode] = useState<"file" | "url">("url");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.competency_codes.length === 0) {
+      setError("Select at least one competency so the course can be recommended to users with that skill gap.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
@@ -34,7 +37,8 @@ export default function CreateCoursePage() {
       await api.post("/api/courses", form);
       router.push("/courses/list");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to create course";
+      const apiMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      const message = apiMessage || (err instanceof Error ? err.message : "Failed to create course");
       setError(message);
     } finally {
       setSaving(false);
@@ -44,12 +48,20 @@ export default function CreateCoursePage() {
   const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [field]: e.target.value });
 
+  const toggleCompetency = (code: string) =>
+    setForm((f) => ({
+      ...f,
+      competency_codes: f.competency_codes.includes(code)
+        ? f.competency_codes.filter((c) => c !== code)
+        : [...f.competency_codes, code],
+    }));
+
   return (
     <div className="min-h-screen bg-background">
       <div className="px-6 py-8 w-full max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Create Course</h1>
-          <p className="text-gray-600 text-lg">Add a new course with learning materials</p>
+          <p className="text-gray-600 text-lg">Add a new course and map it to the competencies it covers</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -79,6 +91,17 @@ export default function CreateCoursePage() {
                 />
               </div>
               <div className="grid gap-2">
+                <Label htmlFor="description_bm">Description (Bahasa Melayu)</Label>
+                <textarea
+                  id="description_bm"
+                  value={form.description_bm}
+                  onChange={update("description_bm")}
+                  rows={3}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  placeholder="Describe the course in BM"
+                />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="level">Level</Label>
                 <select id="level" value={form.level} onChange={update("level")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                   <option value="beginner">Beginner</option>
@@ -95,43 +118,30 @@ export default function CreateCoursePage() {
 
           <Card className="mb-8 border-0 shadow-lg">
             <CardHeader>
-              <CardTitle>Material</CardTitle>
-              <CardDescription>Add learning material to the course</CardDescription>
+              <CardTitle>Competencies &amp; Link</CardTitle>
+              <CardDescription>The recommendation engine matches these competencies to users&apos; skill gaps</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-2">
-                <Label htmlFor="material_title">Material Title</Label>
-                <Input id="material_title" value={form.material_title} onChange={update("material_title")} placeholder="e.g., Introduction Video" />
+                <Label>Competencies Covered</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {Object.values(COMPETENCIES).map((c) => (
+                    <label key={c.code} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={form.competency_codes.includes(c.code)}
+                        onChange={() => toggleCompetency(c.code)}
+                        className="accent-violet-600"
+                      />
+                      <span><span className="font-medium">{c.code}</span> {c.nameEn}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="material_type">Type</Label>
-                <select id="material_type" value={form.material_type} onChange={update("material_type")} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                  <option value="video">Video</option>
-                  <option value="document">Document</option>
-                  <option value="quiz">Quiz</option>
-                </select>
+                <Label htmlFor="url">Course URL</Label>
+                <Input id="url" type="url" value={form.url} onChange={update("url")} placeholder="https://..." />
               </div>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="upload_mode" checked={uploadMode === "file"} onChange={() => setUploadMode("file")} className="accent-violet-600" />
-                  <span className="text-sm font-medium">Upload File</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" name="upload_mode" checked={uploadMode === "url"} onChange={() => setUploadMode("url")} className="accent-violet-600" />
-                  <span className="text-sm font-medium">External URL</span>
-                </label>
-              </div>
-              {uploadMode === "file" ? (
-                <div className="grid gap-2">
-                  <Label>File</Label>
-                  <input type="file" className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-violet-500/10 file:text-violet-700 hover:file:bg-violet-100" />
-                </div>
-              ) : (
-                <div className="grid gap-2">
-                  <Label htmlFor="material_url">URL</Label>
-                  <Input id="material_url" type="url" value={form.material_url} onChange={update("material_url")} placeholder="https://..." />
-                </div>
-              )}
             </CardContent>
           </Card>
 
