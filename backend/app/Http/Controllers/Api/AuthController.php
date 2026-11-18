@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,7 +43,7 @@ class AuthController extends Controller
             'experience_years' => $request->experience_years,
         ]);
 
-        $user->roles()->attach(2); // Staff role by default
+        $user->roles()->attach(Role::where('name', 'Staff')->value('id')); // Staff role by default
 
         return response()->json([
             'user' => new UserResource($user->load('roles.permissions')),

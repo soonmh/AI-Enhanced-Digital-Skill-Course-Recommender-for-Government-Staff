@@ -11,7 +11,6 @@ vendor/
 frontend/.next/
 frontend/out/
 backend/public/build/
-backend/storage/
 
 # IDE
 .idea/
