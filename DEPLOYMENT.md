@@ -55,7 +55,15 @@ NEXTAUTH_SECRET=                              # node -e "console.log(require('cr
 
 Leave `NEXT_PUBLIC_REALTIME_URL` unset when the real-time server isn't deployed. The browser console then shows WebSocket connection errors; they're harmless.
 
-PDF export runs Chrome on the frontend server through Puppeteer. `npm ci` downloads Chrome, but it also needs system libraries on Linux and won't run on Vercel. If the export fails, leave it out of the test.
+PDF export (the personal report download) runs Chrome on the frontend server through Puppeteer, so testers don't install anything. The Chrome that `npm ci` downloads needs system libraries the Linux image doesn't have, so on Railway install Chromium in the frontend service instead:
+
+```env
+RAILPACK_DEPLOY_APT_PACKAGES=... chromium   # "..." keeps the packages Railpack adds itself
+PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+PUPPETEER_SKIP_DOWNLOAD=true                # don't download a second Chrome during npm ci
+```
+
+Give the frontend service at least 1 GB of RAM, because Chrome needs extra memory while it generates a PDF. The export won't run on Vercel. If Chromium fails to start, leave the export out of the test.
 
 ## 4. Backend build and release
 
@@ -90,6 +98,7 @@ The User model hashes the new password automatically.
 - [ ] Demo account passwords changed
 - [ ] `RECOMMENDATION_AB_TESTING=false`
 - [ ] Sign up as a new user, take an assessment and open the recommendations yourself
+- [ ] Download the PDF report from the results page once, to check Chromium starts
 - [ ] **HODs:** self-registered testers have no HOD, so their certificates can't be endorsed until one is assigned in Admin → Users. A newly assigned HOD must sign in again to see My Team.
 - [ ] **Uploaded completion proofs** are publicly reachable by URL. Ask testers not to upload documents with sensitive personal data. On platforms with a temporary filesystem the files are lost on every redeploy unless you attach a volume to `backend/storage`.
 - [ ] **Gemini quota:** many testers at once may hit the API rate limit. Course explanations then show template text and fill in on a later visit.
