@@ -49,6 +49,16 @@ class User extends Authenticatable
         return $this->roles->pluck('name')->contains($role);
     }
 
+    // Deleting, demoting or deactivating the only active admin would leave nobody able to manage the system
+    public function isLastActiveAdmin(): bool
+    {
+        return $this->hasRole('Admin')
+            && !User::where('id', '!=', $this->id)
+                ->where('is_active', true)
+                ->whereHas('roles', fn ($q) => $q->where('name', 'Admin'))
+                ->exists();
+    }
+
     public function assessmentResponses()
     {
         return $this->hasMany(AssessmentResponse::class);

@@ -94,6 +94,12 @@ class AdminController extends Controller
             'role' => 'sometimes|string|in:Admin,Staff,Top Management,Trainer',
         ]);
 
+        $demoting = isset($validated['role']) && $validated['role'] !== 'Admin';
+        $deactivating = array_key_exists('is_active', $validated) && !$validated['is_active'];
+        if (($demoting || $deactivating) && $user->isLastActiveAdmin()) {
+            return response()->json(['message' => 'Cannot deactivate or demote the last active admin'], 403);
+        }
+
         if (isset($validated['role'])) {
             $role = Role::where('name', $validated['role'])->first();
             $user->roles()->sync([$role->id]);
@@ -101,6 +107,11 @@ class AdminController extends Controller
         }
 
         $user->update($validated);
+
+        // Sign a deactivated user out everywhere, as self-deactivation does
+        if ($deactivating) {
+            $user->tokens()->delete();
+        }
 
         return response()->json([
             'message' => 'User updated successfully',
@@ -112,11 +123,8 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if ($user->roles->pluck('name')->contains('Admin')) {
-            $adminCount = User::whereHas('roles', fn($q) => $q->where('name', 'Admin'))->count();
-            if ($adminCount <= 1) {
-                return response()->json(['message' => 'Cannot delete the last admin user'], 403);
-            }
+        if ($user->isLastActiveAdmin()) {
+            return response()->json(['message' => 'Cannot delete the last admin user'], 403);
         }
 
         $user->delete();

@@ -61,6 +61,10 @@ class SettingsController extends Controller
             return response()->json(['message' => 'Current password is incorrect'], 422);
         }
 
+        if ($request->user()->isLastActiveAdmin()) {
+            return response()->json(['message' => 'The last active admin cannot deactivate their own account'], 403);
+        }
+
         $request->user()->update(['is_active' => false]);
         $request->user()->tokens()->delete();
 

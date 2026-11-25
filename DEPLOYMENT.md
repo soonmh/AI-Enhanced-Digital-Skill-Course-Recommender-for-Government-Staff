@@ -22,6 +22,7 @@ APP_ENV=production
 APP_DEBUG=false                  # true would show stack traces and settings to testers
 APP_KEY=                         # output of: php artisan key:generate --show
 APP_URL=https://<backend-domain> # also the base of uploaded-proof links (APP_URL/storage/...)
+FRONTEND_URL=https://<frontend-domain>  # password-reset emails link to FRONTEND_URL/reset-password
 LOG_CHANNEL=stderr               # errors show up in the platform's logs
 LOG_LEVEL=info
 
@@ -39,6 +40,8 @@ SANCTUM_STATEFUL_DOMAINS=<frontend-domain>
 
 FILESYSTEM_DISK=local
 MAIL_MAILER=log                  # password-reset emails only reach the log until SMTP is configured
+# To send them for real: MAIL_MAILER=smtp plus MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD,
+# MAIL_FROM_ADDRESS. Without SMTP, reset a forgotten password in `php artisan tinker` (see section 5).
 
 GEMINI_API_KEY=
 GEMINI_MODEL=gemini-3.1-flash-lite

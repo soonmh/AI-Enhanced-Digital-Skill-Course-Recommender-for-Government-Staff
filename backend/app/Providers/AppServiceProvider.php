@@ -9,12 +9,15 @@ use App\Listeners\GenerateAiInsights;
 use App\Listeners\InvalidateRecommendationCache;
 use App\Listeners\IssueCertificate;
 use App\Listeners\NotifyHodOfPendingEndorsement;
+use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +33,15 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth', fn (Request $request) => Limit::perMinute(5)->by(
             Str::lower((string) $request->input('email')) . '|' . $request->ip()
         ));
+
+        // The API has no web routes, so reset links open the frontend's /reset-password page
+        ResetPassword::createUrlUsing(fn (User $user, string $token) => config('app.frontend_url')
+            . '/reset-password?token=' . $token . '&email=' . urlencode($user->email));
+
+        // Deactivated accounts are refused on every request, even with a token issued before
+        Sanctum::authenticateAccessTokensUsing(
+            fn ($accessToken, bool $isValid) => $isValid && (bool) $accessToken->tokenable?->is_active
+        );
 
         Event::listen(
             AssessmentSubmitted::class,

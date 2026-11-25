@@ -11,7 +11,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -20,20 +19,6 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request): JsonResponse
     {
-        // Allow re-registration if the account was deactivated
-        $existing = User::where('email', $request->email)->where('is_active', false)->first();
-        if ($existing) {
-            DB::transaction(function () use ($existing) {
-                $existing->assessmentDrafts()->delete();
-                $existing->notifications()->delete();
-                $existing->certificates()->delete();
-                $existing->assessmentResponses()->delete();
-                $existing->userCourses()->delete();
-                $existing->roles()->detach();
-                $existing->delete();
-            });
-        }
-
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,

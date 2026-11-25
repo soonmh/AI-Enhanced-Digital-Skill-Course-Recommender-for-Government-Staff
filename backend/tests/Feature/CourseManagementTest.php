@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Course;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserCourse;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -25,6 +26,26 @@ class CourseManagementTest extends TestCase
     private function codes(Course $course): array
     {
         return $course->competencyMappings()->orderBy('competency_code')->pluck('competency_code')->all();
+    }
+
+    public function test_deleting_a_course_creator_keeps_their_courses_and_everyones_progress(): void
+    {
+        $trainer = $this->trainer();
+        $course = Course::factory()->create(['created_by' => $trainer->id]);
+        $learner = User::factory()->createOne();
+        UserCourse::create([
+            'user_id' => $learner->id, 'course_id' => $course->id,
+            'progress' => 60, 'status' => 'active', 'started_at' => now(),
+        ]);
+        $admin = User::factory()->createOne();
+        $admin->roles()->attach(Role::where('name', 'Admin')->first());
+
+        $this->actingAs($admin)->deleteJson("/api/admin/users/{$trainer->id}")->assertOk();
+
+        $this->assertModelExists($course);
+        $this->assertNull($course->fresh()->created_by);
+        $this->assertDatabaseHas('user_courses', ['user_id' => $learner->id, 'course_id' => $course->id, 'progress' => 60]);
+        $this->actingAs($learner)->getJson("/api/courses/{$course->id}")->assertOk()->assertJsonPath('created_by', null);
     }
 
     public function test_creating_and_editing_a_course_saves_its_competency_mapping(): void
